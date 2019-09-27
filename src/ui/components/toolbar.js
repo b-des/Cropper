@@ -54,9 +54,7 @@ export  class ToolbarComponent extends Component{
                 <Button label="Save" icon="pi pi-check" className="p-button-warning" />
             </div>
             <div className="p-toolbar-group-right">
-                <Button icon="pi pi-search" style={{marginRight:'.25em'}} />
-                <Button icon="pi pi-calendar" className="p-button-success" style={{marginRight:'.25em'}} />
-                <Button icon="pi pi-times" className="p-button-danger" />
+                <Button label="Upload" icon="pi pi-check" className="p-button-success" />
             </div>
         </Toolbar>
     }

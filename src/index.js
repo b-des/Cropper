@@ -6,6 +6,8 @@ import { h, Component, render } from 'preact';
 import {Button} from 'primereact/button';
 import {Dialog} from 'primereact/dialog';
 import {ToolbarComponent} from "./ui/components/toolbar";
+import {PanelComponent} from "./ui/components/panel";
+
 const citySelectItems = [
     {label: 'New York', value: 'NY'},
     {label: 'Rome', value: 'RM'},
@@ -23,6 +25,7 @@ class Clock extends Component {
         let time = new Date();
         return  <div>
             <ToolbarComponent cities={citySelectItems} onSizeChange={this.changeSize}/>
+            <PanelComponent />
             <Dialog header="Godfather I" visible={this.state.visible} style={{width: '50vw'}} modal={true} onHide={() => this.setState({visible: false})}>
             The story begins as Don Vito Corleone, the head of a New York Mafia family, oversees his daughter's wedding.
             His beloved son Michael has just come home from the war, but does not intend to become part of his father's business.
