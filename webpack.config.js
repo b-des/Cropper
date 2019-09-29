@@ -3,28 +3,30 @@ const path = require('path');
 const env = process.env.WEBPACK_ENV;
 const libraryName = 'cropper';
 let plugins = [], outputFile;
-
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const isDevelopment = process.env.NODE_ENV === 'development';
 
 
 module.exports = {
-    entry: __dirname + '/src/index.js',
+    entry: './src/index.js',
     devtool: 'source-map',
     output: {
-        path: __dirname + '/dist',
+        path: path.join(__dirname, 'dist'),
         publicPath: '/dist',
         library: 'Cropper',
         filename: '[name].js',
-        libraryExport: "default" ,
+        libraryExport: "default",
         libraryTarget: 'umd',
-        libraryTarget: "var"
+        chunkFilename: '[name].bundle.js',
 
     },
     optimization: {
         // We no not want to minimize our code.
-        minimize: false
+        minimize: true,
+
     },
     module: {
-        rules:[
+        rules: [
             {
                 test: /\.js$/,
                 exclude: /(node_modules|bower_components)/,
@@ -51,10 +53,12 @@ module.exports = {
                     }
                 ]
             },
+
             {
                 test: /\.css$/,
                 use: ["style-loader", "css-loader"]
             },
+
             {
                 test: /\.jsx?$/,
                 exclude: path.resolve(__dirname, 'src'),
@@ -69,6 +73,8 @@ module.exports = {
         ]
     },
 
+
+
     resolve: {
         alias: {
             'react': 'preact-compat',
@@ -77,7 +83,8 @@ module.exports = {
             'create-react-class': 'preact-compat/lib/create-react-class',
             // Not necessary unless you consume a module requiring `react-dom-factories`
             'react-dom-factories': 'preact-compat/lib/react-dom-factories'
-        }
+        },
+        extensions: ['.js', '.jsx', '.scss']
     },
     devServer: {
         contentBase: path.join(__dirname, 'dist'),

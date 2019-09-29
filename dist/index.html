@@ -3,13 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
+          crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="min.styles.css">
 </head>
 <body>
-    <div id="app" style="width: 50%; margin: 0 auto"></div>
+<div id="app" style="width: 50%; margin: 0 auto"></div>
+<div id="template" style="display: none;">
+    <strong>Фото нестандартного формата.</strong>
+    <div>Эта область обрежется при печати.</div>
+</div>
 </body>
+<script src="cropper.js"></script>
 <script src="main.js"></script>
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+<!-- Bootstrap tooltips -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.4/umd/popper.min.js"></script>
+<script src="https://unpkg.com/tippy.js@5"></script>
+
+<!-- Bootstrap core JavaScript -->
+<script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
 <script>
     let c = new Cropper();
     c.test();
+    c.onOrderClick(()=>{
+        console.log('order');
+    })
+    $(document).ready(function () {
+        new CropperT('cropContainerPreload', {});
+        tippy('.cut-line',{ content: document.getElementById('template').innerHTML,theme: 'light', });
+        $('[data-toggle="tooltip"]').tooltip()
+
+    });
 </script>
 </html>

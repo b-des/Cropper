@@ -1,61 +1,83 @@
-import {Toolbar} from 'primereact/toolbar'
 import {h, Component} from "preact";
-import {Button} from 'primereact/button';
-import {Dropdown} from 'primereact/dropdown';
-import {OverlayPanel} from 'primereact/overlaypanel';
-import '../styles/primeflex.css';
 
 
-
-export  class ToolbarComponent extends Component{
-
-
+export class ToolbarComponent extends Component {
+    constructor() {
+        super();
+        this.state = {sizeLabel: 'Формат', paperLabel: 'Бумага',framingLabel: 'Кадрирование',borderLabel: 'Рамка'}
+    }
 
     render(props, state, context) {
 
-        function onSizeChange(value){
-            console.log(value);
-            console.log("changes size" + value);
-            props.onSizeChange(value);
-        }
+        this.sizes = props.sizes.map((item, key) =>
+            <a className="dropdown-item" onClick={() => {
+                this.props.onSizeChange(item.value);
+                this.setState({sizeLabel: `Формат: ${item.title}`});
+            }}>{item.title}</a>
+        );
 
-        return <Toolbar>
-            <div className="p-toolbar-group-left">
-                <Button label="New" data-size='30x30' onClick={(e) => onSizeChange('30x30')} icon="pi pi-plus" style={{marginRight:'.25em'}} />
-                <Button label="Upload" icon="pi pi-upload" className="p-button-success" />
-                <i className="pi pi-bars p-toolbar-separator" style={{marginRight:'.25em'}} />
-                <Dropdown value={this.state.city} options={props.cities} onChange={(e) => {this.setState({city: e.value})}} placeholder="Select a City"/>
-                <Dropdown optionLabel="name" value={this.state.city} options={props.cities} onChange={(e) => {this.setState({city: e.value})}} placeholder="Select a City"/>
 
-                <Button type="button" label="Basic" onClick={(e) => this.op.toggle(e)} />
+        return <nav className="bp3-dark">
+            <div>
+                <div className="bp3-navbar-group bp3-align-left ">
 
-                <OverlayPanel ref={(el) => this.op = el}>
-                 <div className="photo-sizes" style={outerWidth = 400}>
-                     <div className="p-grid p-dir-rev">
-                         <div className="p-col" >1</div>
-                         <div className="p-col">2</div>
-                         <div className="p-col">3</div>
-                     </div>
+                    <div className="dropdown">
+                        <button className="btn btn-sm btn-primary dropdown-toggle" type="button" data-toggle="dropdown"
+                                aria-haspopup="true" aria-expanded="false">
+                            {this.state.sizeLabel}
 
-                     <div className="p-grid p-dir-col">
-                         <div className="p-col">1</div>
-                         <div className="p-col">2</div>
-                         <div className="p-col">3</div>
-                     </div>
+                        </button>
+                        <div className="dropdown-menu">
+                            {this.sizes}
+                        </div>
+                    </div>
+                    <div className="dropdown">
+                        <button className="btn btn-sm btn-primary dropdown-toggle" type="button" data-toggle="dropdown"
+                                aria-haspopup="true" aria-expanded="false">
+                            {this.state.paperLabel}
 
-                     <div className="p-grid p-dir-col-rev">
-                         <div className="p-col">1</div>
-                         <div className="p-col">2</div>
-                         <div className="p-col">3</div>
-                     </div>
-                 </div>
-                </OverlayPanel>
-                <i className="pi pi-bars p-toolbar-separator" style={{marginRight:'.25em'}} />
-                <Button label="Save" icon="pi pi-check" className="p-button-warning" />
+                        </button>
+                        <div className="dropdown-menu">
+                            <a className="dropdown-item" onClick={() => this.props.onPapperChange('glossy')}>Глянцевая</a>
+                            <a className="dropdown-item" onClick={() => this.props.onPapperChange('mate')}>Матовая</a>
+                            <a className="dropdown-item" onClick={() => this.props.onPapperChange('embossed')}>Тиснёная</a>
+                        </div>
+                    </div>
+                    <div className="dropdown">
+                        <button className="btn btn-sm btn-primary dropdown-toggle" type="button" data-toggle="dropdown"
+                                aria-haspopup="true" aria-expanded="false">
+                            {this.state.framingLabel}
+
+                        </button>
+                        <div className="dropdown-menu">
+                            <a className="dropdown-item" onClick={() => {this.props.onFramingChange('whole');
+                                this.setState({framingLabel: `Кадр целиком`});}}>Кадр целиком</a>
+                            <a className="dropdown-item" onClick={() => {this.props.onFramingChange('cropp');
+                                this.setState({framingLabel: `Кадр в обрез`});}}>Кадр в обрез</a>
+
+                        </div>
+                    </div>
+                    <div className="dropdown">
+                        <button className="btn btn-sm btn-primary dropdown-toggle" type="button" data-toggle="dropdown"
+                                aria-haspopup="true" aria-expanded="false">
+                            {this.state.borderLabel}
+                        </button>
+                        <div className="dropdown-menu">
+                            <a className="dropdown-item" onClick={() => this.props.onBorderChange('white')}>Белая</a>
+                            <a className="dropdown-item" onClick={() => this.props.onBorderChange('black')}>Черная</a>
+                            <a className="dropdown-item" onClick={() => this.props.onBorderChange('none')}>Без рамки</a>
+                        </div>
+                    </div>
+
+
+                    <button type="button" className="btn btn-sm btn-success" onClick={() => this.props.onOrderClick()}>Заказать</button>
+                </div>
+                <div className="bp3-navbar-group bp3-align-right">
+                    <button className="bp3-button bp3-minimal bp3-icon-home">Home</button>
+                    <button className="bp3-button bp3-minimal bp3-icon-document">Files</button>
+                </div>
             </div>
-            <div className="p-toolbar-group-right">
-                <Button label="Upload" icon="pi pi-check" className="p-button-success" />
-            </div>
-        </Toolbar>
+        </nav>
+
     }
 }
