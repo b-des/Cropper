@@ -20,6 +20,7 @@ export class ToolbarComponent extends Component {
         return <nav className="bp3-dark">
             <div>
                 <div className="bp3-navbar-group bp3-align-left ">
+                    <input type="checkbox" onChange={(event) => this.props.onSelectChange(event.target.checked)}/>
 
                     <div className="dropdown">
                         <button className="btn btn-sm btn-primary dropdown-toggle" type="button" data-toggle="dropdown"
@@ -71,10 +72,6 @@ export class ToolbarComponent extends Component {
 
 
                     <button type="button" className="btn btn-sm btn-success" onClick={() => this.props.onOrderClick()}>Заказать</button>
-                </div>
-                <div className="bp3-navbar-group bp3-align-right">
-                    <button className="bp3-button bp3-minimal bp3-icon-home">Home</button>
-                    <button className="bp3-button bp3-minimal bp3-icon-document">Files</button>
                 </div>
             </div>
         </nav>

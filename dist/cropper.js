@@ -1,10 +1,11 @@
 
 (function (window, document) {
     let that = this;
-    CropperT = function (id, options) {
+    CropperT = function (container, options) {
         that = this;
-        that.id = id;
-        that.obj = $('#' + id);
+        that.container = container;
+        that.obj = $(container);
+
         that.outputDiv = that.obj;
         that.lastValueSlide = 0;
         that.options = {
@@ -12,7 +13,13 @@
             scaleToFill: true,
             zoomFactor: 100,
         };
-        that.init();
+        // OVERWRITE DEFAULT OPTIONS
+        for (i in options) that.options[i] = options[i];
+
+        // INIT THE WHOLE DAMN THING!!!
+        setTimeout(()=>{
+            that.init();
+        },100);
 
     };
 
@@ -81,19 +88,39 @@
         fitToContainer: function (fit) {
             if (fit) {
                 let css;
+                let html = '';
                 let ratio = that.img.width() / that.img.height();
                 let pratio = that.obj.width() / that.obj.height();
-                if (ratio < pratio) css = {width: 'auto', height: that.obj.height()};
-                else css = {width: that.obj.width(), height: 'auto'};
+                if (ratio < pratio) {
+                    css = {width: 'auto', height: that.obj.height()};
+                    html += '<div class="offset-line line-left"> </div>';
+                    html += '<div class="offset-line line-right"> </div>';
+                } else {
+                    css = {width: that.obj.width(), height: 'auto'};
+                    let height = (that.img.height() - that.obj.height()) ;
+                    html += '<div class="offset-line line-top"> </div>';
+                    html += '<div class="offset-line line-bottom"> </div>';
+                }
                 that.img.css(css);
+                let top = -(that.img.height() - that.objH) / 2;
+                let left = -(that.img.width() - that.objW) / 2;
                 that.img.css({
-                    'left': -(that.img.width() - that.objW) / 2,
-                    'top': -(that.img.height() - that.objH) / 2,
+                    'left': left,
+                    'top': top,
                     'position': 'relative'
                 });
+
+                that.outputDiv.find(".offset-line").remove();
+                that.outputDiv.append(html);
+
+                $('.offset-line.line-top, .offset-line.line-bottom').css({'height': `${top}px`});
+                $('.offset-line.line-left, .offset-line.line-right').css({'width': `${left}px`});
+
+
                 that.outputDiv.find(".slider").remove();
                 that.outputDiv.find(".cross-drag").remove();
                 that.outputDiv.find(".cut-line").remove();
+                tippy('.offset-line',{ content: document.getElementById('tippy-content-2').innerHTML,theme: 'light', });
             } else {
                 that.createUI();
             }
@@ -238,7 +265,7 @@
         },
 
         zoomByPercent: function (value) {
-            console.log(that.initialWidth);
+
             let originalSize = that.initialWidth;
             let ratio = that.imgW / that.imgH;
             let doPositioning = true;

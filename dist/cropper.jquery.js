@@ -1,66 +1,72 @@
+(function ($) {
 
-(function (window, document) {
-    let that = this;
-    CropperT = function (container, options) {
-        that = this;
-        that.container = container;
-        that.obj = $(container);
+    var methods = {
+        init: function (options) {
+            return this.each(function () {
+                this.container = $(this);
+                this.obj = $(this);
 
-        that.outputDiv = that.obj;
-        that.lastValueSlide = 0;
-        that.options = {
-            initialZoom: 0,
-            scaleToFill: true,
-            zoomFactor: 100,
-        };
-        // OVERWRITE DEFAULT OPTIONS
-        for (i in options) that.options[i] = options[i];
+                this.outputDiv = $(this);
+                this.lastValueSlide = 0;
 
-        // INIT THE WHOLE DAMN THING!!!
-        setTimeout(()=>{
-            that.init();
-        },100);
-
-    };
-
-    CropperT.prototype = {
-
-        init: function () {
-            var that = this;
-            that.objW = that.obj.width();
-            that.objH = that.obj.height();
-            that.initialWidth = that.obj.width();
-            that.img = that.obj.find('img');
-            that.imgInitW = that.imgW = that.img.width();
-            that.imgInitH = that.imgH = that.img.height();
-            that.obj.get(0).className += ' cropper-container';
-
-            that.zoomByDelta(-that.imgInitW);
-            that.zoomByDelta(that.options.initialZoom);
+                this.options = $.extend({
+                    initialZoom: 0,
+                    scaleToFill: true,
+                    zoomFactor: 100,
+                    fitToContainer: false
+                }, options);
 
 
-            that.img.css({
-                'left': -(that.imgW - that.objW) / 2,
-                'top': -(that.imgH - that.objH) / 2,
+                let src = this.obj.attr('data-src');
+                var img = $('<img src="' + src + '">');
+                this.obj.html(img);
+                let that = this;
+                this.obj.find('img').on('load', function () {
+                    console.log('load');
+                    setTimeout(()=>{
+                        methods.initCropper.call(that);
+                    }, 10);
+
+                });
+
+            });
+        },
+        initCropper: function () {
+
+            this.objW = this.obj.width();
+            this.objH = this.obj.height();
+            this.initialWidth = this.obj.width();
+            this.img = this.obj.find('img');
+            this.imgInitW = this.imgW = this.img.width();
+            this.imgInitH = this.imgH = this.img.height();
+            this.obj.get(0).className += ' cropper-container';
+
+            methods.zoomByDelta.call(this, -this.imgInitW);
+            methods.zoomByDelta.call(this, this.options.initialZoom);
+
+
+            this.img.css({
+                'left': -(this.imgW - this.objW) / 2,
+                'top': -(this.imgH - this.objH) / 2,
                 'position': 'relative'
             });
-            that.obj.on('mousewheel', function (event) {
+
+            this.obj.on('mousewheel', function (event) {
                 event.preventDefault();
-                that.zoomByDelta(that.options.zoomFactor * event.deltaY);
-                that.img.parent().find(".slider").slider("value", that.img.parent().find(".slider").slider("value") + event.deltaY);
+                methods.zoomByDelta.call(this, this.options.zoomFactor * event.deltaY);
+                this.img.parent().find(".slider").slider("value", this.img.parent().find(".slider").slider("value") + event.deltaY);
             });
 
-            that.fitToContainer(true);
+            methods.fitToContainer.call(this, this.options.fitToContainer);
             //that.fillContainer();
-            that.initDrag();
+            methods.initDrag.call(this);
         },
 
         createUI: function () {
-            var that = this;
             let html = '';
 
-            let ratio = that.img.width() / that.img.height();
-            let pratio = that.obj.width() / that.obj.height();
+            let ratio = this.img.width() / this.img.height();
+            let pratio = this.obj.width() / this.obj.height();
 
             if (ratio > pratio) {
                 html += '<div class="cut-line line-left"  data-tippy-placement="left"> </div>';
@@ -72,78 +78,62 @@
 
             html += '<div class="cross-drag"><i class="fa fa-arrows-alt"></i></div>';
             html += '<div class="slider" ></div>';
-            that.outputDiv.append(html);
-            that.outputDiv.find(".slider").slider({
+            this.outputDiv.append(html);
+            let that = this;
+            this.outputDiv.find(".slider").slider({
                 min: 10,
                 max: 100,
                 slide: function (event, ui) {
-                    let delta = ui.value > that.lastValueSlide ? 1 : -1;
-                    //that.zoomByDelta(that.options.zoomFactor * delta);
-                    that.lastValueSlide = ui.value;
-                    that.zoomByPercent(ui.value/10);
+                    methods.zoomByPercent.call(that, ui.value / 10);
                 }
             });
-        },
 
+
+        },
         fitToContainer: function (fit) {
+
             if (fit) {
                 let css;
                 let html = '';
-                let ratio = that.img.width() / that.img.height();
-                let pratio = that.obj.width() / that.obj.height();
+                let ratio = this.img.width() / this.img.height();
+                let pratio = this.obj.width() / this.obj.height();
                 if (ratio < pratio) {
-                    css = {width: 'auto', height: that.obj.height()};
+                    css = {width: 'auto', height: this.obj.height()};
                     html += '<div class="offset-line line-left"> </div>';
                     html += '<div class="offset-line line-right"> </div>';
                 } else {
-                    css = {width: that.obj.width(), height: 'auto'};
-                    let height = (that.img.height() - that.obj.height()) ;
+                    css = {width: this.obj.width(), height: 'auto'};
+                    let height = (this.img.height() - this.obj.height());
                     html += '<div class="offset-line line-top"> </div>';
                     html += '<div class="offset-line line-bottom"> </div>';
                 }
-                that.img.css(css);
-                let top = -(that.img.height() - that.objH) / 2;
-                let left = -(that.img.width() - that.objW) / 2;
-                that.img.css({
+                this.img.css(css);
+                let top = -(this.img.height() - this.objH) / 2;
+                let left = -(this.img.width() - this.objW) / 2;
+                this.img.css({
                     'left': left,
                     'top': top,
                     'position': 'relative'
                 });
 
-                that.outputDiv.find(".offset-line").remove();
-                that.outputDiv.append(html);
+                this.outputDiv.find(".offset-line").remove();
+                this.outputDiv.append(html);
 
-                $('.offset-line.line-top, .offset-line.line-bottom').css({'height': `${top}px`});
-                $('.offset-line.line-left, .offset-line.line-right').css({'width': `${left}px`});
+                $(this).find('.offset-line.line-top, .offset-line.line-bottom').css({'height': `${top}px`});
+                $(this).find('.offset-line.line-left, .offset-line.line-right').css({'width': `${left}px`});
 
 
-                that.outputDiv.find(".slider").remove();
-                that.outputDiv.find(".cross-drag").remove();
-                that.outputDiv.find(".cut-line").remove();
-                tippy('.offset-line',{ content: document.getElementById('tippy-content-2').innerHTML,theme: 'light', });
+                this.outputDiv.find(".slider").remove();
+                this.outputDiv.find(".cross-drag").remove();
+                this.outputDiv.find(".cut-line").remove();
+                tippy('.offset-line', {content: document.getElementById('tippy-content-2').innerHTML, theme: 'light',});
             } else {
-                that.createUI();
+                methods.createUI.call(this);
             }
 
 
         },
-
-        fillContainer: function () {
-            var css;
-            var ratio = that.img.width() / that.img.height();
-            var pratio = that.obj.width() / that.obj.height();
-            if (ratio < pratio) css = {width: that.obj.width(), height: 'auto'};
-            else css = {width: 'auto', height: that.obj.height()};
-            that.img.css(css);
-            that.img.css({
-                'left': -(that.img.width() - that.objW) / 2,
-                'top': -(that.img.height() - that.objH) / 2,
-                'position': 'relative'
-            });
-        },
-
-
-        initDrag: function () {
+        initDrag: function (content) {
             var that = this;
 
             that.img.parent().find('.cross-drag').on("mousedown touchstart", function (e) {
@@ -261,23 +251,20 @@
             $('body').on("mouseup", function () {
                 $('body').off("mousemove");
             })
-
         },
-
         zoomByPercent: function (value) {
-            console.log(that.initialWidth);
-            let originalSize = that.initialWidth;
-            let ratio = that.imgW / that.imgH;
+            let originalSize = this.initialWidth;
+            let ratio = this.imgW / this.imgH;
             let doPositioning = true;
-            let newWidth = originalSize*value;
+            let newWidth = originalSize * value;
             let newHeight = newWidth / ratio;
-            if (newWidth < that.objW || newHeight < that.objH) {
+            if (newWidth < this.objW || newHeight < this.objH) {
 
-                if (newWidth - that.objW < newHeight - that.objH) {
-                    newWidth = that.objW;
+                if (newWidth - this.objW < newHeight - this.objH) {
+                    newWidth = this.objW;
                     newHeight = newWidth / ratio;
                 } else {
-                    newHeight = that.objH;
+                    newHeight = this.objH;
                     newWidth = ratio * newHeight;
                 }
 
@@ -285,13 +272,13 @@
 
             }
 
-            if (!that.options.scaleToFill && (newWidth > that.imgInitW || newHeight > that.imgInitH)) {
+            if (!this.options.scaleToFill && (newWidth > this.imgInitW || newHeight > this.imgInitH)) {
 
-                if (newWidth - that.imgInitW < newHeight - that.imgInitH) {
-                    newWidth = that.imgInitW;
+                if (newWidth - this.imgInitW < newHeight - this.imgInitH) {
+                    newWidth = this.imgInitW;
                     newHeight = newWidth / ratio;
                 } else {
-                    newHeight = that.imgInitH;
+                    newHeight = this.imgInitH;
                     newWidth = ratio * newHeight;
                 }
 
@@ -299,14 +286,14 @@
 
             }
 
-            that.imgW = newWidth;
-            that.img.width(newWidth);
+            this.imgW = newWidth;
+            this.img.width(newWidth);
 
-            that.imgH = newHeight;
-            that.img.height(newHeight);
+            this.imgH = newHeight;
+            this.img.height(newHeight);
 
-            var newTop = parseInt(that.img.css('top')) ;
-            var newLeft = parseInt(that.img.css('left')) ;
+            var newTop = parseInt(this.img.css('top'));
+            var newLeft = parseInt(this.img.css('left'));
 
             if (newTop > 0) {
                 newTop = 0;
@@ -315,88 +302,69 @@
                 newLeft = 0;
             }
 
-            var maxTop = -(newHeight - that.objH);
+            var maxTop = -(newHeight - this.objH);
             if (newTop < maxTop) {
                 newTop = maxTop;
             }
-            var maxLeft = -(newWidth - that.objW);
+            var maxLeft = -(newWidth - this.objW);
             if (newLeft < maxLeft) {
                 newLeft = maxLeft;
             }
 
-            if(newWidth == originalSize){
+            if (newWidth == originalSize) {
                 newLeft = newTop = 0;
                 console.log("newWidth == originalSize");
 
             }
 
             if (doPositioning) {
-                that.img.css({'top': newTop, 'left': newLeft});
+                this.img.css({'top': newTop, 'left': newLeft});
             }
 
-            if (that.objH < that.imgH) {
-                if (parseInt(that.img.css('top')) > 0) {
-                    that.img.css('top', 0);
-                    if (that.options.imgEyecandy) {
-                        that.imgEyecandy.css('top', 0);
-                    }
+            if (this.objH < this.imgH) {
+                if (parseInt(this.img.css('top')) > 0) {
+                    this.img.css('top', 0);
                 }
-                var maxTop = -(that.imgH - that.objH);
-                if (parseInt(that.img.css('top')) < maxTop) {
-                    that.img.css('top', maxTop);
-                    if (that.options.imgEyecandy) {
-                        that.imgEyecandy.css('top', maxTop);
+                var maxTop = -(this.imgH - this.objH);
+                if (parseInt(this.img.css('top')) < maxTop) {
+                    this.img.css('top', maxTop);
+                    if (this.options.imgEyecandy) {
+                        this.imgEyecandy.css('top', maxTop);
                     }
                 }
             } else {
-                if (parseInt(that.img.css('top')) < 0) {
-                    that.img.css('top', 0);
-                    if (that.options.imgEyecandy) {
-                        that.imgEyecandy.css('top', 0);
-                    }
+                if (parseInt(this.img.css('top')) < 0) {
+                    this.img.css('top', 0);
+
                 }
-                var maxTop = that.objH - that.imgH;
-                if (parseInt(that.img.css('top')) > maxTop) {
-                    that.img.css('top', maxTop);
-                    if (that.options.imgEyecandy) {
-                        that.imgEyecandy.css('top', maxTop);
-                    }
+                var maxTop = this.objH - this.imgH;
+                if (parseInt(this.img.css('top')) > maxTop) {
+                    this.img.css('top', maxTop);
+
                 }
             }
 
-            if (that.objW < that.imgW) {
-                if (parseInt(that.img.css('left')) > 0) {
-                    that.img.css('left', 0);
-                    if (that.options.imgEyecandy) {
-                        that.imgEyecandy.css('left', 0);
-                    }
+            if (this.objW < this.imgW) {
+                if (parseInt(this.img.css('left')) > 0) {
+                    this.img.css('left', 0);
+
                 }
-                var maxLeft = -(that.imgW - that.objW);
-                if (parseInt(that.img.css('left')) < maxLeft) {
-                    that.img.css('left', maxLeft);
-                    if (that.options.imgEyecandy) {
-                        that.imgEyecandy.css('left', maxLeft);
-                    }
+                var maxLeft = -(this.imgW - this.objW);
+                if (parseInt(this.img.css('left')) < maxLeft) {
+                    this.img.css('left', maxLeft);
+
                 }
             } else {
-                if (parseInt(that.img.css('left')) < 0) {
-                    that.img.css('left', 0);
-                    if (that.options.imgEyecandy) {
-                        that.imgEyecandy.css('left', 0);
-                    }
+                if (parseInt(this.img.css('left')) < 0) {
+                    this.img.css('left', 0);
                 }
-                var maxLeft = (that.objW - that.imgW);
-                if (parseInt(that.img.css('left')) > maxLeft) {
-                    that.img.css('left', maxLeft);
-                    if (that.options.imgEyecandy) {
-                        that.imgEyecandy.css('left', maxLeft);
-                    }
+                var maxLeft = (this.objW - this.imgW);
+                if (parseInt(this.img.css('left')) > maxLeft) {
+                    this.img.css('left', maxLeft);
+
                 }
             }
-
-            if (that.options.onImgZoom) that.options.onImgZoom.call(that);
         },
-
         zoomByDelta: function (x) {
             var that = this;
             let ratio = that.imgW / that.imgH;
@@ -418,27 +386,27 @@
 
             }
 
-            if (!that.options.scaleToFill && (newWidth > that.imgInitW || newHeight > that.imgInitH)) {
+            if (!this.options.scaleToFill && (newWidth > this.imgInitW || newHeight > this.imgInitH)) {
 
-                if (newWidth - that.imgInitW < newHeight - that.imgInitH) {
-                    newWidth = that.imgInitW;
+                if (newWidth - this.imgInitW < newHeight - this.imgInitH) {
+                    newWidth = this.imgInitW;
                     newHeight = newWidth / ratio;
                 } else {
-                    newHeight = that.imgInitH;
+                    newHeight = this.imgInitH;
                     newWidth = ratio * newHeight;
                 }
 
                 doPositioning = false;
 
             }
-            that.imgW = newWidth;
-            that.img.width(newWidth);
+            this.imgW = newWidth;
+            this.img.width(newWidth);
 
-            that.imgH = newHeight;
-            that.img.height(newHeight);
+            this.imgH = newHeight;
+            this.img.height(newHeight);
 
-            var newTop = parseInt(that.img.css('top')) - x / 2;
-            var newLeft = parseInt(that.img.css('left')) - x / 2;
+            var newTop = parseInt(this.img.css('top')) - x / 2;
+            var newLeft = parseInt(this.img.css('left')) - x / 2;
 
             if (newTop > 0) {
                 newTop = 0;
@@ -457,16 +425,53 @@
             }
 
             if (doPositioning) {
-                that.img.css({'top': newTop, 'left': newLeft});
+                this.img.css({'top': newTop, 'left': newLeft});
             }
 
 
-            if (that.options.onImgZoom) that.options.onImgZoom.call(that);
-
         },
 
-        destroy:function(){
-            //that.obj.html('');
+        update: function(){
+            return this.each(function () {
+                console.log(this);
+                $(this).find('.slider, .cross-drag, .cut-line, .offset-line').remove();
+                methods.zoomByDelta.call(this, -this.imgInitW);
+                methods.zoomByDelta.call(this, this.options.initialZoom);
+
+
+                this.img.css({
+                    'left': -(this.imgW - this.objW) / 2,
+                    'top': -(this.imgH - this.objH) / 2,
+                    'position': 'relative'
+                });
+                methods.fitToContainer.call(this, false);
+            });
         },
-    }
-})(window, document);
+
+        destroy() {
+            return this.each(function () {
+                console.log($(this));
+                $(this).find('.slider, .cross-drag, .cut-line, .offset-line').remove();
+                //$(window).unbind('.cropper');
+                methods.fitToContainer.call(this, true);
+            })
+        }
+    };
+
+    $.fn.cropper = function (method) {
+
+
+        // Apply options
+        if (methods[method]) {
+            return methods[method].apply(this, Array.prototype.slice.call(arguments, 1));
+        } else if (typeof method === 'object' || !method) {
+            return methods.init.apply(this, arguments);
+        } else {
+            $.error('Метод с именем ' + method + ' не существует для Cropper');
+        }
+
+    };
+
+}(jQuery));
+
+
