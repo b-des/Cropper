@@ -24,6 +24,12 @@
         #cropper-container #toolbar .bp3-navbar-group > * {
           width: 100%;
           margin: 10px 0; } }
+    #cropper-container #toolbar .dropdown.size .dropdown-menu.show {
+      display: flex;
+      width: 400px;
+      flex-wrap: wrap; }
+      #cropper-container #toolbar .dropdown.size .dropdown-menu.show > * {
+        width: 30%; }
   #cropper-container #main-section {
     border-radius: 0;
     background: #888DA6;

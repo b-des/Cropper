@@ -18,7 +18,8 @@
                     fitToContainer: false,
                     createUI: true,
                     initilized: false,
-                    onZoom: null
+                    onZoom: null,
+                    onLoad: null
                 }, options);
 
 
@@ -26,12 +27,25 @@
                 let src = this.obj.attr('data-src');
                 let that = this;
 
+
+
+
                 if (!this.obj.find('img').length) {
                     var img = $('<img src="' + src + '">');
+
                     this.obj.html(img);
                     img.on('load', ()  => {
-                        setTimeout(methods.initCropper.bind(this),100);
+                        //setTimeout(methods.initCropper.bind(this),100);
                     });
+
+                    let tmpImage = new Image();
+                    tmpImage.src = src;
+                    tmpImage.onload = function () {
+                        that.options.onLoad(that.obj.attr('data-uid'), this.width, this.height);
+                        that.obj.html(this);
+                        setTimeout(methods.initCropper.bind(that),10);
+                    };
+
                 } else {
                     methods.initCropper.call(this)
                 }
@@ -191,6 +205,7 @@
             } else {
                 methods.showUi.call(this);
             }
+
             tippy('.cut-line', {content: document.getElementById('tippy-content-1').innerHTML, theme: 'light',});
             tippy('.offset-line', {content: document.getElementById('tippy-content-2').innerHTML, theme: 'light',});
 

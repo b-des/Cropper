@@ -167,7 +167,10 @@ export class MainComponent extends Component {
             fitToContainer: true,
             left: -10,
             top: -30,
-            initialZoom: 2
+            initialZoom: 2,
+            onLoad:(uid, width, height) => {
+                console.log('onLoad  ' +width +" - "+ height);
+            }
         });
 
         $('#main-section').find(`.crop-container`).cropper('option', 'onZoom', (uid, value) => {
@@ -180,6 +183,10 @@ export class MainComponent extends Component {
             this.props.urls[index].left = left;
             this.props.urls[index].top = top;
             console.log("onImgDrag " + left + ' - ' + top);
+        });
+
+        $('#main-section').find(`.crop-container`).cropper('option', 'onLoad', (uid, width, height) => {
+            console.log(`onLoad  ${uid} = ` +width +" - "+ height);
         });
 
         let html = <div id="cropper-container">
