@@ -2,45 +2,31 @@ import {h, Component} from "preact";
 import tippy from 'tippy.js'
 
 
-export class ImageItemComponent extends Component {
+export class ImageItem {
 
-
-    shouldComponentUpdate(nextProps, nextState, nextContext) {
-        console.log("shouldComponentUpdate");
-       // new CropperT(`#crop-container-${this.props.uid}`, {url: this.props.url});
-
-        return true;
-    }
-
-    componentDidMount() {
-
-    }
-
-    onCheck(event) {
-        console.log(`crop-container-${this.props.uid}`);
-        console.log(event.target.checked);
-    }
-
-
-    render(props) {
-
-
-        return (
-            <div className="image-container ">
-                <div className="tools">
-                    <input type="checkbox" className="check-input" checked={this.props.checkAll} onChange={(event) => this.onCheck(event)}/>
-                    <button className="btn btn-danger btn-sm" onClick={() => this.props.removeItem(this.props.uid)}>
-                        <i className="fa fa-trash"></i>
-                    </button>
-                </div>
-                <div className="image-item">
-                    <div id={`crop-container-${this.props.uid}`} className='crop-container'
-                         style={{width: this.props.width, height: this.props.height}} data-src={this.props.url}>
-                        <img src={this.props.url} alt=""/>
+    getHtml(){
+        return `<div class="image-container">
+                <div class="tools">
+                        <div class="pretty p-svg p-curve p-plain">
+                        <input type="checkbox" class="check-input"/>
+                        <div class="state p-success">
+                            <!-- svg path -->
+                            <svg class="svg svg-icon" viewBox="0 0 20 20">
+                                <path d="M7.629,14.566c0.125,0.125,0.291,0.188,0.456,0.188c0.164,0,0.329-0.062,0.456-0.188l8.219-8.221c0.252-0.252,0.252-0.659,0-0.911c-0.252-0.252-0.659-0.252-0.911,0l-7.764,7.763L4.152,9.267c-0.252-0.251-0.66-0.251-0.911,0c-0.252,0.252-0.252,0.66,0,0.911L7.629,14.566z" style="stroke: white;fill:white;"></path>
+                            </svg>
+                            <label></label>
+                        </div>
+                    </div>
+                    <div class="remove-item">
+                        <i class="fa fa-trash"></i>
                     </div>
                 </div>
-            </div>
-        );
+                <div class="image-item">
+                    <div id="crop-container-{{=it.uid}}" class='crop-container' data-uid="{{=it.uid}}"
+                         style="width:100%; height:100%" data-src="{{=it.url}}" data-zoom="{{=it.zoom}}" data-top="{{=it.top}}" data-left="{{=it.left}}">
+                       
+                    </div>
+                </div>
+            </div>`;
     }
-
 }

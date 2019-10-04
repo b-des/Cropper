@@ -25,6 +25,18 @@ module.exports = {
         minimize: true,
 
     },
+    externals: {
+        cropper : {
+            commonjs: 'cropper',
+            amd: 'cropper',
+            root: 'cropper' // indicates global variable
+        },
+        tippy : {
+            commonjs: 'tippy',
+            amd: 'tippy',
+            root: 'tippy' // indicates global variable
+        }
+    },
     module: {
         rules: [
             {

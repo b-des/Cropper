@@ -10,24 +10,32 @@
                 this.lastValueSlide = 0;
 
                 this.options = $.extend({
+                    top: null,
+                    left: null,
                     initialZoom: 0,
                     scaleToFill: true,
                     zoomFactor: 100,
-                    fitToContainer: false
+                    fitToContainer: false,
+                    createUI: true,
+                    initilized: false,
+                    onZoom: null
                 }, options);
 
 
-                let src = this.obj.attr('data-src');
-                var img = $('<img src="' + src + '">');
-                this.obj.html(img);
-                let that = this;
-                this.obj.find('img').on('load', function () {
-                    console.log('load');
-                    setTimeout(()=>{
-                        methods.initCropper.call(that);
-                    }, 10);
 
-                });
+                let src = this.obj.attr('data-src');
+                let that = this;
+
+                if (!this.obj.find('img').length) {
+                    var img = $('<img src="' + src + '">');
+                    this.obj.html(img);
+                    img.on('load', ()  => {
+                        setTimeout(methods.initCropper.bind(this),100);
+                    });
+                } else {
+                    methods.initCropper.call(this)
+                }
+
 
             });
         },
@@ -41,15 +49,45 @@
             this.imgInitH = this.imgH = this.img.height();
             this.obj.get(0).className += ' cropper-container';
 
-            methods.zoomByDelta.call(this, -this.imgInitW);
+           methods.zoomByDelta.call(this, -this.imgInitW);
             methods.zoomByDelta.call(this, this.options.initialZoom);
 
+            //if(!this.options.left){
+                this.options.left =  this.obj.attr('data-left');
+           // }
 
-            this.img.css({
-                'left': -(this.imgW - this.objW) / 2,
-                'top': -(this.imgH - this.objH) / 2,
-                'position': 'relative'
-            });
+           // if(!this.options.top){
+                this.options.top =  this.obj.attr('data-top');
+           // }
+
+
+            //if(!this.options.initialZoom){
+                this.options.initialZoom =  this.obj.attr('data-zoom') || 0;
+           // }
+
+
+
+            if(this.options.initialZoom > 0){
+                methods.zoomByPercent.call(this, this.options.initialZoom);
+            }
+
+
+            if(this.options.left && this.options.left){
+                this.img.css({
+                    'left': `${parseFloat(this.options.left)}px`,
+                    'top': `${parseFloat(this.options.top)}px`,
+                    'position': 'relative'
+                });
+                methods.normalizeOffset.call(this);
+
+            }else{
+                this.img.css({
+                    'left': -(this.imgW - this.objW) / 2,
+                    'top': -(this.imgH - this.objH) / 2,
+                    'position': 'relative'
+                });
+            }
+
 
             this.obj.on('mousewheel', function (event) {
                 event.preventDefault();
@@ -57,6 +95,7 @@
                 this.img.parent().find(".slider").slider("value", this.img.parent().find(".slider").slider("value") + event.deltaY);
             });
 
+            methods.createUI.call(this);
             methods.fitToContainer.call(this, this.options.fitToContainer);
             //that.fillContainer();
             methods.initDrag.call(this);
@@ -67,6 +106,9 @@
 
             let ratio = this.img.width() / this.img.height();
             let pratio = this.obj.width() / this.obj.height();
+
+            this.outputDiv.find(".slider").slider('destroy');
+            this.outputDiv.find('*').not('img').remove();
 
             if (ratio > pratio) {
                 html += '<div class="cut-line line-left"  data-tippy-placement="left"> </div>';
@@ -80,18 +122,36 @@
             html += '<div class="slider" ></div>';
             this.outputDiv.append(html);
             let that = this;
+
             this.outputDiv.find(".slider").slider({
+                value: this.options.initialZoom*10,
                 min: 10,
-                max: 100,
+                max: 30,
+                step:0.1,
+                start: function( event, ui ) {
+                    that.obj.attr('data-top', parseFloat(that.img.css('top')));
+                    that.obj.attr('data-left', parseFloat(that.img.css('left')));
+                },
                 slide: function (event, ui) {
+                    if (that.options.onZoom) that.options.onZoom.call(that, that.obj.attr('data-uid'), ui.value / 10);
+                    that.obj.attr('data-zoom', ui.value / 10);
                     methods.zoomByPercent.call(that, ui.value / 10);
                 }
             });
 
 
         },
-        fitToContainer: function (fit) {
 
+        showUi() {
+            this.obj.find('*').removeClass('hidden');
+        },
+
+        hideUi() {
+            this.obj.find('*').addClass('hidden');
+        },
+
+        fitToContainer: function (fit) {
+            this.obj.attr('data-crop', !fit)
             if (fit) {
                 let css;
                 let html = '';
@@ -117,7 +177,8 @@
                 });
 
                 this.outputDiv.find(".offset-line").remove();
-                this.outputDiv.append(html);
+                if (this.options.createUI)
+                    this.outputDiv.append(html);
 
                 $(this).find('.offset-line.line-top, .offset-line.line-bottom').css({'height': `${top}px`});
                 $(this).find('.offset-line.line-left, .offset-line.line-right').css({'width': `${left}px`});
@@ -126,13 +187,61 @@
                 this.outputDiv.find(".slider").remove();
                 this.outputDiv.find(".cross-drag").remove();
                 this.outputDiv.find(".cut-line").remove();
-                tippy('.offset-line', {content: document.getElementById('tippy-content-2').innerHTML, theme: 'light',});
-            } else {
-                methods.createUI.call(this);
-            }
 
+            } else {
+                methods.showUi.call(this);
+            }
+            tippy('.cut-line', {content: document.getElementById('tippy-content-1').innerHTML, theme: 'light',});
+            tippy('.offset-line', {content: document.getElementById('tippy-content-2').innerHTML, theme: 'light',});
 
         },
+
+
+        normalizeOffset:function(){
+            if (this.objH < this.imgH) {
+                if (parseInt(this.img.css('top')) > 0) {
+                    this.img.css('top', 0);
+
+                }
+                var maxTop = -(this.imgH - this.objH);
+                if (parseInt(this.img.css('top')) < maxTop) {
+                    this.img.css('top', maxTop);
+
+                }
+            } else {
+                if (parseInt(this.img.css('top')) < 0) {
+                    this.img.css('top', 0);
+                }
+                var maxTop = this.objH - this.imgH;
+                if (parseInt(this.img.css('top')) > maxTop) {
+                    this.img.css('top', maxTop);
+
+                }
+            }
+
+            if (this.objW < this.imgW) {
+                if (parseInt(this.img.css('left')) > 0) {
+                    this.img.css('left', 0);
+
+                }
+                var maxLeft = -(this.imgW - this.objW);
+                if (parseInt(this.img.css('left')) < maxLeft) {
+                    this.img.css('left', maxLeft);
+
+                }
+            } else {
+                if (parseInt(this.img.css('left')) < 0) {
+                    this.img.css('left', 0);
+
+                }
+                var maxLeft = (this.objW - this.imgW);
+                if (parseInt(this.img.css('left')) > maxLeft) {
+                    this.img.css('left', maxLeft);
+
+                }
+            }
+        },
+
         initDrag: function (content) {
             var that = this;
 
@@ -179,70 +288,11 @@
                         $(this).removeClass('draggable').css('z-index', z_idx);
                     });
 
-                    if (that.options.imgEyecandy) {
-                        that.imgEyecandy.offset({top: imgTop, left: imgLeft});
-                    }
 
-                    if (that.objH < that.imgH) {
-                        if (parseInt(that.img.css('top')) > 0) {
-                            that.img.css('top', 0);
-                            if (that.options.imgEyecandy) {
-                                that.imgEyecandy.css('top', 0);
-                            }
-                        }
-                        var maxTop = -(that.imgH - that.objH);
-                        if (parseInt(that.img.css('top')) < maxTop) {
-                            that.img.css('top', maxTop);
-                            if (that.options.imgEyecandy) {
-                                that.imgEyecandy.css('top', maxTop);
-                            }
-                        }
-                    } else {
-                        if (parseInt(that.img.css('top')) < 0) {
-                            that.img.css('top', 0);
-                            if (that.options.imgEyecandy) {
-                                that.imgEyecandy.css('top', 0);
-                            }
-                        }
-                        var maxTop = that.objH - that.imgH;
-                        if (parseInt(that.img.css('top')) > maxTop) {
-                            that.img.css('top', maxTop);
-                            if (that.options.imgEyecandy) {
-                                that.imgEyecandy.css('top', maxTop);
-                            }
-                        }
-                    }
-
-                    if (that.objW < that.imgW) {
-                        if (parseInt(that.img.css('left')) > 0) {
-                            that.img.css('left', 0);
-                            if (that.options.imgEyecandy) {
-                                that.imgEyecandy.css('left', 0);
-                            }
-                        }
-                        var maxLeft = -(that.imgW - that.objW);
-                        if (parseInt(that.img.css('left')) < maxLeft) {
-                            that.img.css('left', maxLeft);
-                            if (that.options.imgEyecandy) {
-                                that.imgEyecandy.css('left', maxLeft);
-                            }
-                        }
-                    } else {
-                        if (parseInt(that.img.css('left')) < 0) {
-                            that.img.css('left', 0);
-                            if (that.options.imgEyecandy) {
-                                that.imgEyecandy.css('left', 0);
-                            }
-                        }
-                        var maxLeft = (that.objW - that.imgW);
-                        if (parseInt(that.img.css('left')) > maxLeft) {
-                            that.img.css('left', maxLeft);
-                            if (that.options.imgEyecandy) {
-                                that.imgEyecandy.css('left', maxLeft);
-                            }
-                        }
-                    }
-                    if (that.options.onImgDrag) that.options.onImgDrag.call(that);
+                    methods.normalizeOffset.call(that);
+                    that.obj.attr('data-top', parseInt(that.img.css('top')));
+                    that.obj.attr('data-left', parseInt(that.img.css('left')));
+                    that.options.onImgDrag.call(that, that.obj.attr('data-uid'), parseInt(that.img.css('left')), parseInt(that.img.css('top')));
 
                 });
 
@@ -311,11 +361,6 @@
                 newLeft = maxLeft;
             }
 
-            if (newWidth == originalSize) {
-                newLeft = newTop = 0;
-                console.log("newWidth == originalSize");
-
-            }
 
             if (doPositioning) {
                 this.img.css({'top': newTop, 'left': newLeft});
@@ -365,6 +410,7 @@
                 }
             }
         },
+
         zoomByDelta: function (x) {
             var that = this;
             let ratio = that.imgW / that.imgH;
@@ -431,10 +477,21 @@
 
         },
 
-        update: function(){
+        setOption: function (option, value) {
+
             return this.each(function () {
-                console.log(this);
-                $(this).find('.slider, .cross-drag, .cut-line, .offset-line').remove();
+                this.options[option] = value;
+            })
+        },
+
+        update: function (options) {
+            return this.each(function () {
+                this.options = $.extend(this.options, options);
+                this.options.initialZoom = parseFloat(this.obj.attr('data-zoom'));
+                this.options.createUI = true;
+                methods.initCropper.call(this);
+
+                /*$(this).find('.slider, .cross-drag, .cut-line, .offset-line').remove();
                 methods.zoomByDelta.call(this, -this.imgInitW);
                 methods.zoomByDelta.call(this, this.options.initialZoom);
 
@@ -444,13 +501,26 @@
                     'top': -(this.imgH - this.objH) / 2,
                     'position': 'relative'
                 });
-                methods.fitToContainer.call(this, false);
+                methods.fitToContainer.call(this, false);*/
+            });
+        },
+
+        reset: function () {
+            return this.each(function () {
+                this.obj.css({width: '100%', height: '100%'})
+                methods.zoomByDelta.call(this, -this.imgInitW);
+                methods.zoomByDelta.call(this, this.options.initialZoom);
+
+                this.outputDiv.find('*').not('img').remove();
+                this.options.createUI = false;
+                this.options.fitToContainer = true;
+                methods.initCropper.call(this);
             });
         },
 
         destroy() {
             return this.each(function () {
-                console.log($(this));
+                this.options.createUI = false;
                 $(this).find('.slider, .cross-drag, .cut-line, .offset-line').remove();
                 //$(window).unbind('.cropper');
                 methods.fitToContainer.call(this, true);
@@ -458,8 +528,17 @@
         }
     };
 
-    $.fn.cropper = function (method) {
+    $.fn.cropper = function (method, value, res) {
 
+
+        if (method === 'option') {
+
+            return methods.setOption.call(this, arguments[1], arguments[2])
+        }
+
+        if (method === 'update') {
+            return methods.update.call(this, arguments[1])
+        }
 
         // Apply options
         if (methods[method]) {

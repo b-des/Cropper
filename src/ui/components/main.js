@@ -1,9 +1,11 @@
 import {h, Component} from "preact";
 import {ToolbarComponent} from "./toolbar";
-import {ImageItemComponent} from "./item";
-import tippy from 'tippy.js'
+import {ImageItem} from "./item";
 
-const uuid = require('uuid/v4');
+const dot = require('dot');
+import 'perfect-scrollbar/css/perfect-scrollbar.css'
+import {Scrollbars} from 'react-custom-scrollbars';
+import Scrollbar from "smooth-scrollbar";
 
 
 export class MainComponent extends Component {
@@ -11,120 +13,195 @@ export class MainComponent extends Component {
 
     constructor() {
         super();
-        this.state = {
-            width: '100%', height: '100%', urls: [], checkAll:false
-        };
 
-        this.sizes = [
-            {
-                title: '20x10',
-                value: [20, 10]
-            },
-            {
-                title: '10x15',
-                value: [10, 15]
-            },
-            {
-                title: '30x30',
-                value: [30, 30]
-            },
-            {
-                title: '30x90',
-                value: [30, 90]
-            },
-            {
-                title: '40x60',
-                value: [40, 60]
-            }
-        ];
+        this.state = {
+            width: '100%',
+            height: '100%',
+            urls: [],
+            checkAll: false,
+            framing: 'whole'
+        };
+        this.framing = 'whole';
+        this.size = {width: 15, height: 10};
+
+        this.imageItemTemplate = new ImageItem().getHtml();
     }
 
     onFormatChange(size) {
-        console.log(size);
-        let container = {width: 280, height: 180};
-        console.log(container.height / size[0], container.width / size[1]);
-        // console.log(size[0]/size[1]);
-        let ratio = size[1] / size[0];
-        let pratio = container.width / container.height;
-        //console.log(ratio);
-        //console.log(pratio);
-
-        if (size[0] === size[1]) {
-            this.setState({width: '180px', height: '180px'});
-        } else {
-            let ratio = size[1] / size[0];
-            if (ratio >= container.width / container.height) {
-                //280/size[1]:180/x
-                let height = 280 / size[1] * size[0];
-                this.setState({width: '280px', height: `${height}px`});
-            } else {
-                let width = 180 / size[0] * size[1];
-                this.setState({width: `${width}px`, height: '180px'});
-            }
-
-        }
+        this.size = {width: size[1], height: size[0]};
+        this.changePhotoSize($(`.crop-container.enabled`), this.size);
         setTimeout(() => {
-            $(`.crop-container`).cropper({url:'', fitToContainer: true});
+            if (this.framing === 'cropp') {
+                $(`.crop-container.enabled`).cropper('update', {fitToContainer: false});
+            } else {
+                $(`.crop-container.enabled`).cropper('update', {fitToContainer: true});
+            }
         }, 100);
     };
 
     onFramingChange(framing) {
 
-        console.log(framing);
-        if(framing === 'cropp'){
-            $(`.crop-container`).cropper({url:'', fitToContainer: false});
-        }else{
-            $(`.crop-container`).cropper('destroy');
+        this.framing = framing;
+
+        if (this.framing === 'cropp') {
+            $(`.crop-container.enabled`).cropper('update', {fitToContainer: false});
+        } else {
+            $(`.crop-container.enabled`).cropper('update', {fitToContainer: true});
         }
 
-        tippy('.cut-line',{ content: document.getElementById('tippy-content-1').innerHTML,theme: 'light', });
-        tippy('.offset-line',{ content: document.getElementById('tippy-content-2').innerHTML,theme: 'light', });
+    }
+
+
+    onSelectAllItems(checked) {
+        if (checked) {
+            $('.image-container .crop-container').addClass('enabled');
+            this.changePhotoSize($(`.crop-container.enabled`), this.size);
+            $(`.crop-container.enabled`).cropper('update', {fitToContainer: this.framing === 'whole'});
+        } else {
+            $(`.crop-container.enabled`).css({width: '100%', height: '100%'}).cropper('reset');
+            $('.image-container .crop-container').removeClass('enabled');
+
+        }
+        $('.image-container input[type=checkbox]').prop('checked', checked);
+        $('#cropper-toolbar .selected-items').html($('.image-container input[type=checkbox]:checked').length);
+    }
+
+    onItemSelect(target, checked) {
+        let checkAll = false;
+        $('.image-container input[type=checkbox]').each(function () {
+            if ($(this).prop('checked')) {
+                checkAll = true;
+            }
+        });
+
+        if (checked) {
+            target.addClass('enabled');
+            this.changePhotoSize(target, this.size);
+            target.cropper('update', {fitToContainer: this.framing === 'whole'});
+        } else {
+            target.cropper('reset');
+            target.removeClass('enabled');
+        }
+
+        $('#cropper-toolbar input[type=checkbox]').prop('checked', checkAll);
+        $('#cropper-toolbar .selected-items').html($('.image-container input[type=checkbox]:checked').length);
+    }
+
+    changePhotoSize(container, size) {
+        let containerSize = {width: 280, height: 180};
+        if (size.width === size.height) {
+            //this.setState({width: '180px', height: '180px'});
+            container.css({width: '180px', height: '180px'});
+        } else {
+            let ratio = size.width / size.height;
+            if (ratio >= containerSize.width / containerSize.height) {
+                //280/size[1]:180/x
+                let height = 280 / size.width * size.height;
+                //this.setState({width: '280px', height: `${height}px`});
+                container.css({width: '280px', height: `${height}px`});
+            } else {
+                let width = 180 / size.height * size.width;
+                //this.setState({width: `${width}px`, height: '180px'});
+                container.css({width: `${width}px`, height: '180px'});
+            }
+
+        }
+
     }
 
     removeItem(uid) {
-        console.log("|===  "+uid);
-        const newState = this.state;
-        const index = newState.urls.findIndex(a => a.uid === uid);
-
-        console.log(index);
+        const index = this.props.urls.findIndex(a => a.uid === uid);
         if (index === -1) return;
-        console.log(newState.urls[1]);
-       // newState.urls.splice(1, 1);
+        this.props.urls.splice(index, 1);
         $(`#crop-container-${uid}`).cropper('destroy');
         $(`#crop-container-${uid}`).closest('.image-container').remove();
-      //  this.setState(newState); // This will update the state and trigger a rerender of the components
 
     }
 
-    onSelectChange(state){
-        this.state.checkAll = state;
-        this.setState(this.state);
+    onOrderClick() {
+        let items = [];
+        $('#cropper-container .image-item > div.enabled').each((i, e) => {
+           // console.log(e);
+            let left = 100 * Math.abs(parseFloat($(e).find('img').css('left'))) / parseFloat($(e).find('img').css('width')) | 0;
+            let top = 100 * Math.abs(parseFloat($(e).find('img').css('top'))) / parseFloat($(e).find('img').css('height')) | 0;
+            let cropX = 100 * (parseFloat($(e).css('width')) + left) / parseFloat($(e).find('img').css('width'));
+            let cropY = 100 * (parseFloat($(e).css('height')) + top) / parseFloat($(e).find('img').css('height'));
+            console.log({
+                offsetX: left + "%",
+                offsetY: top + "%",
+                cropX: cropX + "%",
+                cropY: cropY + "%",
+            });
+                items.push({
+                    url: $(e).attr('data-src'),
+                    crop: $(e).attr('data-crop') === 'true' ? {x: left, y: top, w: cropX, h: cropY} : false,
+                    size:this.size
+                });
+        });
+        this.props.onOrderClick(items);
     }
-
 
     render(props, state, context) {
 
 
-        this.items = this.state.urls.map((item, key) =>
-            <ImageItemComponent url={item.url} uid={item.uid} id={'crop-container'} width={this.state.width} height={this.state.height}
-                                removeItem={this.removeItem.bind(this)} checkAll={this.state.checkAll}/>
-        );
+
+
+
+        let items = '';
+
+        this.props.urls.map((item, key) => {
+            return items += dot.template(this.imageItemTemplate)({
+                url: item.url,
+                top: item.top,
+                left: item.left,
+                zoom: item.zoom || 0,
+                uid: item.uid
+            });
+        });
+
+        $('#main-section').html(items);
+
+
+        $('#main-section').find(`.crop-container`).cropper({
+            createUI: false,
+            fitToContainer: true,
+            left: -10,
+            top: -30,
+            initialZoom: 2
+        });
+
+        $('#main-section').find(`.crop-container`).cropper('option', 'onZoom', (uid, value) => {
+            let index = this.props.urls.findIndex(a => a.uid === uid);
+            this.props.urls[index].zoom = value;
+        });
+
+        $('#main-section').find(`.crop-container`).cropper('option', 'onImgDrag', (uid, left, top) => {
+            let index = this.props.urls.findIndex(a => a.uid === uid);
+            this.props.urls[index].left = left;
+            this.props.urls[index].top = top;
+            console.log("onImgDrag " + left + ' - ' + top);
+        });
 
         let html = <div id="cropper-container">
 
             <div id="toolbar">
-                <ToolbarComponent sizes={this.sizes}
-                                  onSelectChange={(state) => this.onSelectChange(state)}
+                <ToolbarComponent sizes={this.props.sizes}
+                                  onSelectChange={(state) => this.onSelectAllItems(state)}
                                   onSizeChange={size => this.onFormatChange.call(this, size)}
-                                  onPapperChange={(val) => console.log(val)}
+                                  onPaperChange={(val) => console.log(val)}
                                   onFramingChange={val => this.onFramingChange.call(this, val)}
                                   onBorderChange={(val) => console.log(val)}
-                                  onOrderClick={(val) => this.props.onOrderClick()}
+                                  onOrderClick={(val) => this.onOrderClick()}
                 />
             </div>
-            <div id="main-section">
-                {this.items}
-
+            <div id="main-section"></div>
+            <div id="tippy-content-1" style="display: none;">
+                <strong>Фото нестандартного формата.</strong>
+                <div>Эта область обрежется при печати.</div>
+            </div>
+            <div id="tippy-content-2" style="display: none;">
+                <strong>Фото нестандартного формата.</strong>
+                <div>Останутся белые поля.</div>
             </div>
         </div>;
         return html;
@@ -136,10 +213,30 @@ export class MainComponent extends Component {
 
         this.setState(this.state);
 
+        $(document).on('click', '.image-container .remove-item', (e) => {
+            let uid = $(e.target).closest('.image-container').find('.crop-container').attr('data-uid');
+            this.removeItem(uid);
+        });
+
+        $(document).on('change', '.image-container input[type=checkbox]', (e) => {
+            this.onItemSelect($(e.target).closest('.image-container').find('.crop-container'), $(e.target).prop('checked'));
+        });
+
+        $(document).on('click', '.cropper-container', function (e) {
+            $('.cropper-container').removeClass('active');
+            $(this).addClass('active');
+        });
+
+        $(document).on('click', 'body', (e) => {
+            if ($(e.target).closest('.image-container').length === 0) {
+                $('.cropper-container').removeClass('active');
+            }
+        });
+
         setTimeout(() => {
-
-        }, 500)
-
+            Scrollbar.init(document.querySelector('#main-section'))
+        }, 1000);
+        // const ps = new PerfectScrollbar('#main-section');
 
     }
 }

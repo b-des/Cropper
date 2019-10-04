@@ -1,103 +1,165 @@
 #cropper-container {
-  background: #f5f8fa;
-  border-radius: 10px;
-  padding: 5px; }
+  background: #c8d5dd;
+  border-radius: 0px;
+  padding: 0px;
+  width: 70%;
+  margin: 100px auto; }
+  @media screen and (max-width: 768px) {
+    #cropper-container {
+      width: 100%; } }
   #cropper-container #toolbar {
-    box-shadow: inset 0 0 0 1px rgba(16, 22, 26, 0.2), 0 0 0 rgba(16, 22, 26, 0), 0 1px 1px rgba(16, 22, 26, 0.4);
     padding: 15px;
-    border: none; }
+    border: none;
+    font-size: 13px;
+    background: #4A5374;
+    color: white; }
+    #cropper-container #toolbar .select-items > * {
+      display: inline-block; }
+      #cropper-container #toolbar .select-items > *.pretty {
+        margin-left: 5px; }
     #cropper-container #toolbar .bp3-navbar-group > * {
       margin: 0 5px;
       display: inline-block; }
+      @media screen and (max-width: 768px) {
+        #cropper-container #toolbar .bp3-navbar-group > * {
+          width: 100%;
+          margin: 10px 0; } }
   #cropper-container #main-section {
-    border-radius: 0 0 10px 10px;
-    background: grey;
+    border-radius: 0;
+    background: #888DA6;
     padding: 10px;
     display: flex;
-    justify-content: start; }
+    justify-content: start;
+    z-index: 1;
+    flex-wrap: wrap;
+    box-shadow: inset 0 3px 7px -6px #000;
+    max-height: 500px;
+    overflow: hidden;
+    position: relative; }
+    @media screen and (max-width: 768px) {
+      #cropper-container #main-section {
+        max-height: 500px; } }
+    #cropper-container #main-section .scroll-content {
+      display: flex;
+      flex-wrap: wrap;
+      align-content: center;
+      align-items: center;
+      width: 100%; }
+      @media screen and (max-width: 768px) {
+        #cropper-container #main-section .scroll-content {
+          flex-direction: column; } }
     #cropper-container #main-section .image-container {
       margin: 1rem .8rem; }
-    #cropper-container #main-section .image-item {
-      position: relative;
-      overflow: hidden;
-      width: 280px;
-      height: 180px;
-      border: 1px solid #bdc0c2;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      box-sizing: content-box; }
-      #cropper-container #main-section .image-item > div {
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
+      #cropper-container #main-section .image-container .tools {
+        padding-bottom: 0;
+        display: inline-block;
+        width: 100%; }
+        #cropper-container #main-section .image-container .tools > * {
+          display: inline-block;
+          vertical-align: middle; }
+        #cropper-container #main-section .image-container .tools .pretty {
+          font-size: 20px;
+          height: 18px;
+          margin-right: 0;
+          float: left; }
+        #cropper-container #main-section .image-container .tools .remove-item {
+          width: 22px;
+          height: 22px;
+          background: red;
+          text-align: center;
+          line-height: 21px;
+          color: white;
+          border-radius: 3px;
+          cursor: pointer;
+          float: right; }
+      #cropper-container #main-section .image-container .cropper-container:hover .cross-drag, #cropper-container #main-section .image-container .cropper-container.active .cross-drag {
+        display: block; }
+      #cropper-container #main-section .image-container .cropper-container:hover .slider, #cropper-container #main-section .image-container .cropper-container.active .slider {
+        display: block; }
+      #cropper-container #main-section .image-container .cropper-container .slider {
+        position: absolute;
+        top: 20px;
+        z-index: 100;
+        width: 80%;
+        left: 0;
+        right: 0;
+        margin: 0 auto;
+        display: none; }
+      #cropper-container #main-section .image-container .cropper-container .ui-slider {
+        margin-top: 0;
+        height: 3px;
+        border: none;
+        background: #ff5b63; }
+        #cropper-container #main-section .image-container .cropper-container .ui-slider .ui-slider-handle {
+          width: 15px;
+          height: 15px; }
+      #cropper-container #main-section .image-container .cropper-container .cross-drag {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        background: rgba(255, 255, 255, 0.61);
+        width: 20px;
+        height: 20px;
+        margin-left: -10px;
+        margin-top: -10px;
+        line-height: 20px;
+        text-align: center;
+        border-radius: 50px;
+        display: none;
+        z-index: 101;
+        cursor: all-scroll;
+        font-size: 10px; }
+      #cropper-container #main-section .image-container .image-item {
         position: relative;
-        background: white; }
-
-.photo-sizes {
-  width: 400px; }
-
-.panel {
-  width: 100%;
-  height: auto;
-  max-height: calc(100vh - 20%); }
-
-.cropper-container:hover .cross-drag {
-  display: block; }
-
-.cropper-container:hover .slider {
-  display: block; }
-
-.cropper-container .slider {
-  position: absolute;
-  top: 20px;
-  z-index: 100;
-  width: 80%;
-  left: 0;
-  right: 0;
-  margin: 0 auto; }
-
-.cropper-container .ui-slider {
-  margin-top: 20px;
-  height: 3px;
-  border: none;
-  background: #ff5b63; }
-
-.cropper-container .ui-state-default, .cropper-container .ui-widget-content .ui-state-default, .cropper-container .ui-widget-header .ui-state-default {
-  background: #ff5b63;
-  border-radius: 25px;
-  outline: none;
-  border: none;
-  position: absolute;
-  top: -7px; }
-
-.cropper-container .ui-widget.ui-widget-content {
-  border: none; }
-
-.cropper-container .ui-slider-horizontal .ui-slider-range {
-  background: #e9ecf1; }
-
-.cropper-container .ui-slider .ui-slider-handle {
-  width: 15px;
-  height: 15px; }
-
-.cropper-container .offset-line {
-  position: absolute;
-  background: red; }
-  .cropper-container .offset-line.line-top {
-    top: 0;
-    width: 100%; }
-  .cropper-container .offset-line.line-bottom {
-    bottom: 0;
-    width: 100%; }
-  .cropper-container .offset-line.line-left {
-    left: 0;
-    top: 0;
-    height: 100%; }
-  .cropper-container .offset-line.line-right {
-    right: 0;
-    top: 0;
-    height: 100%; }
+        overflow: hidden;
+        width: 280px;
+        height: 180px;
+        border: 1px solid #bdc0c2;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-sizing: content-box; }
+        #cropper-container #main-section .image-container .image-item > div {
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+          position: relative; }
+          #cropper-container #main-section .image-container .image-item > div > .hidden {
+            display: none; }
+  #cropper-container .photo-sizes {
+    width: 400px; }
+  #cropper-container .panel {
+    width: 100%;
+    height: auto;
+    max-height: calc(100vh - 20%); }
+  #cropper-container .cropper-container .ui-state-default, #cropper-container .cropper-container .ui-widget-content .ui-state-default, #cropper-container .cropper-container .ui-widget-header .ui-state-default {
+    background: #ff5b63;
+    border-radius: 25px;
+    outline: none;
+    border: none;
+    position: absolute;
+    top: -6px; }
+  #cropper-container .cropper-container .ui-widget.ui-widget-content {
+    border: none; }
+  #cropper-container .cropper-container .ui-slider-horizontal .ui-slider-range {
+    background: #e9ecf1; }
+  #cropper-container .offset-line {
+    position: absolute;
+    background: white; }
+    #cropper-container .offset-line.line-top {
+      top: 0;
+      width: 100%; }
+    #cropper-container .offset-line.line-bottom {
+      bottom: 0;
+      width: 100%; }
+    #cropper-container .offset-line.line-left {
+      left: 0;
+      top: 0;
+      height: 100%; }
+    #cropper-container .offset-line.line-right {
+      right: 0;
+      top: 0;
+      height: 100%; }
 
 .cut-line {
   position: absolute;
@@ -133,19 +195,3 @@
   height: 10px;
   width: 100%;
   border-top: 2px dashed white; }
-
-.cross-drag {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  background: rgba(255, 255, 255, 0.61);
-  width: 40px;
-  height: 40px;
-  margin-left: -20px;
-  margin-top: -20px;
-  line-height: 40px;
-  text-align: center;
-  border-radius: 50px;
-  display: none;
-  z-index: 101;
-  cursor: all-scroll; }
