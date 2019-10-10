@@ -17,14 +17,17 @@ export class ImageItem {
                             <label></label>
                         </div>
                     </div>
+                    
                     <div class="remove-item">
                         <i class="fa fa-trash"></i>
                     </div>
+                    <span class="warning" style="display: none"><i class="fa fa-info"></i></span>
                 </div>
                 <div class="image-item">
+               
                     <div id="crop-container-{{=it.uid}}" class='crop-container' data-uid="{{=it.uid}}"
                          style="width:100%; height:100%" data-src="{{=it.url}}" data-zoom="{{=it.zoom}}" data-top="{{=it.top}}" data-left="{{=it.left}}">
-                       
+                        <div class="lds-ring"><div></div><div></div><div></div><div></div></div>
                     </div>
                 </div>
             </div>`;

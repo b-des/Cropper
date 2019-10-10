@@ -33,7 +33,7 @@
                 if (!this.obj.find('img').length) {
                     var img = $('<img src="' + src + '">');
 
-                    this.obj.html(img);
+                    //this.obj.html(img);
                     img.on('load', ()  => {
                         //setTimeout(methods.initCropper.bind(this),100);
                     });
@@ -43,6 +43,8 @@
                     tmpImage.onload = function () {
                         that.options.onLoad(that.obj.attr('data-uid'), this.width, this.height);
                         that.obj.html(this);
+                        that.obj.append('<div class="border-frame"></div>');
+
                         setTimeout(methods.initCropper.bind(that),10);
                     };
 
@@ -122,14 +124,14 @@
             let pratio = this.obj.width() / this.obj.height();
 
             this.outputDiv.find(".slider").slider('destroy');
-            this.outputDiv.find('*').not('img').remove();
+            this.outputDiv.find('*').not('img, .border-frame').remove();
 
             if (ratio > pratio) {
-                html += '<div class="cut-line line-left"  data-tippy-placement="left"> </div>';
-                html += '<div class="cut-line line-right"  data-tippy-placement="right"> </div>';
+               // html += '<div class="cut-line line-left"  data-tippy-placement="left"> </div>';
+                //html += '<div class="cut-line line-right"  data-tippy-placement="right"> </div>';
             } else {
-                html += '<div class="cut-line line-top" data-tippy-placement="top"> </div>';
-                html += '<div class="cut-line line-bottom"  data-tippy-placement="bottom"> </div>';
+               // html += '<div class="cut-line line-top" data-tippy-placement="top"> </div>';
+                //html += '<div class="cut-line line-bottom"  data-tippy-placement="bottom"> </div>';
             }
 
             html += '<div class="cross-drag"><i class="fa fa-arrows-alt"></i></div>';
@@ -526,7 +528,7 @@
                 methods.zoomByDelta.call(this, -this.imgInitW);
                 methods.zoomByDelta.call(this, this.options.initialZoom);
 
-                this.outputDiv.find('*').not('img').remove();
+                this.outputDiv.find('*').not('img, .border-frame').remove();
                 this.options.createUI = false;
                 this.options.fitToContainer = true;
                 methods.initCropper.call(this);

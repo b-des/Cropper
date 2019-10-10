@@ -6,7 +6,8 @@ const dot = require('dot');
 import 'perfect-scrollbar/css/perfect-scrollbar.css'
 import {Scrollbars} from 'react-custom-scrollbars';
 import Scrollbar from "smooth-scrollbar";
-
+import pagination from 'pagination';
+import axios from 'axios';
 
 export class MainComponent extends Component {
 
@@ -25,7 +26,15 @@ export class MainComponent extends Component {
         this.size = {width: 15, height: 10};
 
         this.imageItemTemplate = new ImageItem().getHtml();
+
+        
     }
+
+    goToPage(page) {
+        this.paginator.set('current', page);
+        $('#pagination-bar').html(this.paginator.render());
+    }
+
 
     onFormatChange(size) {
         this.size = {width: size[1], height: size[0]};
@@ -51,17 +60,37 @@ export class MainComponent extends Component {
 
     }
 
+    onBorderChange(border) {
+        if (border === 'none') {
+            $(`.crop-container.enabled`).find('.border-frame').css('border', 'none');
+            $(`.crop-container.enabled`).attr('data-border', 'none');
+        } else {
+            //$(`.crop-container.enabled`).css('border', `3px solid ${border}`);
+            $(`.crop-container.enabled`).find('.border-frame').css('border', `3px solid ${border}`);
+            $(`.crop-container.enabled`).attr('data-border', border);
+        }
+    }
+
 
     onSelectAllItems(checked) {
         if (checked) {
-            $('.image-container .crop-container').addClass('enabled');
-            this.changePhotoSize($(`.crop-container.enabled`), this.size);
-            $(`.crop-container.enabled`).cropper('update', {fitToContainer: this.framing === 'whole'});
-        } else {
-            $(`.crop-container.enabled`).css({width: '100%', height: '100%'}).cropper('reset');
-            $('.image-container .crop-container').removeClass('enabled');
 
+            setTimeout(()=>{
+                $('.image-container .crop-container').addClass('enabled');
+                this.changePhotoSize($(`.crop-container.enabled`), this.size);
+                $(`.crop-container.enabled`).cropper('update', {fitToContainer: this.framing === 'whole'});
+                $(`.crop-container.enabled`).find('.border-frame').css('border', `3px solid ${$(`.crop-container.enabled`).attr('data-border')}`);
+            }, 100);
+
+        } else {
+            setTimeout(()=>{
+                $(`.crop-container.enabled`).css({width: '100%', height: '100%'}).cropper('reset');
+                $('.image-container .crop-container').removeClass('enabled');
+            }, 100);
+
+            $(`.crop-container.enabled`).find('.border-frame').css('border', 'none');
         }
+
         $('.image-container input[type=checkbox]').prop('checked', checked);
         $('#cropper-toolbar .selected-items').html($('.image-container input[type=checkbox]:checked').length);
     }
@@ -78,7 +107,9 @@ export class MainComponent extends Component {
             target.addClass('enabled');
             this.changePhotoSize(target, this.size);
             target.cropper('update', {fitToContainer: this.framing === 'whole'});
+            target.find('.border-frame').css('border', `3px solid ${target.attr('data-border')}`);
         } else {
+            target.find('.border-frame').css('border', 'none');
             target.cropper('reset');
             target.removeClass('enabled');
         }
@@ -115,37 +146,88 @@ export class MainComponent extends Component {
         this.props.urls.splice(index, 1);
         $(`#crop-container-${uid}`).cropper('destroy');
         $(`#crop-container-${uid}`).closest('.image-container').remove();
-
+        this.paginator.set('totalResult', this.props.urls.length);
+        $('#pagination-bar').html(this.paginator.render());
+        if(this.props.urls.length === 0){
+            $('#main-section .placeholder').show();
+        }
     }
 
     onOrderClick() {
         let items = [];
+        console.log(this.props.handlerUrl);
         $('#cropper-container .image-item > div.enabled').each((i, e) => {
-           // console.log(e);
+            // console.log(e);
             let left = 100 * Math.abs(parseFloat($(e).find('img').css('left'))) / parseFloat($(e).find('img').css('width')) | 0;
             let top = 100 * Math.abs(parseFloat($(e).find('img').css('top'))) / parseFloat($(e).find('img').css('height')) | 0;
             let cropX = 100 * (parseFloat($(e).css('width')) + left) / parseFloat($(e).find('img').css('width'));
             let cropY = 100 * (parseFloat($(e).css('height')) + top) / parseFloat($(e).find('img').css('height'));
-            console.log({
-                offsetX: left + "%",
-                offsetY: top + "%",
-                cropX: cropX + "%",
-                cropY: cropY + "%",
-            });
-                items.push({
-                    url: $(e).attr('data-src'),
-                    crop: $(e).attr('data-crop') === 'true' ? {x: left, y: top, w: cropX, h: cropY} : false,
-                    size:this.size
-                });
+
+            let index = this.props.urls.findIndex(a => a.uid === $(e).attr('data-uid'));
+
+            let item = {
+                url: this.props.urls[index].url,
+                crop: $(e).attr('data-crop') === 'true' ? {x: left, y: top, w: cropX, h: cropY} : false,
+                size: this.size,
+                dest: '',
+                border: $(e).attr('data-border')
+            };
+            items.push(item);
+
+            axios.post(this.props.handlerUrl, item).then(response => {
+                console.log(response.data);
+            }).catch(error => {
+                console.log(error);
+            })
+
         });
         this.props.onOrderClick(items);
     }
 
+    onPhotoAdded() {
+        if(this.props.urls.length === 1){
+            $('#main-section .placeholder').hide();
+        }
+
+        this.paginator.set('totalResult', this.props.urls.length);
+         $('#pagination-bar').html(this.paginator.render());
+    }
+
+    generatePagination(){
+        this.paginator = new pagination.TemplatePaginator({
+            prelink: '', current: 1, rowsPerPage: this.props.itemsPerPage,
+            totalResult: this.props.urls.length, slashSeparator: true,
+            template: function (result) {
+                var i, len, prelink;
+                var html = '<div><ul class="pagination">';
+                if (result.pageCount < 2) {
+                    html += '</ul></div>';
+                    return '';
+                }
+                prelink = this.preparePreLink(result.prelink);
+                if (result.previous) {
+                    html += '<li class="page-item"><a class="page-link" href="#" data-page="' + result.previous + '">&#8249;</a></li>';
+                }
+                if (result.range.length) {
+                    for (i = 0, len = result.range.length; i < len; i++) {
+                        if (result.range[i] === result.current) {
+                            html += '<li class="active page-item"><a class="page-link" href="#"  data-page="' + result.range[i] + '">' + result.range[i] + '</a></li>';
+                        } else {
+                            html += '<li class="page-item"><a class="page-link" href="#"  data-page="' + result.range[i] + '">' + result.range[i] + '</a></li>';
+                        }
+                    }
+                }
+                if (result.next) {
+                    html += '<li class="page-item"><a class="page-link" href="#"  data-page="' + result.next + '" class="paginator-next">&#8250;</a></li>';
+                }
+                html += '</ul></div>';
+
+                return result.previous || result.next ? html : '';
+            }
+        });
+    }
+
     render(props, state, context) {
-
-
-
-
 
         let items = '';
 
@@ -168,8 +250,8 @@ export class MainComponent extends Component {
             left: -10,
             top: -30,
             initialZoom: 2,
-            onLoad:(uid, width, height) => {
-                console.log('onLoad  ' +width +" - "+ height);
+            onLoad: (uid, width, height) => {
+                console.log('onLoad  ' + width + " - " + height);
             }
         });
 
@@ -186,7 +268,7 @@ export class MainComponent extends Component {
         });
 
         $('#main-section').find(`.crop-container`).cropper('option', 'onLoad', (uid, width, height) => {
-            console.log(`onLoad  ${uid} = ` +width +" - "+ height);
+            console.log(`onLoad  ${uid} = ` + width + " - " + height);
         });
 
         let html = <div id="cropper-container">
@@ -197,11 +279,14 @@ export class MainComponent extends Component {
                                   onSizeChange={size => this.onFormatChange.call(this, size)}
                                   onPaperChange={(val) => console.log(val)}
                                   onFramingChange={val => this.onFramingChange.call(this, val)}
-                                  onBorderChange={(val) => console.log(val)}
+                                  onBorderChange={(val) => this.onBorderChange.call(this, val)}
                                   onOrderClick={(val) => this.onOrderClick()}
                 />
             </div>
-            <div id="main-section"></div>
+            <div id="main-section">
+
+            </div>
+            <div id="pagination-bar"></div>
             <div id="tippy-content-1" style="display: none;">
                 <strong>Фото нестандартного формата.</strong>
                 <div>Эта область обрежется при печати.</div>
@@ -210,10 +295,16 @@ export class MainComponent extends Component {
                 <strong>Фото нестандартного формата.</strong>
                 <div>Останутся белые поля.</div>
             </div>
+            <div id="tippy-content-3" style="display: none;">
+                <strong>Фото низкого качества(current).</strong>
+                <div>Советуем заменить на фото с высоким разрешением(минимум min).</div>
+            </div>
         </div>;
         return html;
 
     }
+
+
 
     componentDidMount() {
         this.state.urls = this.props.urls;
@@ -245,5 +336,16 @@ export class MainComponent extends Component {
         }, 1000);
         // const ps = new PerfectScrollbar('#main-section');
 
+        this.generatePagination();
+
+        $(document).on('click', '.pagination .page-link', (e) => {
+            this.goToPage($(e.target).attr('data-page'));
+            e.preventDefault();
+        });
+
+        $('#pagination-bar').html(this.paginator.render());
+        
     }
+    
+    
 }

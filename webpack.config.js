@@ -26,12 +26,12 @@ module.exports = {
 
     },
     externals: {
-        cropper : {
+        cropper: {
             commonjs: 'cropper',
             amd: 'cropper',
             root: 'cropper' // indicates global variable
         },
-        tippy : {
+        tippy: {
             commonjs: 'tippy',
             amd: 'tippy',
             root: 'tippy' // indicates global variable
@@ -53,6 +53,7 @@ module.exports = {
                 test: /\.svg$/,
                 loader: 'svg-inline-loader'
             },
+
             {
                 test: /\.(woff(2)?|ttf|eot|svg|gif|png)(\?v=\d+\.\d+\.\d+)?$/,
                 use: [
@@ -84,7 +85,6 @@ module.exports = {
             },
         ]
     },
-
 
 
     resolve: {

@@ -3,13 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" crossorigin="anonymous">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<div id="app" style="width: 50%; margin: 0 auto"></div>
+<div id="app" style="width: auto; margin: 0 auto">
+    <button class="btn btn-primary" onclick="addPhoto()">Добавить фото</button>
+</div>
 
 </body>
 
@@ -24,17 +27,28 @@
 <!-- Bootstrap core JavaScript -->
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
 <script>
-    let c = new Cropper();
+    function addPhoto(){
+        let imgs = [
+            {url:'https://images.pexels.com/photos/1236701/pexels-photo-1236701.jpeg'},
+            {thumbnail: 'https://cdn.pixabay.com/photo/2016/11/14/04/45/elephant-1822636__340.jpg'},
+            'https://images.pexels.com/photos/556416/pexels-photo-556416.jpeg',
+            'https://c4.wallpaperflare.com/wallpaper/410/867/750/vector-forest-sunset-forest-sunset-forest-wallpaper-thumb.jpg',
+            'https://rog.asus.com/media/1554200908315.jpg',
+            'https://cdn.guidingtech.com/media/assets/2019/07/Best-Star-Wars-HD-and-4K-Wallpapers-for-Phone-and-PC-9.jpg',
+            'https://esossl-a.akamaihd.net/assets/img/cms/media/56274c7523aff0fa1744819a554d7af4_the-halls-of-the-colossus_wallpaper-1920x1080.jpg',
+            'https://images3.alphacoders.com/675/675273.jpg',
+        ];
+        c.addPhotos([imgs[Math.floor(Math.random()*((imgs.length-1)-0+1)+0)]])
+    }
+    let c = new Cropper({container: 'app', handlerUrl: 'http://localhost:6770', saveOnRefresh: false});
+
 
     c.onOrderClick((items)=>{
         console.log((items));
     });
     setTimeout(()=>{
+        c.setHandlerUrl('localhost:6770');
 
-        /*c.addPhoto({
-                uid: '123243',
-                url: 'https://i.imgur.com/Ywcvr7u.jpg'
-            })*/
     },4000);
     $(document).ready(function () {
         //new CropperT('.crop-container', {});

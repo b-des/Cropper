@@ -1,49 +1,49 @@
-import {h, Component, render} from 'preact';
+import {h, Component, render, createRef} from 'preact';
 import {ToolbarComponent} from "./ui/components/toolbar";
 import {MainComponent} from "./ui/components/main";
 import 'tippy.js/dist/tippy.css'
 import 'tippy.js/themes/light.css'
 import 'pretty-checkbox/'
+import {ImageItem} from "./ui/components/item";
+
 window.tippy = require('tippy.js').default;
 window.toPixel = require('unit-to-px').default;
 //import './lib/cropper.jquery.js'
 const uuid = require('uuid/v4');
 const ls = require('local-storage');
+import config from './data.json'
+import dot from 'dot'
+
 
 export default class Cropper extends Component {
 
 
     constructor(options) {
         super();
+        //this.child = createRef();
+        this.child = createRef();
+
+        this.imageItemTemplate = new ImageItem().getHtml();
         window.onload = function () {
             //console.log(ls.get('urls'));
         };
 
+
         this.options = {
-          saveOnRefresh: false
+            container: 'cropper',
+            handlerUrl: '',
+            saveOnRefresh: false,
+            itemsPerPage: 20
         };
 
         Object.assign(this.options, options);
 
-        this.state.urls = [
-            {
-                uid: uuid(),
-                url: 'https://cdn.pixabay.com/photo/2018/01/14/23/12/nature-3082832__340.jpg'
-            },
-            {
-                uid: uuid(),
-                url: 'https://img.freepik.com/free-vector/abstract-dynamic-pattern-wallpaper-vector_53876-59131.jpg'
-            },
-            {
-                uid: uuid(),
-                url: 'https://i.imgur.com/Ywcvr7u.jpg'
-            },
-        ];
-        this.state.urls = ls.get('urls') ? ls.get('urls') : this.state.urls;
-        console.log(this.state.urls);
+        this.state.urls = [];
+        this.state.handlerUrl = '';
+        this.state.urls = ls.get('urls') ? ls.get('urls') : [];
 
         window.onbeforeunload = () => {
-            if(this.options){
+            if (this.options.saveOnRefresh) {
                 ls.set('urls', this.state.urls);
             }
         };
@@ -51,53 +51,91 @@ export default class Cropper extends Component {
         this.orderCallback = function () {};
 
 
-        this.sizes = [
-            {title:'10x15', value:[10, 15]},
-            {title:'10x30', value:[10, 30]},
-            {title:'15x15', value:[15, 15]},
-            {title:'15x20', value:[15, 20]},
-            {title:'15x22', value:[15, 22]},
-            {title:'20x20', value:[20, 20]},
-            {title:'20x30', value:[20, 30]},
-            {title:'21x30', value:[21, 30]},
-            {title:'30x30', value:[30, 30]},
-            {title:'30x40', value:[30, 40]},
-            {title:'30x45', value:[30, 45]},
-            {title:'30x60', value:[30, 60]},
-            {title:'30x90', value:[30, 90]},
-            {title:'40x40', value:[40, 40]},
-            {title:'40x50', value:[40, 50]},
-            {title:'40x60', value:[40, 60]},
-            {title:'50x50', value:[50, 50]},
-            {title:'50x60', value:[50, 60]},
-            {title:'50x70', value:[50, 70]},
-            {title:'50x75', value:[50, 75]},
-            {title:'60x60', value:[60, 60]},
-            {title:'60x80', value:[60, 80]},
-            {title:'60x90', value:[60, 90]},
-            {title:'60x180',value:[60, 180]},
-            {title:'70x100',value:[70, 100]},
-            {title:'80x80', value:[80, 80]},
-           {title:'100x100',value:[100, 100]},
-          {title:'100x150', value:[100, 150]}
-        ];
+        this.sizes = config.sizes;
 
-        render(<MainComponent sizes={this.sizes} onOrderClick={(items) => this.orderCallback(items)}
-                              urls={this.state.urls}/>, document.body);
+        this.sizesInPixel = this.sizes.map((item, index) => {
+            return {
+                title: item.title,
+                width: Math.round(item.value[1] * 37.79515625),
+                height: Math.round(item.value[0] * 37.79515625)
+            }
+        });
+
+        render(<MainComponent ref={this.child}
+                              sizes={this.sizes} onOrderClick={(items) => this.orderCallback(items)}
+                              urls={this.state.urls}
+                              itemsPerPage={this.options.itemsPerPage}
+                              handlerUrl={this.options.handlerUrl}/>, document.getElementById(this.options.container));
 
     }
 
-    addPhoto(url) {
-        this.state.urls.push(url);
+
+    addPhotos(urls) {
+
+        urls.map((item, key) => {
+            let photo = {uid: uuid()};
+            if (typeof item === 'object') {
+                photo = Object.assign(photo, item);
+            } else {
+                photo = Object.assign(photo, {url: item});
+            }
+
+            this.state.urls.unshift(photo);
+
+
+            let html = dot.template(this.imageItemTemplate)({
+                url: photo.thumbnail || photo.url,
+                top: photo.top,
+                left: photo.left,
+                zoom: photo.zoom || 0,
+                uid: photo.uid
+            });
+
+            if ($('#main-section').find('.scroll-content').length) {
+                $('#main-section').find('.scroll-content').prepend(html);
+            } else {
+                $('#main-section').prepend(html);
+            }
+
+            $('#main-section').find(`#crop-container-${photo.uid}`).cropper({
+                createUI: false,
+                fitToContainer: true,
+                onLoad: (uid, width, height) => {
+                    let fitSizes = this.sizesInPixel.filter((item) => item.width <= width || item.height <= height).map((item, index) => item.title);
+
+                    if (fitSizes.length === 0) {
+                        let item = $(`#crop-container-${uid}`).closest('.image-container').find('.warning').css('display', 'block');
+                        tippy(item.get(0),
+                            {
+                                content: document.getElementById('tippy-content-3').innerHTML.replace('current', `${width}x${height}`).replace('min', '567x378'),
+                                theme: 'light'
+                            });
+                    }
+                    $(`#crop-container-${uid}`).attr('data-fit-sizes', fitSizes.join(','));
+                }
+            });
+            //return {url: item, uid: uuid()}
+        });
+
         this.setState(this.state);
-        console.log(url);
+        this.child.current.onPhotoAdded();
+
+    }
+
+    setHandlerUrl(handlerUrl) {
+        this.state.handlerUrl = handlerUrl;
+        this.setState(this.state);
     }
 
     setPhotoSizes(sizes) {
 
     }
 
+    setDestinationPath(path) {
+        this.path = path;
+    }
+
     onOrderClick(callback) {
-         this.orderCallback = callback;
+        this.orderCallback = callback;
     }
 }
