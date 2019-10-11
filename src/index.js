@@ -33,7 +33,8 @@ export default class Cropper extends Component {
             container: 'cropper',
             handlerUrl: '',
             saveOnRefresh: false,
-            itemsPerPage: 20
+            itemsPerPage: 20,
+            dest: ''
         };
 
         Object.assign(this.options, options);
@@ -48,7 +49,8 @@ export default class Cropper extends Component {
             }
         };
 
-        this.orderCallback = function () {};
+        this.orderCallback = function () {
+        };
 
 
         this.sizes = config.sizes;
@@ -64,6 +66,7 @@ export default class Cropper extends Component {
         render(<MainComponent ref={this.child}
                               sizes={this.sizes} onOrderClick={(items) => this.orderCallback(items)}
                               urls={this.state.urls}
+                              dest={this.options.dest}
                               itemsPerPage={this.options.itemsPerPage}
                               handlerUrl={this.options.handlerUrl}/>, document.getElementById(this.options.container));
 
@@ -73,52 +76,58 @@ export default class Cropper extends Component {
     addPhotos(urls) {
 
         urls.map((item, key) => {
-            let photo = {uid: uuid()};
-            if (typeof item === 'object') {
-                photo = Object.assign(photo, item);
-            } else {
-                photo = Object.assign(photo, {url: item});
-            }
+            setTimeout(() => {
 
-            this.state.urls.unshift(photo);
-
-
-            let html = dot.template(this.imageItemTemplate)({
-                url: photo.thumbnail || photo.url,
-                top: photo.top,
-                left: photo.left,
-                zoom: photo.zoom || 0,
-                uid: photo.uid
-            });
-
-            if ($('#main-section').find('.scroll-content').length) {
-                $('#main-section').find('.scroll-content').prepend(html);
-            } else {
-                $('#main-section').prepend(html);
-            }
-
-            $('#main-section').find(`#crop-container-${photo.uid}`).cropper({
-                createUI: false,
-                fitToContainer: true,
-                onLoad: (uid, width, height) => {
-                    let fitSizes = this.sizesInPixel.filter((item) => item.width <= width || item.height <= height).map((item, index) => item.title);
-
-                    if (fitSizes.length === 0) {
-                        let item = $(`#crop-container-${uid}`).closest('.image-container').find('.warning').css('display', 'block');
-                        tippy(item.get(0),
-                            {
-                                content: document.getElementById('tippy-content-3').innerHTML.replace('current', `${width}x${height}`).replace('min', '567x378'),
-                                theme: 'light'
-                            });
-                    }
-                    $(`#crop-container-${uid}`).attr('data-fit-sizes', fitSizes.join(','));
+                let photo = {uid: uuid()};
+                if (typeof item === 'object') {
+                    photo = Object.assign(photo, item);
+                } else {
+                    photo = Object.assign(photo, {url: item});
                 }
-            });
-            //return {url: item, uid: uuid()}
+
+                this.state.urls.unshift(photo);
+
+
+                let html = dot.template(this.imageItemTemplate)({
+                    url: photo.thumbnail || photo.url,
+                    top: photo.top,
+                    left: photo.left,
+                    zoom: photo.zoom || 0,
+                    uid: photo.uid
+                });
+
+                if ($('#main-section').find('.scroll-content').length) {
+                    $('#main-section').find('.scroll-content').prepend(html);
+                } else {
+                    $('#main-section').prepend(html);
+                }
+
+                $('#main-section').find(`#crop-container-${photo.uid}`).cropper({
+                    createUI: false,
+                    fitToContainer: true,
+                    onLoad: (uid, width, height) => {
+                        let fitSizes = this.sizesInPixel.filter((item) => item.width <= width || item.height <= height).map((item, index) => item.title);
+
+                        if (fitSizes.length === 0) {
+                            let item = $(`#crop-container-${uid}`).closest('.image-container').find('.warning').css('display', 'block');
+                            tippy(item.get(0),
+                                {
+                                    content: document.getElementById('tippy-content-3').innerHTML.replace('current', `${width}x${height}`).replace('min', '567x378'),
+                                    theme: 'light'
+                                });
+                        }
+                        $(`#crop-container-${uid}`).attr('data-fit-sizes', fitSizes.join(','));
+                    }
+                });
+                this.setState(this.state);
+                if (urls.length === key + 1) {
+                    this.child.current.onPhotoAdded();
+                }
+            }, 100);
+
+
         });
 
-        this.setState(this.state);
-        this.child.current.onPhotoAdded();
 
     }
 

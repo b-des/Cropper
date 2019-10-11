@@ -23,18 +23,15 @@
                 }, options);
 
 
-
                 let src = this.obj.attr('data-src');
                 let that = this;
-
-
 
 
                 if (!this.obj.find('img').length) {
                     var img = $('<img src="' + src + '">');
 
                     //this.obj.html(img);
-                    img.on('load', ()  => {
+                    img.on('load', () => {
                         //setTimeout(methods.initCropper.bind(this),100);
                     });
 
@@ -45,7 +42,7 @@
                         that.obj.html(this);
                         that.obj.append('<div class="border-frame"></div>');
 
-                        setTimeout(methods.initCropper.bind(that),10);
+                        setTimeout(methods.initCropper.bind(that), 10);
                     };
 
                 } else {
@@ -65,30 +62,29 @@
             this.imgInitH = this.imgH = this.img.height();
             this.obj.get(0).className += ' cropper-container';
 
-           methods.zoomByDelta.call(this, -this.imgInitW);
+            methods.zoomByDelta.call(this, -this.imgInitW);
             methods.zoomByDelta.call(this, this.options.initialZoom);
 
             //if(!this.options.left){
-                this.options.left =  this.obj.attr('data-left');
-           // }
+            this.options.left = this.obj.attr('data-left');
+            // }
 
-           // if(!this.options.top){
-                this.options.top =  this.obj.attr('data-top');
-           // }
+            // if(!this.options.top){
+            this.options.top = this.obj.attr('data-top');
+            // }
 
 
             //if(!this.options.initialZoom){
-                this.options.initialZoom =  this.obj.attr('data-zoom') || 0;
-           // }
+            this.options.initialZoom = this.obj.attr('data-zoom') || 0;
+            // }
 
 
-
-            if(this.options.initialZoom > 0){
+            if (this.options.initialZoom > 0) {
                 methods.zoomByPercent.call(this, this.options.initialZoom);
             }
 
 
-            if(this.options.left && this.options.left){
+            if (this.options.left && this.options.left) {
                 this.img.css({
                     'left': `${parseFloat(this.options.left)}px`,
                     'top': `${parseFloat(this.options.top)}px`,
@@ -96,7 +92,7 @@
                 });
                 methods.normalizeOffset.call(this);
 
-            }else{
+            } else {
                 this.img.css({
                     'left': -(this.imgW - this.objW) / 2,
                     'top': -(this.imgH - this.objH) / 2,
@@ -127,10 +123,10 @@
             this.outputDiv.find('*').not('img, .border-frame').remove();
 
             if (ratio > pratio) {
-               // html += '<div class="cut-line line-left"  data-tippy-placement="left"> </div>';
+                // html += '<div class="cut-line line-left"  data-tippy-placement="left"> </div>';
                 //html += '<div class="cut-line line-right"  data-tippy-placement="right"> </div>';
             } else {
-               // html += '<div class="cut-line line-top" data-tippy-placement="top"> </div>';
+                // html += '<div class="cut-line line-top" data-tippy-placement="top"> </div>';
                 //html += '<div class="cut-line line-bottom"  data-tippy-placement="bottom"> </div>';
             }
 
@@ -140,11 +136,11 @@
             let that = this;
 
             this.outputDiv.find(".slider").slider({
-                value: this.options.initialZoom*10,
+                value: this.options.initialZoom * 10,
                 min: 10,
                 max: 30,
-                step:0.1,
-                start: function( event, ui ) {
+                step: 0.1,
+                start: function (event, ui) {
                     that.obj.attr('data-top', parseFloat(that.img.css('top')));
                     that.obj.attr('data-left', parseFloat(that.img.css('left')));
                 },
@@ -154,8 +150,6 @@
                     methods.zoomByPercent.call(that, ui.value / 10);
                 }
             });
-
-
         },
 
         showUi() {
@@ -214,7 +208,7 @@
         },
 
 
-        normalizeOffset:function(){
+        normalizeOffset: function () {
             if (this.objH < this.imgH) {
                 if (parseInt(this.img.css('top')) > 0) {
                     this.img.css('top', 0);
@@ -503,10 +497,32 @@
 
         update: function (options) {
             return this.each(function () {
-                this.options = $.extend(this.options, options);
+                if (options) {
+                    this.options = $.extend(this.options, options);
+                    this.options.createUI = true;
+                }
                 this.options.initialZoom = parseFloat(this.obj.attr('data-zoom'));
-                this.options.createUI = true;
-                methods.initCropper.call(this);
+
+
+                if (!this.obj.find('img').length) {
+                    let src = this.obj.attr('data-src');
+                    let that = this;
+                    let tmpImage = new Image();
+                    tmpImage.src = src;
+                    tmpImage.onload = function () {
+                        that.options.onLoad(that.obj.attr('data-uid'), this.width, this.height);
+                        that.obj.html(this);
+
+                        that.obj.append('<div class="border-frame"></div>');
+                        if (that.obj.hasClass('enabled'))
+                            that.obj.find('.border-frame').css('border', `3px solid ${that.obj.attr('data-border')}`);
+
+                        setTimeout(methods.initCropper.bind(that), 10);
+                    };
+
+                } else {
+                    methods.initCropper.call(this)
+                }
 
                 /*$(this).find('.slider, .cross-drag, .cut-line, .offset-line').remove();
                 methods.zoomByDelta.call(this, -this.imgInitW);

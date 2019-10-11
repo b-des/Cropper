@@ -3,7 +3,8 @@
   border-radius: 0px;
   padding: 0px;
   width: 70%;
-  margin: 100px auto; }
+  margin: 100px auto;
+  border: 1px solid #8faaa3; }
   @media screen and (max-width: 768px) {
     #cropper-container {
       width: 100%; } }
@@ -11,7 +12,7 @@
     padding: 15px;
     border: none;
     font-size: 13px;
-    background: #4A5374;
+    background: #72a888;
     color: white; }
     #cropper-container #toolbar .select-items > * {
       display: inline-block; }
@@ -32,7 +33,7 @@
         width: 30%; }
   #cropper-container #main-section {
     border-radius: 0;
-    background: #888DA6;
+    background: #fff;
     padding: 10px;
     display: flex;
     justify-content: start;
@@ -40,7 +41,7 @@
     flex-wrap: wrap;
     box-shadow: inset 0 3px 7px -6px #000;
     max-height: 500px;
-    overflow: hidden;
+    overflow-y: auto;
     position: relative; }
     #cropper-container #main-section .placeholder {
       padding: 100px;
@@ -74,23 +75,23 @@
           width: 22px;
           text-align: center;
           border-radius: 2px;
-          margin: 0 10px;
           float: right; }
         #cropper-container #main-section .image-container .tools .pretty {
           font-size: 20px;
           height: 18px;
           margin-right: 0;
           float: left; }
-        #cropper-container #main-section .image-container .tools .remove-item {
+        #cropper-container #main-section .image-container .tools .item-manipulation {
           width: 22px;
           height: 22px;
-          background: red;
+          background: white;
           text-align: center;
-          line-height: 21px;
+          line-height: 19px;
           color: white;
           border-radius: 3px;
           cursor: pointer;
-          float: right; }
+          float: right;
+          margin-left: 10px; }
       #cropper-container #main-section .image-container .cropper-container:hover .cross-drag, #cropper-container #main-section .image-container .cropper-container.active .cross-drag {
         display: block; }
       #cropper-container #main-section .image-container .cropper-container:hover .slider, #cropper-container #main-section .image-container .cropper-container.active .slider {
@@ -137,7 +138,8 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        box-sizing: content-box; }
+        box-sizing: content-box;
+        background: #dfdfdf; }
         #cropper-container #main-section .image-container .image-item > div {
           width: 100%;
           height: 100%;
@@ -149,7 +151,7 @@
             position: absolute;
             top: 0;
             left: 0;
-            z-index: 1; }
+            z-index: 0; }
           #cropper-container #main-section .image-container .image-item > div > .hidden {
             display: none; }
         #cropper-container #main-section .image-container .image-item .lds-ring {

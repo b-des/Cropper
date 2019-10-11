@@ -62,11 +62,11 @@ export class MainComponent extends Component {
 
     onBorderChange(border) {
         if (border === 'none') {
-            $(`.crop-container.enabled`).find('.border-frame').css('border', 'none');
+            $(`.crop-container.enabled`).find('.border-frame').css('border', 'none').css('z-index',0);
             $(`.crop-container.enabled`).attr('data-border', 'none');
         } else {
             //$(`.crop-container.enabled`).css('border', `3px solid ${border}`);
-            $(`.crop-container.enabled`).find('.border-frame').css('border', `3px solid ${border}`);
+            $(`.crop-container.enabled`).find('.border-frame').css('border', `3px solid ${border}`).css('z-index', 99);
             $(`.crop-container.enabled`).attr('data-border', border);
         }
     }
@@ -108,8 +108,13 @@ export class MainComponent extends Component {
             this.changePhotoSize(target, this.size);
             target.cropper('update', {fitToContainer: this.framing === 'whole'});
             target.find('.border-frame').css('border', `3px solid ${target.attr('data-border')}`);
+            if(target.attr('data-border') !== 'none'){
+                target.find('.border-frame').css('z-index',99);
+            }else{
+                target.find('.border-frame').css('z-index',0);
+            }
         } else {
-            target.find('.border-frame').css('border', 'none');
+            target.find('.border-frame').css('border', 'none').css('z-index',0);
             target.cropper('reset');
             target.removeClass('enabled');
         }
@@ -153,6 +158,27 @@ export class MainComponent extends Component {
         }
     }
 
+    rotateImage(uid, deg){
+        let index = this.props.urls.findIndex(a => a.uid === uid);
+        $(`#crop-container-${uid}`).append('<div class="lds-ring"><div></div><div></div><div></div><div></div></div>');
+        axios.post(`${this.props.handlerUrl}/rotate`, {
+            url: this.props.urls[index].thumbnail || this.props.urls[index].url,
+            uid: uid,
+            deg: deg || 90,
+            dest: this.props.dest
+        }).then(response => {
+            console.log(response.data);
+            let target =  $(`#crop-container-${uid}`);
+            target.attr('data-rotate', response.data.deg >= 360 ? 0 : response.data.deg);
+            target.html('');
+            target.attr('data-src', `${response.data.filename}?v=${new Date().getTime()}`);
+            target.cropper('update');
+        }).catch(error => {
+            $(`#crop-container-${uid} .lds-ring`).remove();
+            console.log(error);
+        })
+    }
+
     onOrderClick() {
         let items = [];
         console.log(this.props.handlerUrl);
@@ -169,12 +195,13 @@ export class MainComponent extends Component {
                 url: this.props.urls[index].url,
                 crop: $(e).attr('data-crop') === 'true' ? {x: left, y: top, w: cropX, h: cropY} : false,
                 size: this.size,
-                dest: '',
+                dest: this.props.dest,
+                rotate: $(e).attr('data-rotate') || 0,
                 border: $(e).attr('data-border')
             };
             items.push(item);
 
-            axios.post(this.props.handlerUrl, item).then(response => {
+            axios.post(`${this.props.handlerUrl}/processing`, item).then(response => {
                 console.log(response.data);
             }).catch(error => {
                 console.log(error);
@@ -191,6 +218,17 @@ export class MainComponent extends Component {
 
         this.paginator.set('totalResult', this.props.urls.length);
          $('#pagination-bar').html(this.paginator.render());
+
+        let pagination = this.paginator.getPaginationData();
+        if(pagination.current === 1){
+          
+            let hidden = this.props.urls.slice(this.props.itemsPerPage).map((item, i) => {
+               return `#crop-container-${item.uid}`
+            });
+            console.log(hidden);
+            $(hidden.join(',')).hide();
+        }
+        console.log(this.paginator.getPaginationData());
     }
 
     generatePagination(){
@@ -241,7 +279,7 @@ export class MainComponent extends Component {
             });
         });
 
-        $('#main-section').html(items);
+
 
 
         $('#main-section').find(`.crop-container`).cropper({
@@ -316,6 +354,12 @@ export class MainComponent extends Component {
             this.removeItem(uid);
         });
 
+        $(document).on('click', '.image-container .rotate-item', (e) => {
+            let uid = $(e.target).closest('.image-container').find('.crop-container').attr('data-uid');
+            let deg = parseInt($(e.target).closest('.image-container').find('.crop-container').attr('data-rotate')) + 90;
+            this.rotateImage(uid, deg > 360 ? 90 : deg);
+        });
+
         $(document).on('change', '.image-container input[type=checkbox]', (e) => {
             this.onItemSelect($(e.target).closest('.image-container').find('.crop-container'), $(e.target).prop('checked'));
         });
@@ -332,7 +376,7 @@ export class MainComponent extends Component {
         });
 
         setTimeout(() => {
-            Scrollbar.init(document.querySelector('#main-section'))
+           // Scrollbar.init(document.querySelector('#main-section'))
         }, 1000);
         // const ps = new PerfectScrollbar('#main-section');
 

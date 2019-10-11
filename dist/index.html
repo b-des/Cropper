@@ -27,21 +27,30 @@
 <!-- Bootstrap core JavaScript -->
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
 <script>
+     imgs = [
+        {url:'https://images.pexels.com/photos/1236701/pexels-photo-1236701.jpeg'},
+        {thumbnail: 'https://cdn.pixabay.com/photo/2016/11/14/04/45/elephant-1822636__340.jpg'},
+        'https://images.pexels.com/photos/556416/pexels-photo-556416.jpeg',
+        'https://c4.wallpaperflare.com/wallpaper/410/867/750/vector-forest-sunset-forest-sunset-forest-wallpaper-thumb.jpg',
+        'https://rog.asus.com/media/1554200908315.jpg',
+        'https://cdn.guidingtech.com/media/assets/2019/07/Best-Star-Wars-HD-and-4K-Wallpapers-for-Phone-and-PC-9.jpg',
+        'https://esossl-a.akamaihd.net/assets/img/cms/media/56274c7523aff0fa1744819a554d7af4_the-halls-of-the-colossus_wallpaper-1920x1080.jpg',
+        'https://images3.alphacoders.com/675/675273.jpg',
+    ];
     function addPhoto(){
-        let imgs = [
-            {url:'https://images.pexels.com/photos/1236701/pexels-photo-1236701.jpeg'},
-            {thumbnail: 'https://cdn.pixabay.com/photo/2016/11/14/04/45/elephant-1822636__340.jpg'},
-            'https://images.pexels.com/photos/556416/pexels-photo-556416.jpeg',
-            'https://c4.wallpaperflare.com/wallpaper/410/867/750/vector-forest-sunset-forest-sunset-forest-wallpaper-thumb.jpg',
-            'https://rog.asus.com/media/1554200908315.jpg',
-            'https://cdn.guidingtech.com/media/assets/2019/07/Best-Star-Wars-HD-and-4K-Wallpapers-for-Phone-and-PC-9.jpg',
-            'https://esossl-a.akamaihd.net/assets/img/cms/media/56274c7523aff0fa1744819a554d7af4_the-halls-of-the-colossus_wallpaper-1920x1080.jpg',
-            'https://images3.alphacoders.com/675/675273.jpg',
-        ];
+
         c.addPhotos([imgs[Math.floor(Math.random()*((imgs.length-1)-0+1)+0)]])
     }
-    let c = new Cropper({container: 'app', handlerUrl: 'http://localhost:6770', saveOnRefresh: false});
-
+    let c = new Cropper({
+        container: 'app',
+        handlerUrl: 'http://localhost:6770',
+        dest: ['/home/dev50/Node-projects/cropper/dist','uploads'],
+        itemsPerPage:2,
+        saveOnRefresh: false
+    });
+    c.addPhotos([imgs[1]]);
+    c.addPhotos([imgs[2]]);
+    c.addPhotos([imgs[3]]);
 
     c.onOrderClick((items)=>{
         console.log((items));
