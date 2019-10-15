@@ -8,6 +8,7 @@ import {Scrollbars} from 'react-custom-scrollbars';
 import Scrollbar from "smooth-scrollbar";
 import pagination from 'pagination';
 import axios from 'axios';
+import Swal from 'sweetalert2';
 
 export class MainComponent extends Component {
 
@@ -20,49 +21,52 @@ export class MainComponent extends Component {
             height: '100%',
             urls: [],
             checkAll: false,
-            framing: 'whole'
+            framing: 'whole',
+            waiting: false,
+            progress: false
         };
         this.framing = 'whole';
         this.size = {width: 15, height: 10};
-
+        this.progress = 0;
         this.imageItemTemplate = new ImageItem().getHtml();
 
-        
-    }
 
-    goToPage(page) {
-        this.paginator.set('current', page);
-        $('#pagination-bar').html(this.paginator.render());
     }
 
 
+    /*Fire when changed size*/
     onFormatChange(size) {
         this.size = {width: size[1], height: size[0]};
         this.changePhotoSize($(`.crop-container.enabled`), this.size);
-        setTimeout(() => {
-            if (this.framing === 'cropp') {
-                $(`.crop-container.enabled`).cropper('update', {fitToContainer: false});
-            } else {
-                $(`.crop-container.enabled`).cropper('update', {fitToContainer: true});
-            }
-        }, 100);
+        $(`.image-container:visible .crop-container.enabled`).cropper('update', {fitToContainer: this.framing !== 'cropp'});
+        $(`.crop-container.enabled`).each((i, obj) => {
+            setTimeout(() => {
+                $(obj).cropper('update', {fitToContainer: this.framing !== 'cropp'})
+            }, 10)
+        });
     };
 
-    onFramingChange(framing) {
-
-        this.framing = framing;
-
-        if (this.framing === 'cropp') {
-            $(`.crop-container.enabled`).cropper('update', {fitToContainer: false});
-        } else {
-            $(`.crop-container.enabled`).cropper('update', {fitToContainer: true});
-        }
-
+    /*Fired on paper change*/
+    onPaperChange(paper) {
+        this.paper = paper;
     }
 
+    /*Fire when change cropping mode*/
+    onFramingChange(framing) {
+        this.framing = framing;
+        $(`.image-container:visible .crop-container.enabled`).cropper('update', {fitToContainer: this.framing !== 'cropp'});
+        $(`.crop-container.enabled`).each((i, obj) => {
+            setTimeout(() => {
+                $(obj).cropper('update', {fitToContainer: this.framing !== 'cropp'})
+            }, 10)
+        });
+    }
+
+    /*On change photo border*/
     onBorderChange(border) {
+        this.border = border;
         if (border === 'none') {
-            $(`.crop-container.enabled`).find('.border-frame').css('border', 'none').css('z-index',0);
+            $(`.crop-container.enabled`).find('.border-frame').css('border', 'none').css('z-index', 0);
             $(`.crop-container.enabled`).attr('data-border', 'none');
         } else {
             //$(`.crop-container.enabled`).css('border', `3px solid ${border}`);
@@ -72,21 +76,67 @@ export class MainComponent extends Component {
     }
 
 
+    /*Select/unselect all photos*/
     onSelectAllItems(checked) {
-        if (checked) {
+        let pagination = this.paginator.getPaginationData();
 
-            setTimeout(()=>{
-                $('.image-container .crop-container').addClass('enabled');
+        let visibleItems = this.props.urls.slice(pagination.fromResult - 1, pagination.toResult).map((item, i) => {
+            return `#${item.uid}`
+        });
+
+        let totalItems = $(`.crop-container`).length;
+        let k = 100 / totalItems;
+        if (totalItems >= 50)
+            $('#loader').show();
+
+
+        if (checked) {
+            $('.image-container .crop-container').addClass('enabled');
+            setTimeout(() => {
                 this.changePhotoSize($(`.crop-container.enabled`), this.size);
-                $(`.crop-container.enabled`).cropper('update', {fitToContainer: this.framing === 'whole'});
+                $(visibleItems.join(',')).find('.crop-container').cropper('update', {fitToContainer: this.framing === 'whole'});
                 $(`.crop-container.enabled`).find('.border-frame').css('border', `3px solid ${$(`.crop-container.enabled`).attr('data-border')}`);
-            }, 100);
+                if (this.border)
+                    $(`.crop-container.enabled`).find('.border-frame').css('border', `3px solid ${this.border}`);
+            }, 10);
+
+
+            console.log(k);
+            $(`.crop-container.enabled`).each((i, obj) => {
+                setTimeout(() => {
+                    // this.setState(this.state);
+
+                    if (i + 1 >= totalItems) {
+                        $('#loader').hide();
+                    }
+                    $(obj).cropper('update', {fitToContainer: this.framing === 'whole'})
+                }, 10)
+            });
+            //setTimeout(() => { $(`.crop-container.enabled`).cropper('update', {fitToContainer: this.framing === 'whole'});}, 1000)
 
         } else {
-            setTimeout(()=>{
-                $(`.crop-container.enabled`).css({width: '100%', height: '100%'}).cropper('reset');
-                $('.image-container .crop-container').removeClass('enabled');
-            }, 100);
+            $('.image-container .crop-container').removeClass('enabled');
+            /*  setTimeout(() => {
+                  $('.image-container:visible .crop-container.enabled').css({
+                      width: '100%',
+                      height: '100%'
+                  }).cropper('reset');
+              }, 10);*/
+
+
+            $(`.crop-container:not(.enabled)`).each((i, obj) => {
+                setTimeout(() => {
+                    if (i + 1 >= totalItems) {
+                        $('#loader').hide();
+                    }
+                    $(obj).cropper('reset')
+                }, 10)
+            });
+
+            $(visibleItems.join(',')).find('.crop-container').css({
+                width: '100%',
+                height: '100%'
+            }).cropper('reset');
 
             $(`.crop-container.enabled`).find('.border-frame').css('border', 'none');
         }
@@ -95,6 +145,7 @@ export class MainComponent extends Component {
         $('#cropper-toolbar .selected-items').html($('.image-container input[type=checkbox]:checked').length);
     }
 
+    /*Select/unselect single item*/
     onItemSelect(target, checked) {
         let checkAll = false;
         $('.image-container input[type=checkbox]').each(function () {
@@ -108,13 +159,13 @@ export class MainComponent extends Component {
             this.changePhotoSize(target, this.size);
             target.cropper('update', {fitToContainer: this.framing === 'whole'});
             target.find('.border-frame').css('border', `3px solid ${target.attr('data-border')}`);
-            if(target.attr('data-border') !== 'none'){
-                target.find('.border-frame').css('z-index',99);
-            }else{
-                target.find('.border-frame').css('z-index',0);
+            if (this.border) {
+                target.find('.border-frame').css('border', `3px solid ${this.border}`);
+            } else {
+                target.find('.border-frame').css('z-index', 0);
             }
         } else {
-            target.find('.border-frame').css('border', 'none').css('z-index',0);
+            target.find('.border-frame').css('border', 'none').css('z-index', 0);
             target.cropper('reset');
             target.removeClass('enabled');
         }
@@ -123,6 +174,7 @@ export class MainComponent extends Component {
         $('#cropper-toolbar .selected-items').html($('.image-container input[type=checkbox]:checked').length);
     }
 
+    /*Calculate sizes for photo*/
     changePhotoSize(container, size) {
         let containerSize = {width: 280, height: 180};
         if (size.width === size.height) {
@@ -145,20 +197,47 @@ export class MainComponent extends Component {
 
     }
 
+    /*Delete item*/
     removeItem(uid) {
-        const index = this.props.urls.findIndex(a => a.uid === uid);
-        if (index === -1) return;
-        this.props.urls.splice(index, 1);
-        $(`#crop-container-${uid}`).cropper('destroy');
-        $(`#crop-container-${uid}`).closest('.image-container').remove();
-        this.paginator.set('totalResult', this.props.urls.length);
-        $('#pagination-bar').html(this.paginator.render());
-        if(this.props.urls.length === 0){
-            $('#main-section .placeholder').show();
-        }
+
+        let confirmedRemove = () => {
+            const index = this.props.urls.findIndex(a => a.uid === uid);
+            if (index === -1) return;
+            this.props.urls.splice(index, 1);
+            $(`#crop-container-${uid}`).cropper('destroy');
+            $(`#crop-container-${uid}`).closest('.image-container').remove();
+            this.paginator.set('totalResult', this.props.urls.length);
+            $('#pagination-bar').html(this.paginator.render());
+            if (this.props.urls.length === 0) {
+                $('#main-section .placeholder').show();
+            }
+
+            let pagination = this.paginator.getPaginationData();
+
+            let visible = this.props.urls.slice(pagination.fromResult - 1, pagination.toResult).map((item, i) => {
+                return `#${item.uid}`
+            });
+
+            $('.image-container').hide();
+            $(visible.join(',')).show().find('.crop-container').cropper('update').cropper('update');
+        };
+
+        Swal.fire({
+            title: 'Вы уверены?',
+            text: 'Удалить фото?',
+            type: 'question',
+            showCancelButton: true,
+            cancelButtonText: 'Отмена',
+            confirmButtonText: 'Удалить'
+        }).then(res => {
+            if (res.value) {
+                confirmedRemove();
+            }
+        })
     }
 
-    rotateImage(uid, deg){
+    /*Rotate image*/
+    rotateImage(uid, deg) {
         let index = this.props.urls.findIndex(a => a.uid === uid);
         $(`#crop-container-${uid}`).append('<div class="lds-ring"><div></div><div></div><div></div><div></div></div>');
         axios.post(`${this.props.handlerUrl}/rotate`, {
@@ -168,7 +247,7 @@ export class MainComponent extends Component {
             dest: this.props.dest
         }).then(response => {
             console.log(response.data);
-            let target =  $(`#crop-container-${uid}`);
+            let target = $(`#crop-container-${uid}`);
             target.attr('data-rotate', response.data.deg >= 360 ? 0 : response.data.deg);
             target.html('');
             target.attr('data-src', `${response.data.filename}?v=${new Date().getTime()}`);
@@ -179,59 +258,106 @@ export class MainComponent extends Component {
         })
     }
 
+    /*Fire when clicked ORDER button*/
     onOrderClick() {
         let items = [];
-        console.log(this.props.handlerUrl);
-        $('#cropper-container .image-item > div.enabled').each((i, e) => {
-            // console.log(e);
-            let left = 100 * Math.abs(parseFloat($(e).find('img').css('left'))) / parseFloat($(e).find('img').css('width')) | 0;
-            let top = 100 * Math.abs(parseFloat($(e).find('img').css('top'))) / parseFloat($(e).find('img').css('height')) | 0;
-            let cropX = 100 * (parseFloat($(e).css('width')) + left) / parseFloat($(e).find('img').css('width'));
-            let cropY = 100 * (parseFloat($(e).css('height')) + top) / parseFloat($(e).find('img').css('height'));
 
-            let index = this.props.urls.findIndex(a => a.uid === $(e).attr('data-uid'));
+        $('#cropper-container .image-item > div').each((i, e) => {
 
             let item = {
-                url: this.props.urls[index].url,
-                crop: $(e).attr('data-crop') === 'true' ? {x: left, y: top, w: cropX, h: cropY} : false,
+                url: this.props.urls[i].url,
+                thumbnail: this.props.urls[i].thumbnail || this.props.urls[i].url,
                 size: this.size,
                 dest: this.props.dest,
-                rotate: $(e).attr('data-rotate') || 0,
-                border: $(e).attr('data-border')
+                paper: this.paper || '',
+                original: true
             };
-            items.push(item);
+            if ($(e).hasClass('enabled')) {
 
-            axios.post(`${this.props.handlerUrl}/processing`, item).then(response => {
+                let left = 100 * Math.abs(parseFloat($(e).find('img').css('left'))) / parseFloat($(e).find('img').css('width')) || 0;
+                let top = 100 * Math.abs(parseFloat($(e).find('img').css('top'))) / parseFloat($(e).find('img').css('height')) || 0;
+                let cropX = 100 * (parseFloat($(e).css('width'))) / parseFloat($(e).find('img').css('width'));
+                let cropY = 100 * (parseFloat($(e).css('height'))) / parseFloat($(e).find('img').css('height'));
+
+
+                item = Object.assign(item, {
+                    crop: $(e).attr('data-crop') === 'true' ? {x: left, y: top, w: cropX, h: cropY} : false,
+                    rotate: $(e).attr('data-rotate') || 0,
+                    border: $(e).attr('data-border') || '',
+                    zoom: $(e).attr('data-zoom'),
+                    original: false
+                });
+
+            }
+
+            if(!this.props.immediate){
+                item = Object.assign(item, {
+                    top: parseFloat($(e).find('img').css('top')),
+                    left: parseFloat($(e).find('img').css('left')),
+                });
+            }
+
+            items.push(item);
+        });
+
+        if (this.props.immediate) {
+            axios.post(`${this.props.handlerUrl}/processing`, items).then(response => {
                 console.log(response.data);
+                this.props.onOrderClick(response.data);
             }).catch(error => {
                 console.log(error);
-            })
-
-        });
-        this.props.onOrderClick(items);
+            });
+        }else{
+            this.props.onOrderClick(items.reverse());
+        }
     }
 
+    /*Fire when add photo*/
     onPhotoAdded() {
-        if(this.props.urls.length === 1){
+        if (this.props.urls.length === 1) {
             $('#main-section .placeholder').hide();
         }
 
         this.paginator.set('totalResult', this.props.urls.length);
-         $('#pagination-bar').html(this.paginator.render());
+        $('#pagination-bar').html(this.paginator.render());
 
         let pagination = this.paginator.getPaginationData();
-        if(pagination.current === 1){
-          
+        if (pagination.current === 1) {
+
             let hidden = this.props.urls.slice(this.props.itemsPerPage).map((item, i) => {
-               return `#crop-container-${item.uid}`
+                return `#${item.uid}`
             });
-            console.log(hidden);
+
             $(hidden.join(',')).hide();
+        } else {
+            let visible = this.props.urls.slice(pagination.fromResult - 1, pagination.toResult).map((item, i) => {
+                return `#${item.uid}`
+            });
+
+            $('.image-container').hide();
+            $(visible.join(',')).show().find('.crop-container').cropper('update');
         }
-        console.log(this.paginator.getPaginationData());
+        tippy('[data-tippy-content]', {
+            'theme': 'light'
+        });
     }
 
-    generatePagination(){
+    /*Pagination*/
+    goToPage(page) {
+        this.paginator.set('current', page);
+        $('#pagination-bar').html(this.paginator.render());
+        let pagination = this.paginator.getPaginationData();
+
+        let visible = this.props.urls.slice(pagination.fromResult - 1, pagination.toResult).map((item, i) => {
+            return `#${item.uid}`
+        });
+
+        $('.image-container').hide();
+        $(visible.join(',')).show().find('.crop-container').cropper('update');
+    }
+
+    /*Create pagination instance*/
+    generatePagination() {
         this.paginator = new pagination.TemplatePaginator({
             prelink: '', current: 1, rowsPerPage: this.props.itemsPerPage,
             totalResult: this.props.urls.length, slashSeparator: true,
@@ -280,8 +406,6 @@ export class MainComponent extends Component {
         });
 
 
-
-
         $('#main-section').find(`.crop-container`).cropper({
             createUI: false,
             fitToContainer: true,
@@ -310,12 +434,17 @@ export class MainComponent extends Component {
         });
 
         let html = <div id="cropper-container">
+            <div className="spinner-container" id="loader" style="display: none">
+                <div className="spinner"></div>
+            </div>
 
             <div id="toolbar">
                 <ToolbarComponent sizes={this.props.sizes}
+                                  progress={this.progress}
+                                  waiting={this.state.waiting}
                                   onSelectChange={(state) => this.onSelectAllItems(state)}
                                   onSizeChange={size => this.onFormatChange.call(this, size)}
-                                  onPaperChange={(val) => console.log(val)}
+                                  onPaperChange={(val) => this.onPaperChange.call(this, val)}
                                   onFramingChange={val => this.onFramingChange.call(this, val)}
                                   onBorderChange={(val) => this.onBorderChange.call(this, val)}
                                   onOrderClick={(val) => this.onOrderClick()}
@@ -335,13 +464,12 @@ export class MainComponent extends Component {
             </div>
             <div id="tippy-content-3" style="display: none;">
                 <strong>Фото низкого качества(current).</strong>
-                <div>Советуем заменить на фото с высоким разрешением(минимум min).</div>
+                <div>Советуем заменить на фото с более высоким разрешением(минимум min).</div>
             </div>
         </div>;
         return html;
 
     }
-
 
 
     componentDidMount() {
@@ -376,9 +504,9 @@ export class MainComponent extends Component {
         });
 
         setTimeout(() => {
-           // Scrollbar.init(document.querySelector('#main-section'))
+            // Scrollbar.init(document.querySelector('#main-section'))
         }, 1000);
-        // const ps = new PerfectScrollbar('#main-section');
+
 
         this.generatePagination();
 
@@ -388,8 +516,9 @@ export class MainComponent extends Component {
         });
 
         $('#pagination-bar').html(this.paginator.render());
-        
+
+
     }
-    
-    
+
+
 }

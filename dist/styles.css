@@ -4,10 +4,65 @@
   padding: 0px;
   width: 70%;
   margin: 100px auto;
-  border: 1px solid #8faaa3; }
+  border: 1px solid #8faaa3;
+  position: relative; }
   @media screen and (max-width: 768px) {
     #cropper-container {
       width: 100%; } }
+  #cropper-container .spinner-container {
+    position: absolute;
+    top: 61px;
+    width: 100%;
+    background: #bdd0c178;
+    z-index: 9;
+    height: calc(100% - 61px); }
+  #cropper-container .spinner {
+    position: relative;
+    top: 20%;
+    left: 0;
+    z-index: 999;
+    right: 0;
+    margin: auto;
+    box-sizing: border-box;
+    background-clip: padding-box;
+    width: 200px;
+    height: 200px;
+    border-radius: 100px;
+    border: 4px solid rgba(87, 87, 87, 0.34);
+    -webkit-mask: linear-gradient(rgba(0, 0, 0, 0.1), #000000 90%);
+    transform-origin: 50% 60%;
+    transform: perspective(200px) rotateX(66deg);
+    animation: spinner-wiggle 1.2s infinite; }
+  #cropper-container .spinner:before,
+  #cropper-container .spinner:after {
+    content: "";
+    position: absolute;
+    margin: -4px;
+    box-sizing: inherit;
+    width: inherit;
+    height: inherit;
+    border-radius: inherit;
+    opacity: .05;
+    border: inherit;
+    border-color: transparent;
+    animation: spinner-spin 1.2s cubic-bezier(0.6, 0.2, 0, 0.8) infinite, spinner-fade 1.2s linear infinite; }
+  #cropper-container .spinner:before {
+    border-top-color: #66e6ff; }
+  #cropper-container .spinner:after {
+    border-top-color: #f0db75;
+    animation-delay: 0.3s; }
+
+@keyframes spinner-spin {
+  100% {
+    transform: rotate(360deg); } }
+
+@keyframes spinner-fade {
+  20% {
+    opacity: .1; }
+  40% {
+    opacity: 1; }
+  60% {
+    opacity: .1; } }
   #cropper-container #toolbar {
     padding: 15px;
     border: none;
@@ -18,19 +73,42 @@
       display: inline-block; }
       #cropper-container #toolbar .select-items > *.pretty {
         margin-left: 5px; }
+    @media screen and (max-width: 768px) {
+      #cropper-container #toolbar .bp3-navbar-group {
+        display: flex;
+        flex-wrap: wrap;
+        flex-direction: row;
+        justify-content: space-between; } }
     #cropper-container #toolbar .bp3-navbar-group > * {
       margin: 0 5px;
       display: inline-block; }
       @media screen and (max-width: 768px) {
+        #cropper-container #toolbar .bp3-navbar-group > *:not(.select-items) > * {
+          width: 100%; } }
+      @media screen and (max-width: 768px) {
         #cropper-container #toolbar .bp3-navbar-group > * {
-          width: 100%;
-          margin: 10px 0; } }
+          margin: 10px;
+          display: flex;
+          flex-basis: calc(50% - 20px);
+          text-align: center; } }
+    @media screen and (max-width: 768px) {
+      #cropper-container #toolbar .bp3-navbar-group > .select-items {
+        flex-basis: 100%;
+        display: block; } }
+    @media screen and (max-width: 768px) {
+      #cropper-container #toolbar .bp3-navbar-group > .btn {
+        flex-basis: 100%;
+        display: block; } }
     #cropper-container #toolbar .dropdown.size .dropdown-menu.show {
       display: flex;
       width: 400px;
-      flex-wrap: wrap; }
+      flex-wrap: wrap;
+      max-width: 300px; }
       #cropper-container #toolbar .dropdown.size .dropdown-menu.show > * {
         width: 30%; }
+    #cropper-container #toolbar .progressbar-container {
+      background: rgba(0, 0, 0, 0.075);
+      width: 200px; }
   #cropper-container #main-section {
     border-radius: 0;
     background: #fff;
@@ -49,7 +127,8 @@
       text-align: center; }
     @media screen and (max-width: 768px) {
       #cropper-container #main-section {
-        max-height: 500px; } }
+        max-height: 500px;
+        justify-content: center; } }
     #cropper-container #main-section .scroll-content {
       display: flex;
       flex-wrap: wrap;
@@ -113,6 +192,10 @@
         #cropper-container #main-section .image-container .cropper-container .ui-slider .ui-slider-handle {
           width: 15px;
           height: 15px; }
+          @media screen and (max-width: 768px) {
+            #cropper-container #main-section .image-container .cropper-container .ui-slider .ui-slider-handle {
+              width: 20px;
+              height: 20px; } }
       #cropper-container #main-section .image-container .cropper-container .cross-drag {
         position: absolute;
         top: 50%;
@@ -129,6 +212,14 @@
         z-index: 101;
         cursor: all-scroll;
         font-size: 10px; }
+        @media screen and (max-width: 768px) {
+          #cropper-container #main-section .image-container .cropper-container .cross-drag {
+            width: 50px;
+            height: 50px;
+            margin-left: -25px;
+            margin-top: -25px;
+            line-height: 50px;
+            font-size: 14px; } }
       #cropper-container #main-section .image-container .image-item {
         position: relative;
         overflow: hidden;
@@ -139,7 +230,7 @@
         justify-content: center;
         align-items: center;
         box-sizing: content-box;
-        background: #dfdfdf; }
+        background: #bdc0c2; }
         #cropper-container #main-section .image-container .image-item > div {
           width: 100%;
           height: 100%;
@@ -183,6 +274,9 @@
     border: none;
     position: absolute;
     top: -6px; }
+    @media screen and (max-width: 768px) {
+      #cropper-container .cropper-container .ui-state-default, #cropper-container .cropper-container .ui-widget-content .ui-state-default, #cropper-container .cropper-container .ui-widget-header .ui-state-default {
+        top: -9px; } }
   #cropper-container .cropper-container .ui-widget.ui-widget-content {
     border: none; }
   #cropper-container .cropper-container .ui-slider-horizontal .ui-slider-range {

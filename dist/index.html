@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" crossorigin="anonymous">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -19,6 +18,7 @@
 
 <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
 <script src="cropper.jquery.js"></script>
 <script src="main.js"></script>
 
@@ -29,7 +29,7 @@
 <script>
      imgs = [
         {url:'https://images.pexels.com/photos/1236701/pexels-photo-1236701.jpeg'},
-        {thumbnail: 'https://cdn.pixabay.com/photo/2016/11/14/04/45/elephant-1822636__340.jpg'},
+        {url: 'https://cdn.pixabay.com/photo/2016/11/14/04/45/elephant-1822636__340.jpg', thumbnail: 'https://cdn.pixabay.com/photo/2016/11/14/04/45/elephant-1822636__340.jpg'},
         'https://images.pexels.com/photos/556416/pexels-photo-556416.jpeg',
         'https://c4.wallpaperflare.com/wallpaper/410/867/750/vector-forest-sunset-forest-sunset-forest-wallpaper-thumb.jpg',
         'https://rog.asus.com/media/1554200908315.jpg',
@@ -44,35 +44,30 @@
     let c = new Cropper({
         container: 'app',
         handlerUrl: 'http://localhost:6770',
-        dest: ['/home/dev50/Node-projects/cropper/dist','uploads'],
+        dest: ['C:/\Node/\Cropper/\dist','uploads/12334'],
+        immediate: true,
         itemsPerPage:2,
         saveOnRefresh: false
     });
-    c.addPhotos([imgs[1]]);
-    c.addPhotos([imgs[2]]);
-    c.addPhotos([imgs[3]]);
+   // c.addPhotos([imgs[1], imgs[2]]);
+    //c.addPhotos([imgs[2]]);
 
-    c.onOrderClick((items)=>{
-        console.log((items));
+
+    let items = [];
+    for(let i =0; i <= 0; i ++ ){
+        items.push(imgs[Math.floor(Math.random()*((imgs.length-1)-0+1)+0)]);
+    }
+
+     c.addPhotos([imgs[6]]);
+     c.addPhotos([imgs[7]]);
+     c.addPhotos(items);
+     //c.addPhotos([{"url":"https://images.pexels.com/photos/1236701/pexels-photo-1236701.jpeg","thumbnail":"https://images.pexels.com/photos/1236701/pexels-photo-1236701.jpeg","size":{"width":15,"height":10},"dest":["C:/Node/Cropper/dist","uploads/12334"],"paper":"","original":false,"crop":{"x":18,"y":22,"w":67.94055201698514,"h":31.768498859793976},"rotate":0,"border":"","zoom":"1.5699999999999998","top":-143,"left":-77}]);
+  /* c.process([{"url":"https://images3.alphacoders.com/675/675273.jpg","crop":{"x":0,"y":4.87685930260912,"w":74.07407407407408,"h":87.78346744696415},"size":{"width":15,"height":10},"dest":["C:/Node/Cropper/dist","uploads/12334"],"border":"","rotate":0,"paper":""}], (r) => {
+       console.log(r);
+   });*/
+    c.onImagesProcessed((items)=>{
+        console.log(JSON.stringify(items));
     });
-    setTimeout(()=>{
-        c.setHandlerUrl('localhost:6770');
 
-    },4000);
-    $(document).ready(function () {
-        //new CropperT('.crop-container', {});
-
-
-
-        //$(`.crop-container`).cropper('test');
-
-
-
-        setTimeout(()=>{
-
-        },1000);
-        $('[data-toggle="tooltip"]').tooltip()
-
-    });
 </script>
 </html>

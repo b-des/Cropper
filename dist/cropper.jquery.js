@@ -15,7 +15,7 @@
                     initialZoom: 0,
                     scaleToFill: true,
                     zoomFactor: 100,
-                    fitToContainer: false,
+                    fitToContainer: true,
                     createUI: true,
                     initilized: false,
                     onZoom: null,
@@ -39,10 +39,10 @@
                     tmpImage.src = src;
                     tmpImage.onload = function () {
                         that.options.onLoad(that.obj.attr('data-uid'), this.width, this.height);
-                        that.obj.html(this);
+                        that.obj.append(this);
                         that.obj.append('<div class="border-frame"></div>');
 
-                        setTimeout(methods.initCropper.bind(that), 10);
+                        setTimeout(methods.initCropper.bind(that), 50);
                     };
 
                 } else {
@@ -60,10 +60,13 @@
             this.img = this.obj.find('img');
             this.imgInitW = this.imgW = this.img.width();
             this.imgInitH = this.imgH = this.img.height();
-            this.obj.get(0).className += ' cropper-container';
+            if (!this.obj.hasClass('cropper-container'))
+                this.obj.addClass('cropper-container')
 
-            methods.zoomByDelta.call(this, -this.imgInitW);
-            methods.zoomByDelta.call(this, this.options.initialZoom);
+            if (this.imgInitH && this.imgInitW) {
+                methods.zoomByDelta.call(this, -this.imgInitW);
+                methods.zoomByDelta.call(this, this.options.initialZoom);
+            }
 
             //if(!this.options.left){
             this.options.left = this.obj.attr('data-left');
@@ -84,7 +87,8 @@
             }
 
 
-            if (this.options.left && this.options.left) {
+            if (this.options.top || this.options.left) {
+
                 this.img.css({
                     'left': `${parseFloat(this.options.left)}px`,
                     'top': `${parseFloat(this.options.top)}px`,
@@ -303,14 +307,16 @@
                     methods.normalizeOffset.call(that);
                     that.obj.attr('data-top', parseInt(that.img.css('top')));
                     that.obj.attr('data-left', parseInt(that.img.css('left')));
-                    that.options.onImgDrag.call(that, that.obj.attr('data-uid'), parseInt(that.img.css('left')), parseInt(that.img.css('top')));
+                    if (that.options.onImgDrag)
+                        that.options.onImgDrag.call(that, that.obj.attr('data-uid'), parseInt(that.img.css('left')), parseInt(that.img.css('top')));
 
                 });
 
             });
 
-            $('body').on("mouseup", function () {
+            $('body').on("mouseup touchend", function () {
                 $('body').off("mousemove");
+                $('body').off("touchmove");
             })
         },
         zoomByPercent: function (value) {
@@ -501,8 +507,8 @@
                     this.options = $.extend(this.options, options);
                     this.options.createUI = true;
                 }
-                this.options.initialZoom = parseFloat(this.obj.attr('data-zoom'));
 
+                this.options.initialZoom = parseFloat(this.obj.attr('data-zoom'));
 
                 if (!this.obj.find('img').length) {
                     let src = this.obj.attr('data-src');

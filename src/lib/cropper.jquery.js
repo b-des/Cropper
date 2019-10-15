@@ -15,25 +15,38 @@
                     initialZoom: 0,
                     scaleToFill: true,
                     zoomFactor: 100,
-                    fitToContainer: false,
+                    fitToContainer: true,
                     createUI: true,
                     initilized: false,
-                    onZoom: null
+                    onZoom: null,
+                    onLoad: null
                 }, options);
-
 
 
                 let src = this.obj.attr('data-src');
                 let that = this;
 
+
                 if (!this.obj.find('img').length) {
                     var img = $('<img src="' + src + '">');
-                    this.obj.html(img);
-                    img.on('load', function () {
-                        setTimeout(methods.initCropper.bind(that),100);
+
+                    //this.obj.html(img);
+                    img.on('load', () => {
+                        //setTimeout(methods.initCropper.bind(this),100);
                     });
+
+                    let tmpImage = new Image();
+                    tmpImage.src = src;
+                    tmpImage.onload = function () {
+                        that.options.onLoad(that.obj.attr('data-uid'), this.width, this.height);
+                        that.obj.append(this);
+                        that.obj.append('<div class="border-frame"></div>');
+
+                        setTimeout(methods.initCropper.bind(that), 50);
+                    };
+
                 } else {
-                    methods.initCropper.call(that)
+                    methods.initCropper.call(this)
                 }
 
 
@@ -47,32 +60,34 @@
             this.img = this.obj.find('img');
             this.imgInitW = this.imgW = this.img.width();
             this.imgInitH = this.imgH = this.img.height();
-            this.obj.get(0).className += ' cropper-container';
+            if(!this.obj.hasClass('cropper-container'))
+                this.obj.addClass('cropper-container')
 
-            methods.zoomByDelta.call(this, -this.imgInitW);
-            methods.zoomByDelta.call(this, this.options.initialZoom);
+            if(this.imgInitH && this.imgInitW){
+                methods.zoomByDelta.call(this, -this.imgInitW);
+                methods.zoomByDelta.call(this, this.options.initialZoom);
+            }
 
             //if(!this.options.left){
-            this.options.left =  this.obj.attr('data-left');
+            this.options.left = this.obj.attr('data-left');
             // }
 
             // if(!this.options.top){
-            this.options.top =  this.obj.attr('data-top');
+            this.options.top = this.obj.attr('data-top');
             // }
 
 
             //if(!this.options.initialZoom){
-            this.options.initialZoom =  this.obj.attr('data-zoom') || 0;
+            this.options.initialZoom = this.obj.attr('data-zoom') || 0;
             // }
 
 
-
-            if(this.options.initialZoom > 0){
+            if (this.options.initialZoom > 0) {
                 methods.zoomByPercent.call(this, this.options.initialZoom);
             }
 
 
-            if(this.options.left && this.options.left){
+            if (this.options.left && this.options.left) {
                 this.img.css({
                     'left': `${parseFloat(this.options.left)}px`,
                     'top': `${parseFloat(this.options.top)}px`,
@@ -80,7 +95,7 @@
                 });
                 methods.normalizeOffset.call(this);
 
-            }else{
+            } else {
                 this.img.css({
                     'left': -(this.imgW - this.objW) / 2,
                     'top': -(this.imgH - this.objH) / 2,
@@ -108,14 +123,14 @@
             let pratio = this.obj.width() / this.obj.height();
 
             this.outputDiv.find(".slider").slider('destroy');
-            this.outputDiv.find('*').not('img').remove();
+            this.outputDiv.find('*').not('img, .border-frame').remove();
 
             if (ratio > pratio) {
-                html += '<div class="cut-line line-left"  data-tippy-placement="left"> </div>';
-                html += '<div class="cut-line line-right"  data-tippy-placement="right"> </div>';
+                // html += '<div class="cut-line line-left"  data-tippy-placement="left"> </div>';
+                //html += '<div class="cut-line line-right"  data-tippy-placement="right"> </div>';
             } else {
-                html += '<div class="cut-line line-top" data-tippy-placement="top"> </div>';
-                html += '<div class="cut-line line-bottom"  data-tippy-placement="bottom"> </div>';
+                // html += '<div class="cut-line line-top" data-tippy-placement="top"> </div>';
+                //html += '<div class="cut-line line-bottom"  data-tippy-placement="bottom"> </div>';
             }
 
             html += '<div class="cross-drag"><i class="fa fa-arrows-alt"></i></div>';
@@ -124,11 +139,11 @@
             let that = this;
 
             this.outputDiv.find(".slider").slider({
-                value: this.options.initialZoom*10,
+                value: this.options.initialZoom * 10,
                 min: 10,
                 max: 30,
-                step:0.1,
-                start: function( event, ui ) {
+                step: 0.1,
+                start: function (event, ui) {
                     that.obj.attr('data-top', parseFloat(that.img.css('top')));
                     that.obj.attr('data-left', parseFloat(that.img.css('left')));
                 },
@@ -138,8 +153,6 @@
                     methods.zoomByPercent.call(that, ui.value / 10);
                 }
             });
-
-
         },
 
         showUi() {
@@ -151,6 +164,7 @@
         },
 
         fitToContainer: function (fit) {
+            this.obj.attr('data-crop', !fit)
             if (fit) {
                 let css;
                 let html = '';
@@ -186,16 +200,18 @@
                 this.outputDiv.find(".slider").remove();
                 this.outputDiv.find(".cross-drag").remove();
                 this.outputDiv.find(".cut-line").remove();
-                tippy('.offset-line', {content: document.getElementById('tippy-content-2').innerHTML, theme: 'light',});
+
             } else {
                 methods.showUi.call(this);
             }
 
+            tippy('.cut-line', {content: document.getElementById('tippy-content-1').innerHTML, theme: 'light',});
+            tippy('.offset-line', {content: document.getElementById('tippy-content-2').innerHTML, theme: 'light',});
 
         },
 
 
-        normalizeOffset:function(){
+        normalizeOffset: function () {
             if (this.objH < this.imgH) {
                 if (parseInt(this.img.css('top')) > 0) {
                     this.img.css('top', 0);
@@ -290,13 +306,15 @@
                     methods.normalizeOffset.call(that);
                     that.obj.attr('data-top', parseInt(that.img.css('top')));
                     that.obj.attr('data-left', parseInt(that.img.css('left')));
-                    that.options.onImgDrag.call(that, that.obj.attr('data-uid'), parseInt(that.img.css('left')), parseInt(that.img.css('top')));
+                    if (that.options.onImgDrag)
+                        that.options.onImgDrag.call(that, that.obj.attr('data-uid'), parseInt(that.img.css('left')), parseInt(that.img.css('top')));
 
                 });
 
             });
 
-            $('body').on("mouseup", function () {
+            $('body').on("mouseup touchend", function () {
+                $('body').off("mousemove");
                 $('body').off("mousemove");
             })
         },
@@ -484,10 +502,32 @@
 
         update: function (options) {
             return this.each(function () {
-                this.options = $.extend(this.options, options);
+                if (options) {
+                    this.options = $.extend(this.options, options);
+                    this.options.createUI = true;
+                }
+
                 this.options.initialZoom = parseFloat(this.obj.attr('data-zoom'));
-                this.options.createUI = true;
-                methods.initCropper.call(this);
+
+                if (!this.obj.find('img').length) {
+                    let src = this.obj.attr('data-src');
+                    let that = this;
+                    let tmpImage = new Image();
+                    tmpImage.src = src;
+                    tmpImage.onload = function () {
+                        that.options.onLoad(that.obj.attr('data-uid'), this.width, this.height);
+                        that.obj.html(this);
+
+                        that.obj.append('<div class="border-frame"></div>');
+                        if (that.obj.hasClass('enabled'))
+                            that.obj.find('.border-frame').css('border', `3px solid ${that.obj.attr('data-border')}`);
+
+                        setTimeout(methods.initCropper.bind(that), 10);
+                    };
+
+                } else {
+                    methods.initCropper.call(this)
+                }
 
                 /*$(this).find('.slider, .cross-drag, .cut-line, .offset-line').remove();
                 methods.zoomByDelta.call(this, -this.imgInitW);
@@ -509,7 +549,7 @@
                 methods.zoomByDelta.call(this, -this.imgInitW);
                 methods.zoomByDelta.call(this, this.options.initialZoom);
 
-                this.outputDiv.find('*').not('img').remove();
+                this.outputDiv.find('*').not('img, .border-frame').remove();
                 this.options.createUI = false;
                 this.options.fitToContainer = true;
                 methods.initCropper.call(this);
