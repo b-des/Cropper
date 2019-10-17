@@ -54,33 +54,22 @@
         handlerUrl: 'http://localhost:1234',
         dest: ['C:/\Node/\Cropper/\dist', 'uploads/12334'],
         immediate: true,
-        itemsPerPage: 8,
-        saveOnRefresh: false
+        itemsPerPage: 8
     });
-    // c.addPhotos([imgs[1], imgs[2]]);
-    //c.addPhotos([imgs[2]]);
-
 
     let items = [];
     for (let i = 0; i <= 10; i++) {
         items.push(imgs[Math.floor(Math.random() * ((imgs.length - 1) - 0 + 1) + 0)]);
     }
 
-   // c.addPhotos([imgs[5]]);
-   // c.addPhotos([imgs[6]]);
-    //c.addPhotos([imgs[7]]);
     c.addPhotos(items);
-    //c.addPhotos([{"url":"https://cdn.guidingtech.com/media/assets/2019/07/Best-Star-Wars-HD-and-4K-Wallpapers-for-Phone-and-PC-9.jpg","thumbnail":"https://cdn.guidingtech.com/media/assets/2019/07/Best-Star-Wars-HD-and-4K-Wallpapers-for-Phone-and-PC-9.jpg","size":{"width":15,"height":10},"dest":["C:/Node/Cropper/dist","uploads/12334"],"paper":"","crop":{"x":13.768115942028984,"y":7.06164144992676,"w":72.46376811594203,"h":85.88482844505518},"original":false,"rotate":0,"border":"white","zoom":"1.3800000000000001","top":-14.8,"left":-51.3},{"url":"https://esossl-a.akamaihd.net/assets/img/cms/media/56274c7523aff0fa1744819a554d7af4_the-halls-of-the-colossus_wallpaper-1920x1080.jpg","thumbnail":"https://esossl-a.akamaihd.net/assets/img/cms/media/56274c7523aff0fa1744819a554d7af4_the-halls-of-the-colossus_wallpaper-1920x1080.jpg","size":{"width":15,"height":10},"dest":["C:/Node/Cropper/dist","uploads/12334"],"paper":"","crop":false,"original":true,"top":"","left":""},{"url":"https://images3.alphacoders.com/675/675273.jpg","thumbnail":"https://images3.alphacoders.com/675/675273.jpg","size":{"width":15,"height":10},"dest":["C:/Node/Cropper/dist","uploads/12334"],"paper":"","crop":{"x":9.491903964265774,"y":0,"w":50.25125628140704,"h":59.55669963240281},"original":false,"rotate":0,"border":"white","zoom":"1.9899999999999998","top":0,"left":-51}]);
-    //c.addPhotos([{"url":"https://images.pexels.com/photos/1236701/pexels-photo-1236701.jpeg","thumbnail":"https://images.pexels.com/photos/1236701/pexels-photo-1236701.jpeg","size":{"width":15,"height":10},"dest":["C:/Node/Cropper/dist","uploads/12334"],"paper":"","original":false,"crop":{"x":18,"y":22,"w":67.94055201698514,"h":31.768498859793976},"rotate":0,"border":"","zoom":"1.5699999999999998","top":-143,"left":-77}]);
-    /* c.process([{"url":"https://images3.alphacoders.com/675/675273.jpg","crop":{"x":0,"y":4.87685930260912,"w":74.07407407407408,"h":87.78346744696415},"size":{"width":15,"height":10},"dest":["C:/Node/Cropper/dist","uploads/12334"],"border":"","rotate":0,"paper":""}], (r) => {
-         console.log(r);
-     });*/
+
     c.onProcessingStart((data) => {
         console.log(data);
     });
 
     c.onImagesProcessed((items) => {
-        console.log((items.length));
+        console.log(items);
     });
 
 </script>
