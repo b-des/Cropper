@@ -155,9 +155,6 @@
       background: $bar-bg;
       width: 200px;
     }
-
-
-
   }
 
   #main-section {
@@ -169,7 +166,6 @@
     z-index: 1;
     flex-wrap: wrap;
     box-shadow: inset 0 3px 7px -6px #000;
-    max-height: 500px;
     overflow-y: auto;
     position: relative;
 
@@ -217,6 +213,15 @@
           text-align: center;
           border-radius: 2px;
           float: right;
+          cursor: pointer;
+        }
+
+        & > span.warning{
+          display: block;
+          font-style: italic;
+          font-size: 14px;
+          font-weight: bold;
+          text-align: center;
         }
 
         .pretty {

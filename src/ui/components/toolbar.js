@@ -44,7 +44,7 @@ export class ToolbarComponent extends Component {
         this.sizes = props.sizes.map((item, key) =>
             <a className="dropdown-item" href="#" onClick={(e) => {
                 this.props.onSizeChange(item.value);
-                $('.dropdown.size button').html(`Формат: ${item.title}`);
+               // $('.dropdown.size button').html(`Формат: ${item.title}`);
                 e.preventDefault();
             }}>{item.title}</a>
         );

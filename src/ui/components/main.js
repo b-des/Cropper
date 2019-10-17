@@ -66,7 +66,7 @@ export class MainComponent extends Component {
     onBorderChange(border) {
         this.border = border;
         if (border === 'none') {
-            $(`.crop-container.enabled`).find('.border-frame').css('border', 'none').css('z-index', 0);
+            $(`.crop-container.enabled`).find('.border-frame').css('border', 'none').css('z-index', '-1');
             $(`.crop-container.enabled`).attr('data-border', 'none');
         } else {
             //$(`.crop-container.enabled`).css('border', `3px solid ${border}`);
@@ -86,8 +86,8 @@ export class MainComponent extends Component {
 
         let totalItems = $(`.crop-container`).length;
         let k = 100 / totalItems;
-        if (totalItems >= 50)
-            $('#loader').show();
+        //  if (totalItems >= 50)
+        //  $('#loader').show();
 
 
         if (checked) {
@@ -95,23 +95,23 @@ export class MainComponent extends Component {
             setTimeout(() => {
                 this.changePhotoSize($(`.crop-container.enabled`), this.size);
                 $(visibleItems.join(',')).find('.crop-container').cropper('update', {fitToContainer: this.framing === 'whole'});
-                $(`.crop-container.enabled`).find('.border-frame').css('border', `3px solid ${$(`.crop-container.enabled`).attr('data-border')}`);
+                if($(`.crop-container.enabled`).attr('data-border'))
+                    $(`.crop-container.enabled`).find('.border-frame').css('border', `3px solid ${$(`.crop-container.enabled`).attr('data-border')}`);
                 if (this.border)
                     $(`.crop-container.enabled`).find('.border-frame').css('border', `3px solid ${this.border}`);
             }, 10);
 
 
-            console.log(k);
-            $(`.crop-container.enabled`).each((i, obj) => {
-                setTimeout(() => {
-                    // this.setState(this.state);
+            /*     $(`.crop-container.enabled`).each((i, obj) => {
+                     setTimeout(() => {
+                         // this.setState(this.state);
 
-                    if (i + 1 >= totalItems) {
-                        $('#loader').hide();
-                    }
-                    $(obj).cropper('update', {fitToContainer: this.framing === 'whole'})
-                }, 10)
-            });
+                         if (i + 1 >= totalItems) {
+                             $('#loader').hide();
+                         }
+                         $(obj).cropper('update', {fitToContainer: this.framing === 'whole'})
+                     }, 10)
+                 });*/
             //setTimeout(() => { $(`.crop-container.enabled`).cropper('update', {fitToContainer: this.framing === 'whole'});}, 1000)
 
         } else {
@@ -124,14 +124,14 @@ export class MainComponent extends Component {
               }, 10);*/
 
 
-            $(`.crop-container:not(.enabled)`).each((i, obj) => {
-                setTimeout(() => {
-                    if (i + 1 >= totalItems) {
-                        $('#loader').hide();
-                    }
-                    $(obj).cropper('reset')
-                }, 10)
-            });
+            /* $(`.crop-container:not(.enabled)`).each((i, obj) => {
+                 setTimeout(() => {
+                     if (i + 1 >= totalItems) {
+                         $('#loader').hide();
+                     }
+                     $(obj).cropper('reset')
+                 }, 10)
+             });*/
 
             $(visibleItems.join(',')).find('.crop-container').css({
                 width: '100%',
@@ -158,14 +158,14 @@ export class MainComponent extends Component {
             target.addClass('enabled');
             this.changePhotoSize(target, this.size);
             target.cropper('update', {fitToContainer: this.framing === 'whole'});
-            target.find('.border-frame').css('border', `3px solid ${target.attr('data-border')}`);
+
             if (this.border) {
                 target.find('.border-frame').css('border', `3px solid ${this.border}`);
             } else {
-                target.find('.border-frame').css('z-index', 0);
+                target.find('.border-frame').css('z-index', '-1');
             }
         } else {
-            target.find('.border-frame').css('border', 'none').css('z-index', 0);
+            target.find('.border-frame').css('border', 'none').css('z-index', '-1');
             target.cropper('reset');
             target.removeClass('enabled');
         }
@@ -194,7 +194,8 @@ export class MainComponent extends Component {
             }
 
         }
-
+        this.size = {width: size.width, height: size.height};
+        $('.dropdown.size button').html(`Формат: ${size.height}x${size.width}`);
     }
 
     /*Delete item*/
@@ -241,20 +242,23 @@ export class MainComponent extends Component {
         let index = this.props.urls.findIndex(a => a.uid === uid);
         $(`#crop-container-${uid}`).append('<div class="lds-ring"><div></div><div></div><div></div><div></div></div>');
         axios.post(`${this.props.handlerUrl}/rotate`, {
-            url: this.props.urls[index].thumbnail || this.props.urls[index].url,
+            url: this.props.urls[index].url,
             uid: uid,
             deg: deg || 90,
             dest: this.props.dest
         }).then(response => {
-            console.log(response.data);
+
             let target = $(`#crop-container-${uid}`);
             target.attr('data-rotate', response.data.deg >= 360 ? 0 : response.data.deg);
             target.html('');
             target.attr('data-src', `${response.data.filename}?v=${new Date().getTime()}`);
             target.cropper('update');
+
+            if(this.border && this.border !== 'none'){
+                target.find('.border-frame').css('z-index', `99`);
+            }
         }).catch(error => {
             $(`#crop-container-${uid} .lds-ring`).remove();
-            console.log(error);
         })
     }
 
@@ -266,10 +270,11 @@ export class MainComponent extends Component {
 
             let item = {
                 url: this.props.urls[i].url,
-                thumbnail: this.props.urls[i].thumbnail || this.props.urls[i].url,
+                thumbnail: $(e).attr('data-src') || this.props.urls[i].thumbnail || this.props.urls[i].url,
                 size: this.size,
                 dest: this.props.dest,
                 paper: this.paper || '',
+                crop:false,
                 original: true
             };
             if ($(e).hasClass('enabled')) {
@@ -279,44 +284,92 @@ export class MainComponent extends Component {
                 let cropX = 100 * (parseFloat($(e).css('width'))) / parseFloat($(e).find('img').css('width'));
                 let cropY = 100 * (parseFloat($(e).css('height'))) / parseFloat($(e).find('img').css('height'));
 
-
                 item = Object.assign(item, {
-                    crop: $(e).attr('data-crop') === 'true' ? {x: left, y: top, w: cropX, h: cropY} : false,
+                    crop: $(e).attr('data-crop') === 'true' ? {
+                        x: isFinite(left) ? left : 0,
+                        y: isFinite(top) ? top: 0,
+                        w: isFinite(cropX)? cropX: 0,
+                        h: isFinite(cropY)? cropY: 0} : false,
                     rotate: $(e).attr('data-rotate') || 0,
                     border: $(e).attr('data-border') || '',
                     zoom: $(e).attr('data-zoom'),
                     original: false
                 });
 
-            }
+                if(this.props.urls[i].crop && (!item.crop.w || !item.crop.h)){
+                    item.crop = this.props.urls[i].crop;
+                }
 
-            if(!this.props.immediate){
+            }
+            if (!this.props.immediate) {
                 item = Object.assign(item, {
-                    top: parseFloat($(e).find('img').css('top')),
-                    left: parseFloat($(e).find('img').css('left')),
+                    top: (!item.crop.w && !item.crop.h) ? '' : parseFloat($(e).find('img').css('top')),
+                    left: (!item.crop.w && !item.crop.h) ? '' : parseFloat($(e).find('img').css('left')),
                 });
             }
 
             items.push(item);
         });
 
+
         if (this.props.immediate) {
+            this.props.onProcessingStart({status: 'start', count: items.length});
+
             axios.post(`${this.props.handlerUrl}/processing`, items).then(response => {
-                console.log(response.data);
-                this.props.onOrderClick(response.data);
+                if(this.props.onOrderClick)
+                    this.props.onOrderClick(response.data);
             }).catch(error => {
-                console.log(error);
+                if(this.props.onOrderClick)
+                    this.props.onOrderClick(error);
             });
-        }else{
+
+
+            /*Alternative method for send images to backend*/
+            /*
+            * if(items.length > 100){
+                items = this.chunkArray(items, 100);
+            }else{
+                items = [items];
+            }
+            console.log(items.length);
+            let tmpResponse = [];
+            let i = 0;
+            for (let item of items){
+                axios.post(`${this.props.handlerUrl}/processing`, item).then(response => {
+                    tmpResponse.push(response.data);
+                    console.log(++i);
+                    if(i === items.length){
+                        console.log(items.length);
+                        if(this.props.onOrderClick)
+                            this.props.onOrderClick([].concat(...tmpResponse));
+                    }
+
+                }).catch(error => {
+                    if(this.props.onOrderClick)
+                        this.props.onOrderClick(error);
+                });
+            }*/
+        } else {
             this.props.onOrderClick(items.reverse());
         }
     }
 
-    /*Fire when add photo*/
-    onPhotoAdded() {
-        if (this.props.urls.length === 1) {
-            $('#main-section .placeholder').hide();
+     chunkArray(myArray, chunk_size){
+        var index = 0;
+        var arrayLength = myArray.length;
+        var tempArray = [];
+
+        for (index = 0; index < arrayLength; index += chunk_size) {
+           let myChunk = myArray.slice(index, index+chunk_size);
+            tempArray.push(myChunk);
         }
+
+        return tempArray;
+    }
+
+    /*Fire when add photo*/
+    onPhotoAdded(border, crop, firstElement, lastElement) {
+        $('#main-section .placeholder').hide();
 
         this.paginator.set('totalResult', this.props.urls.length);
         $('#pagination-bar').html(this.paginator.render());
@@ -340,6 +393,34 @@ export class MainComponent extends Component {
         tippy('[data-tippy-content]', {
             'theme': 'light'
         });
+        let length = $('.image-container input[type=checkbox]:checked').length;
+        $('#cropper-toolbar .selected-items').html(length);
+        if (length){
+            $('#cropper-toolbar input[type=checkbox]').prop('checked', 'checked');
+            $(`.dropdown.framing button`).html('Кадр целиком');
+        }
+
+        if (firstElement.size || lastElement.size){
+            this.changePhotoSize($(`.crop-container.enabled`), firstElement.size || lastElement.size);
+            if(crop){
+                this.framing = 'cropp';
+                $(`.dropdown.framing button`).html('Кадр в обрез');
+            }
+        }
+
+        if (border){
+            this.border = border;
+            if (border === 'black') {
+                $(`.dropdown.border-select button`).html(`Черная рамка`);
+            }else if(border === 'white'){
+                $(`.dropdown.border-select button`).html(`Белая рамка`);
+            }else{
+                $(`.dropdown.border-select button`).html(`Без рамки`);
+            }
+
+            $(`.crop-container.enabled`).attr('data-border', border);
+            $('.border-frame').css('border', `3px solid ${border}`);
+        }
     }
 
     /*Pagination*/
@@ -348,12 +429,29 @@ export class MainComponent extends Component {
         $('#pagination-bar').html(this.paginator.render());
         let pagination = this.paginator.getPaginationData();
 
+        //get items from current page
         let visible = this.props.urls.slice(pagination.fromResult - 1, pagination.toResult).map((item, i) => {
             return `#${item.uid}`
         });
 
+        //hide all items
         $('.image-container').hide();
-        $(visible.join(',')).show().find('.crop-container').cropper('update');
+        //change size for items
+        this.changePhotoSize($(`.crop-container.enabled`), this.size);
+        if (this.framing !== 'whole') {
+            $(visible.join(',')).show().find('.crop-container.enabled').find('img').css({
+                'width': 'auto',
+                'height': 'auto'
+            })
+        }
+        //show items from current page and update cropper
+        $(visible.join(',')).show().find('.crop-container.enabled').cropper('update', {fitToContainer: this.framing === 'whole'});
+
+        //reset unchecked items
+        $(visible.join(',')).find('.crop-container:not(.enabled)').css({
+            width: '100%',
+            height: '100%'
+        }).cropper('reset');
     }
 
     /*Create pagination instance*/
@@ -406,32 +504,7 @@ export class MainComponent extends Component {
         });
 
 
-        $('#main-section').find(`.crop-container`).cropper({
-            createUI: false,
-            fitToContainer: true,
-            left: -10,
-            top: -30,
-            initialZoom: 2,
-            onLoad: (uid, width, height) => {
-                console.log('onLoad  ' + width + " - " + height);
-            }
-        });
 
-        $('#main-section').find(`.crop-container`).cropper('option', 'onZoom', (uid, value) => {
-            let index = this.props.urls.findIndex(a => a.uid === uid);
-            this.props.urls[index].zoom = value;
-        });
-
-        $('#main-section').find(`.crop-container`).cropper('option', 'onImgDrag', (uid, left, top) => {
-            let index = this.props.urls.findIndex(a => a.uid === uid);
-            this.props.urls[index].left = left;
-            this.props.urls[index].top = top;
-            console.log("onImgDrag " + left + ' - ' + top);
-        });
-
-        $('#main-section').find(`.crop-container`).cropper('option', 'onLoad', (uid, width, height) => {
-            console.log(`onLoad  ${uid} = ` + width + " - " + height);
-        });
 
         let html = <div id="cropper-container">
             <div className="spinner-container" id="loader" style="display: none">
@@ -450,8 +523,8 @@ export class MainComponent extends Component {
                                   onOrderClick={(val) => this.onOrderClick()}
                 />
             </div>
-            <div id="main-section">
-
+            <div id="main-section" style={{'max-height': this.props.options.maxHeight+'px'}}>
+                <div className="placeholder">Фотографии не загружены</div>
             </div>
             <div id="pagination-bar"></div>
             <div id="tippy-content-1" style="display: none;">

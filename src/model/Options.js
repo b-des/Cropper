@@ -9,6 +9,7 @@
  * @property {number} itemsPerPage - Specify number of items per page
  * @property {boolean} immediate - Specify if want to process images after Order button click
  * @property {string} dest - Specify destination path for storing images
+ * @property {string} maxHeight - The height of photo container
  */
 export default class Options {
 
@@ -61,6 +62,15 @@ export default class Options {
          * @default none
          */
         dest;
+
+        /**
+         * @memberOf Options
+         * @property maxHeight
+         * @type number
+         * @name maxHeight - The height of photo container.
+         * @default 500
+         */
+        maxHeight;
     }
 
 }

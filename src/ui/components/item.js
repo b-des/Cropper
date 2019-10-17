@@ -40,12 +40,12 @@ export class ImageItem {
                     </div>
                     
                    
-                    <span class="warning" style="display: none"><i class="fa fa-info"></i></span>
+                    <span class="warning" style="display: none">i</span>
                 </div>
                 <div class="image-item">
                
-                    <div id="crop-container-{{=it.uid}}" class='crop-container {{? it.checked }} enabled {{?}}' data-uid="{{=it.uid}}"
-                         style="width:100%; height:100%" data-src="{{=it.url}}" data-zoom="{{=it.zoom}}" data-top="{{=it.top}}" data-left="{{=it.left}}">
+                    <div id="crop-container-{{=it.uid}}" class='crop-container {{? it.checked }} enabled {{?}}' data-uid="{{=it.uid}}" data-rotate="{{=it.rotate}}"
+                         style="width:100%; height:100%" data-src="{{=it.url}}" data-border="{{=it.border}}" data-zoom="{{=it.zoom}}" data-top="{{=it.top}}" data-left="{{=it.left}}">
                         <div class="lds-ring"><div></div><div></div><div></div><div></div></div>
                     </div>
                 </div>

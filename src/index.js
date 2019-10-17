@@ -10,12 +10,13 @@ import axios from "axios";
 import 'tippy.js/dist/tippy.css'
 import 'tippy.js/themes/light.css';
 import 'pretty-checkbox/'
-//import './lib/cropper.jquery.js'
+import './lib/cropper.jquery.js'
 
 window.tippy = require('tippy.js').default;
 window.toPixel = require('unit-to-px').default;
 import Image from './model/Image';
 import Options from './model/Options';
+import Swal from "sweetalert2";
 
 
 /**
@@ -24,7 +25,7 @@ import Options from './model/Options';
  * @see Cropper
  * @name Cropper
  */
- class Cropper extends Component {
+class Cropper extends Component {
 
 
     /**
@@ -33,14 +34,10 @@ import Options from './model/Options';
      */
     constructor(options) {
         super();
-        //this.child = createRef();
+
         this.child = createRef();
 
         this.imageItemTemplate = new ImageItem().getHtml();
-        window.onload = function () {
-            //console.log(ls.get('urls'));
-        };
-
 
         this.options = {
             container: '',
@@ -48,7 +45,8 @@ import Options from './model/Options';
             saveOnRefresh: false,
             itemsPerPage: 10,
             immediate: false,
-            dest: ''
+            dest: '',
+            maxHeight: 500,
         };
 
         Object.assign(this.options, options);
@@ -63,8 +61,8 @@ import Options from './model/Options';
             }
         };
 
-        this.orderCallback = function () {
-        };
+        this.orderCallback = () => {};
+        this.startProcessingCallback = () => {};
 
 
         this.state.sizes = config.sizes;
@@ -79,7 +77,10 @@ import Options from './model/Options';
         if (this.options.container) {
             render(<MainComponent ref={this.child}
                                   immediate={this.options.immediate}
-                                  sizes={this.state.sizes} onOrderClick={(items) => this.orderCallback(items)}
+                                  options={this.options}
+                                  sizes={this.state.sizes}
+                                  onOrderClick={(items) => this.orderCallback(items)}
+                                  onProcessingStart={(result) => this.startProcessingCallback(result)}
                                   urls={this.state.urls}
                                   dest={this.options.dest}
                                   itemsPerPage={this.options.itemsPerPage}
@@ -95,6 +96,14 @@ import Options from './model/Options';
      */
     addPhotos(images) {
 
+        if(images.length > 1000){
+            Swal.fire({
+                title: 'Предупреждение',
+                text: 'Максимальное допустимое количество фотографи не должно превышать 1000 штук',
+                type: 'info'
+            });
+            images = images.slice(0, 1000);
+        }
         images.map((item, key) => {
             setTimeout(() => {
 
@@ -104,17 +113,19 @@ import Options from './model/Options';
                 } else {
                     photo = Object.assign(photo, {url: item});
                 }
-                console.log(photo);
+
                 this.state.urls.unshift(photo);
 
 
                 let html = dot.template(this.imageItemTemplate)({
                     url: photo.thumbnail || photo.url,
-                    top: photo.top || '',
-                    left: photo.left || '',
+                    top: photo.top === 0 ? 0 : photo.top || '',
+                    left: photo.left === 0 ? 0 : photo.left || '',
                     zoom: photo.zoom || 0,
                     uid: photo.uid,
-                    checked: photo.zoom && (photo.left || photo.top) || null
+                    border: photo.border || '',
+                    rotate: photo.rotate || '',
+                    checked: photo.zoom && (photo.left || photo.top) || photo.original === false || null
                 });
 
                 if ($('#main-section').find('.scroll-content').length) {
@@ -124,12 +135,12 @@ import Options from './model/Options';
                 }
 
                 $('#main-section').find(`#crop-container-${photo.uid}`).cropper({
-                    createUI: false,
-                    fitToContainer: !photo.zoom && (!photo.left || !photo.top),
-                    onLoad: (uid, width, height) => {
+                    createUI: photo.original === false,
+                    fitToContainer: !photo.crop || photo.crop === false,
+                    onLoad: (uid, width, height, existItem) => {
                         let fitSizes = this.sizesInPixel.filter((item) => item.width <= width || item.height <= height).map((item, index) => item.title);
 
-                        if (fitSizes.length === 0) {
+                        if (fitSizes.length === 0 && !existItem) {
                             let item = $(`#crop-container-${uid}`).closest('.image-container').find('.warning').css('display', 'block');
                             tippy(item.get(0),
                                 {
@@ -137,12 +148,21 @@ import Options from './model/Options';
                                     theme: 'light'
                                 });
                         }
+                        if (photo.border) {
+                            setTimeout(() => {
+                                $(`#${uid}`).find('.border-frame').css('border', `3px solid ${photo.border}`).css('z-index', '99');
+                            }, 500)
+
+                        }
                         $(`#crop-container-${uid}`).attr('data-fit-sizes', fitSizes.join(','));
                     }
                 });
                 this.setState(this.state);
                 if (images.length === key + 1) {
-                    this.child.current.onPhotoAdded();
+                    let cropItems = images.filter((item) => item.crop);
+                    let borderItems = images.filter((item) => item.border);
+
+                    this.child.current.onPhotoAdded(borderItems[0] ? borderItems[0].border : 'none', cropItems.length > 0, images[0], images[images.length - 1]);
                 }
             }, 100);
         });
@@ -154,17 +174,27 @@ import Options from './model/Options';
      * @param {orderCallback} callback - Function will triggered when crop process finished.
      */
     process(items, callback) {
+        this.startProcessingCallback({status: 'start', count: items.length});
         axios.post(`${this.options.handlerUrl}/processing`, items).then(response => {
-            callback(response.data);
+            if(callback)
+                callback(response.data);
         }).catch(error => {
-            console.log(error);
-            callback(error);
+            if(callback)
+                callback(error);
         });
     }
 
     setPhotoSizes(sizes) {
         this.state.sizes.concat(sizes);
         this.setState(this.state);
+    }
+
+    /**
+     * Callback for start images processing.
+     * @param {processCallback} callback - Function will triggered when processing images started.
+     */
+    onProcessingStart(callback) {
+        this.startProcessingCallback = callback;
     }
 
 
@@ -184,4 +214,10 @@ export default Cropper;
  * Make order callback.
  * @callback orderCallback
  * @return {Image[]} List of images
+ */
+
+/**
+ * Start processing callback.
+ * @callback processCallback
+ * @return {{status: string, count: number}} Status and count of images
  */

@@ -45,6 +45,10 @@
                         setTimeout(methods.initCropper.bind(that), 50);
                     };
 
+                    tmpImage.onerror  = function () {
+                        that.obj.closest('.image-container').remove();
+                    }
+
                 } else {
                     methods.initCropper.call(this)
                 }
@@ -60,10 +64,10 @@
             this.img = this.obj.find('img');
             this.imgInitW = this.imgW = this.img.width();
             this.imgInitH = this.imgH = this.img.height();
-            if(!this.obj.hasClass('cropper-container'))
+            if (!this.obj.hasClass('cropper-container'))
                 this.obj.addClass('cropper-container')
 
-            if(this.imgInitH && this.imgInitW){
+            if (this.imgInitH && this.imgInitW) {
                 methods.zoomByDelta.call(this, -this.imgInitW);
                 methods.zoomByDelta.call(this, this.options.initialZoom);
             }
@@ -87,7 +91,7 @@
             }
 
 
-            if (this.options.left && this.options.left) {
+            if (this.options.top !== '' || this.options.left !== '') {
                 this.img.css({
                     'left': `${parseFloat(this.options.left)}px`,
                     'top': `${parseFloat(this.options.top)}px`,
@@ -315,7 +319,7 @@
 
             $('body').on("mouseup touchend", function () {
                 $('body').off("mousemove");
-                $('body').off("mousemove");
+                $('body').off("touchmove");
             })
         },
         zoomByPercent: function (value) {
@@ -515,17 +519,27 @@
                     let tmpImage = new Image();
                     tmpImage.src = src;
                     tmpImage.onload = function () {
-                        that.options.onLoad(that.obj.attr('data-uid'), this.width, this.height);
+
                         that.obj.html(this);
 
                         that.obj.append('<div class="border-frame"></div>');
+                        if(that.options.onLoad) that.options.onLoad(that.obj.attr('data-uid'), this.width, this.height, true);
                         if (that.obj.hasClass('enabled'))
-                            that.obj.find('.border-frame').css('border', `3px solid ${that.obj.attr('data-border')}`);
+                            that.obj.find('.border-frame').css('border', `3px solid ${that.obj.attr('data-border')}`).css('z-index', '-1');
+
+                        if(that.obj.attr('data-border') && that.obj.attr('data-border') !== 'none')
+                            that.obj.find('.border-frame').css('z-index', '99');
+
 
                         setTimeout(methods.initCropper.bind(that), 10);
                     };
 
+                    tmpImage.onerror  = function () {
+                        console.log('load failed');
+                    }
+
                 } else {
+
                     methods.initCropper.call(this)
                 }
 
