@@ -57,16 +57,16 @@
         container: 'app',
         handlerUrl: 'http://localhost:1234',
         dest: ['C:/\Node/\Cropper/\dist', 'uploads/12334'],
-        immediate: true,
+        immediate: false,
         itemsPerPage: 8
     });
 
     let items = [];
-    for (let i = 0; i <= 10; i++) {
+    for (let i = 0; i <= 0; i++) {
         items.push(imgs[Math.floor(Math.random() * ((imgs.length - 1) - 0 + 1) + 0)]);
     }
 
-    c.addPhotos(items);
+    c.addPhotos([imgs[2]]);
 
     c.onProcessingStart((data) => {
         console.log(data);

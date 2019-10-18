@@ -1,4 +1,4 @@
-import {h, Component} from "preact";
+import {h, Component, createRef} from "preact";
 import {ToolbarComponent} from "./toolbar";
 import {ImageItem} from "./item";
 import uuid from 'uuid/v4';
@@ -30,7 +30,7 @@ export class MainComponent extends Component {
         this.progress = 0;
         this.imageItemTemplate = new ImageItem().getHtml();
 
-
+        this.child = createRef();
     }
 
 
@@ -39,11 +39,11 @@ export class MainComponent extends Component {
         this.size = {width: size[1], height: size[0]};
         this.changePhotoSize($(`.crop-container.enabled`), this.size);
         $(`.image-container:visible .crop-container.enabled`).cropper('update', {fitToContainer: this.framing !== 'cropp'});
-        $(`.crop-container.enabled`).each((i, obj) => {
+       /* $(`.crop-container.enabled`).each((i, obj) => {
             setTimeout(() => {
                 $(obj).cropper('update', {fitToContainer: this.framing !== 'cropp'})
             }, 10)
-        });
+        });*/
     };
 
     /*Fired on paper change*/
@@ -86,9 +86,6 @@ export class MainComponent extends Component {
 
         let totalItems = $(`.crop-container`).length;
         let k = 100 / totalItems;
-        //  if (totalItems >= 50)
-        //  $('#loader').show();
-
 
         if (checked) {
             $('.image-container .crop-container').addClass('enabled');
@@ -100,45 +97,16 @@ export class MainComponent extends Component {
                 if (this.border)
                     $(`.crop-container.enabled`).find('.border-frame').css('border', `3px solid ${this.border}`);
             }, 10);
-
-
-            /*     $(`.crop-container.enabled`).each((i, obj) => {
-                     setTimeout(() => {
-                         // this.setState(this.state);
-
-                         if (i + 1 >= totalItems) {
-                             $('#loader').hide();
-                         }
-                         $(obj).cropper('update', {fitToContainer: this.framing === 'whole'})
-                     }, 10)
-                 });*/
-            //setTimeout(() => { $(`.crop-container.enabled`).cropper('update', {fitToContainer: this.framing === 'whole'});}, 1000)
-
+            this.child.current.removeControlTooltip();
         } else {
             $('.image-container .crop-container').removeClass('enabled');
-            /*  setTimeout(() => {
-                  $('.image-container:visible .crop-container.enabled').css({
-                      width: '100%',
-                      height: '100%'
-                  }).cropper('reset');
-              }, 10);*/
-
-
-            /* $(`.crop-container:not(.enabled)`).each((i, obj) => {
-                 setTimeout(() => {
-                     if (i + 1 >= totalItems) {
-                         $('#loader').hide();
-                     }
-                     $(obj).cropper('reset')
-                 }, 10)
-             });*/
-
-            $(visibleItems.join(',')).find('.crop-container').css({
+                $(visibleItems.join(',')).find('.crop-container').css({
                 width: '100%',
                 height: '100%'
             }).cropper('reset');
 
             $(`.crop-container.enabled`).find('.border-frame').css('border', 'none');
+            this.child.current.addControlTooltip();
         }
 
         $('.image-container input[type=checkbox]').prop('checked', checked);
@@ -168,6 +136,12 @@ export class MainComponent extends Component {
             target.find('.border-frame').css('border', 'none').css('z-index', '-1');
             target.cropper('reset');
             target.removeClass('enabled');
+        }
+
+        if(checkAll){
+            this.child.current.removeControlTooltip();
+        }else{
+            this.child.current.addControlTooltip();
         }
 
         $('#cropper-toolbar input[type=checkbox]').prop('checked', checkAll);
@@ -324,7 +298,7 @@ export class MainComponent extends Component {
                 paper: this.paper || '',
                 crop:false,
                 original: true,
-                quantity: $('[name="quantity"]').val()
+                quantity: parseInt($('[name="quantity"]').val())
             };
             if ($(e).hasClass('enabled')) {
 
@@ -447,6 +421,7 @@ export class MainComponent extends Component {
         if (length){
             $('#cropper-toolbar input[type=checkbox]').prop('checked', 'checked');
             $(`.dropdown.framing button`).html('Кадр целиком');
+            this.child.current.removeControlTooltip();
         }
 
         if (firstElement.size || lastElement.size){
@@ -561,7 +536,8 @@ export class MainComponent extends Component {
             </div>
 
             <div id="toolbar">
-                <ToolbarComponent sizes={this.props.sizes}
+                <ToolbarComponent ref={this.child}
+                                  sizes={this.props.sizes}
                                   progress={this.progress}
                                   waiting={this.state.waiting}
                                   onSelectChange={(state) => this.onSelectAllItems(state)}

@@ -62,16 +62,16 @@
             this.objH = this.obj.height();
             this.initialWidth = this.obj.width();
             this.img = this.obj.find('img');
-            this.imgInitW = this.imgW = this.img.width();
-            this.imgInitH = this.imgH = this.img.height();
+
             if (!this.obj.hasClass('cropper-container'))
-                this.obj.addClass('cropper-container')
+                this.obj.addClass('cropper-container');
 
             if (this.imgInitH && this.imgInitW) {
                 methods.zoomByDelta.call(this, -this.imgInitW);
                 methods.zoomByDelta.call(this, this.options.initialZoom);
             }
-
+            this.imgInitW = this.imgW = this.img.width();
+            this.imgInitH = this.imgH = this.img.height();
             //if(!this.options.left){
             this.options.left = this.obj.attr('data-left');
             // }
@@ -323,7 +323,7 @@
             })
         },
         zoomByPercent: function (value) {
-            let originalSize = this.initialWidth;
+            let originalSize = this.imgInitW;
             let ratio = this.imgW / this.imgH;
             let doPositioning = true;
             let newWidth = originalSize * value;

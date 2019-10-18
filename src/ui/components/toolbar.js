@@ -4,6 +4,7 @@ export class ToolbarComponent extends Component {
     constructor() {
         super();
         this.state = {sizeLabel: 'Формат', paperLabel: 'Бумага', framingLabel: 'Кадрирование', borderLabel: 'Рамка'}
+        this.tooltip;
     }
 
     onPaperChange(type) {
@@ -39,6 +40,27 @@ export class ToolbarComponent extends Component {
         this.props.onBorderChange(border)
     }
 
+    addControlTooltip(){
+        $('.dropdown').find('button').addClass('disabled');
+        if(!this.tooltip)
+            this.tooltip = tippy('.dropdown .disabled', {content: 'Для изменения опций отметьте фотографии', theme: 'light',});
+        this.tooltip.forEach((tooltip) => {
+            tooltip.enable();
+        });
+    }
+
+    removeControlTooltip(){
+        if(this.tooltip)
+            this.tooltip.forEach((tooltip) => {
+                tooltip.disable();
+            });
+        $('.dropdown').find('button').removeClass('disabled');
+    }
+
+    componentDidMount() {
+       this.addControlTooltip()
+    }
+
     render(props, state, context) {
 
         this.sizes = props.sizes.map((item, key) =>
@@ -69,7 +91,7 @@ export class ToolbarComponent extends Component {
                         </div>
                     </div>
                     <div className="dropdown size">
-                        <button className="btn btn-sm btn-primary dropdown-toggle" type="button" data-toggle="dropdown"
+                        <button className="btn btn-sm btn-primary dropdown-toggle disabled" type="button" data-toggle="dropdown"
                                 aria-haspopup="true" aria-expanded="false">
                             {this.state.sizeLabel}
 
@@ -80,7 +102,7 @@ export class ToolbarComponent extends Component {
                     </div>
 
                     <div className="dropdown paper">
-                        <button className="btn btn-sm btn-primary dropdown-toggle" type="button" data-toggle="dropdown"
+                        <button className="btn btn-sm btn-primary dropdown-toggle disabled" type="button" data-toggle="dropdown"
                                 aria-haspopup="true" aria-expanded="false">
                             {this.state.paperLabel}
 
@@ -101,7 +123,7 @@ export class ToolbarComponent extends Component {
                         </div>
                     </div>
                     <div className="dropdown framing">
-                        <button className="btn btn-sm btn-primary dropdown-toggle" type="button" data-toggle="dropdown"
+                        <button className="btn btn-sm btn-primary dropdown-toggle disabled" type="button" data-toggle="dropdown"
                                 aria-haspopup="true" aria-expanded="false">
                             {this.state.framingLabel}
 
@@ -119,7 +141,7 @@ export class ToolbarComponent extends Component {
                         </div>
                     </div>
                     <div className="dropdown border-select">
-                        <button className="btn btn-sm btn-primary dropdown-toggle" type="button" data-toggle="dropdown"
+                        <button className="btn btn-sm btn-primary dropdown-toggle disabled" type="button" data-toggle="dropdown"
                                 aria-haspopup="true" aria-expanded="false">
                             {this.state.borderLabel}
                         </button>
