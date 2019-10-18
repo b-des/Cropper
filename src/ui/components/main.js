@@ -1,7 +1,7 @@
 import {h, Component} from "preact";
 import {ToolbarComponent} from "./toolbar";
 import {ImageItem} from "./item";
-
+import uuid from 'uuid/v4';
 const dot = require('dot');
 import 'perfect-scrollbar/css/perfect-scrollbar.css'
 import {Scrollbars} from 'react-custom-scrollbars';
@@ -198,6 +198,31 @@ export class MainComponent extends Component {
         $('.dropdown.size button').html(`Формат: ${size.height}x${size.width}`);
     }
 
+    /*Clone image*/
+    cloneItem(uid){
+        console.log(this.props.urls.length);
+        const index = this.props.urls.findIndex(a => a.uid === uid);
+        let photo = this.props.urls[index];
+        this.props.urls.splice( index, 0, photo );
+
+        let newUid = uuid();
+        let html = dot.template(this.imageItemTemplate)({
+            url: photo.thumbnail || photo.url,
+            top: photo.top === 0 ? 0 : photo.top || '',
+            left: photo.left === 0 ? 0 : photo.left || '',
+            zoom: photo.zoom || 0,
+            uid:newUid,
+            border: photo.border || '',
+            rotate: photo.rotate || '',
+            checked:  null
+        });
+
+        $(html).insertAfter(`#${uid}`);
+        $(`#${newUid}`).find('.crop-container').cropper({onLoad: () => {}, createUI: false});
+        this.paginator.set('totalResult', this.props.urls.length);
+        $('#pagination-bar').html(this.paginator.render());
+    }
+
     /*Delete item*/
     removeItem(uid) {
 
@@ -226,6 +251,29 @@ export class MainComponent extends Component {
         Swal.fire({
             title: 'Вы уверены?',
             text: 'Удалить фото?',
+            type: 'question',
+            showCancelButton: true,
+            cancelButtonText: 'Отмена',
+            confirmButtonText: 'Удалить'
+        }).then(res => {
+            if (res.value) {
+                confirmedRemove();
+            }
+        })
+    }
+
+    /*Delet all images*/
+    deleteAllItems(){
+        let confirmedRemove = () => {
+            this.props.urls = [];
+            $('.image-container').remove();
+            this.paginator.set('totalResult', this.props.urls.length);
+            $('#pagination-bar').html(this.paginator.render());
+            $('.placeholder').show();
+        };
+        Swal.fire({
+            title: 'Вы уверены?',
+            text: 'Удалить все фото?',
             type: 'question',
             showCancelButton: true,
             cancelButtonText: 'Отмена',
@@ -275,7 +323,8 @@ export class MainComponent extends Component {
                 dest: this.props.dest,
                 paper: this.paper || '',
                 crop:false,
-                original: true
+                original: true,
+                quantity: $('[name="quantity"]').val()
             };
             if ($(e).hasClass('enabled')) {
 
@@ -516,6 +565,7 @@ export class MainComponent extends Component {
                                   progress={this.progress}
                                   waiting={this.state.waiting}
                                   onSelectChange={(state) => this.onSelectAllItems(state)}
+                                  onDeleteAllClick={() => this.deleteAllItems()}
                                   onSizeChange={size => this.onFormatChange.call(this, size)}
                                   onPaperChange={(val) => this.onPaperChange.call(this, val)}
                                   onFramingChange={val => this.onFramingChange.call(this, val)}
@@ -553,6 +603,11 @@ export class MainComponent extends Component {
         $(document).on('click', '.image-container .remove-item', (e) => {
             let uid = $(e.target).closest('.image-container').find('.crop-container').attr('data-uid');
             this.removeItem(uid);
+        });
+
+        $(document).on('click', '.image-container .copy-item', (e) => {
+            let uid = $(e.target).closest('.image-container').find('.crop-container').attr('data-uid');
+            this.cloneItem(uid);
         });
 
         $(document).on('click', '.image-container .rotate-item', (e) => {

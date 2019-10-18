@@ -140,9 +140,19 @@ export class ToolbarComponent extends Component {
                     </div>
 
 
+
                     <button type="button" className="btn btn-sm btn-success border"
                             onClick={() => this.props.onOrderClick()}>Заказать
                     </button>
+
+                    <div className="right-toolbar-tools" >
+                        <div>
+                            <span>Кол-во: </span><input type="number" name="quantity" value="1" min="1" style="width: 50px"/>
+                        </div>
+                        <button className="btn btn-sm btn-danger" onClick={() => this.props.onDeleteAllClick()}>Удалить все
+                            фото
+                        </button>
+                    </div>
 
 
                 </div>

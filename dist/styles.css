@@ -67,7 +67,7 @@
     padding: 15px;
     border: none;
     font-size: 13px;
-    background: #72a888;
+    background: #343434;
     color: white; }
     #cropper-container #toolbar .select-items > * {
       display: inline-block; }
@@ -109,9 +109,14 @@
     #cropper-container #toolbar .progressbar-container {
       background: rgba(0, 0, 0, 0.075);
       width: 200px; }
+    #cropper-container #toolbar .right-toolbar-tools {
+      float: right; }
+      #cropper-container #toolbar .right-toolbar-tools > * {
+        display: inline-block;
+        margin-left: 10px; }
   #cropper-container #main-section {
     border-radius: 0;
-    background: #fff;
+    background: #343434;
     padding: 10px;
     display: flex;
     justify-content: start;
@@ -235,8 +240,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        box-sizing: content-box;
-        background: #bdc0c2; }
+        box-sizing: content-box; }
         #cropper-container #main-section .image-container .image-item > div {
           width: 100%;
           height: 100%;

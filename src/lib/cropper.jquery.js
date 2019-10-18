@@ -130,11 +130,11 @@
             this.outputDiv.find('*').not('img, .border-frame').remove();
 
             if (ratio > pratio) {
-                // html += '<div class="cut-line line-left"  data-tippy-placement="left"> </div>';
-                //html += '<div class="cut-line line-right"  data-tippy-placement="right"> </div>';
+                 html += '<div class="cut-line line-left"  data-tippy-placement="left"> </div>';
+                html += '<div class="cut-line line-right"  data-tippy-placement="right"> </div>';
             } else {
-                // html += '<div class="cut-line line-top" data-tippy-placement="top"> </div>';
-                //html += '<div class="cut-line line-bottom"  data-tippy-placement="bottom"> </div>';
+                 html += '<div class="cut-line line-top" data-tippy-placement="top"> </div>';
+                html += '<div class="cut-line line-bottom"  data-tippy-placement="bottom"> </div>';
             }
 
             html += '<div class="cross-drag"><i class="fa fa-arrows-alt"></i></div>';
@@ -328,6 +328,7 @@
             let doPositioning = true;
             let newWidth = originalSize * value;
             let newHeight = newWidth / ratio;
+
             if (newWidth < this.objW || newHeight < this.objH) {
 
                 if (newWidth - this.objW < newHeight - this.objH) {

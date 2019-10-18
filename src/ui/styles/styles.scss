@@ -87,7 +87,7 @@
     padding: 15px;
     border: none;
     font-size: 13px;
-    background: #72a888;
+    background: #343434;
     color: white;
 
     .select-items > * {
@@ -155,11 +155,19 @@
       background: $bar-bg;
       width: 200px;
     }
+
+    .right-toolbar-tools{
+      float: right;
+      & > *{
+        display: inline-block;
+        margin-left: 10px;
+      }
+    }
   }
 
   #main-section {
     border-radius: 0;
-    background: #fff;
+    background: #343434;
     padding: 10px;
     display: flex;
     justify-content: start;
@@ -325,7 +333,6 @@
         justify-content: center;
         align-items: center;
         box-sizing: content-box;
-        background: #bdc0c2;
 
 
         & > div {
