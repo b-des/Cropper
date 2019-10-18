@@ -62,11 +62,11 @@
     });
 
     let items = [];
-    for (let i = 0; i <= 0; i++) {
+    for (let i = 0; i <= 10; i++) {
         items.push(imgs[Math.floor(Math.random() * ((imgs.length - 1) - 0 + 1) + 0)]);
     }
 
-    c.addPhotos([imgs[2]]);
+    c.addPhotos(items);
 
     c.onProcessingStart((data) => {
         console.log(data);
