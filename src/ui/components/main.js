@@ -196,6 +196,7 @@ export class MainComponent extends Component {
         $(`#${item.uid}`).find('.crop-container').cropper({onLoad: () => {}, createUI: false});
         this.paginator.set('totalResult', this.props.urls.length);
         $('#pagination-bar').html(this.paginator.render());
+        tippy('[data-tippy-content]', {'theme': 'light'});
     }
 
     /*Delete item*/
