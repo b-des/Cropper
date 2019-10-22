@@ -174,25 +174,26 @@ export class MainComponent extends Component {
 
     /*Clone image*/
     cloneItem(uid){
-        console.log(this.props.urls.length);
         const index = this.props.urls.findIndex(a => a.uid === uid);
         let photo = this.props.urls[index];
-        this.props.urls.splice( index, 0, photo );
+        let item = JSON.parse(JSON.stringify(photo));
+        item.uid = uuid();
+        this.props.urls.push(item);
+        console.log(this.props.urls);
 
-        let newUid = uuid();
         let html = dot.template(this.imageItemTemplate)({
             url: photo.thumbnail || photo.url,
             top: photo.top === 0 ? 0 : photo.top || '',
             left: photo.left === 0 ? 0 : photo.left || '',
             zoom: photo.zoom || 0,
-            uid:newUid,
+            uid: item.uid,
             border: photo.border || '',
             rotate: photo.rotate || '',
             checked:  null
         });
 
         $(html).insertAfter(`#${uid}`);
-        $(`#${newUid}`).find('.crop-container').cropper({onLoad: () => {}, createUI: false});
+        $(`#${item.uid}`).find('.crop-container').cropper({onLoad: () => {}, createUI: false});
         this.paginator.set('totalResult', this.props.urls.length);
         $('#pagination-bar').html(this.paginator.render());
     }
