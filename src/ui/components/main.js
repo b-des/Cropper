@@ -179,7 +179,6 @@ export class MainComponent extends Component {
         let item = JSON.parse(JSON.stringify(photo));
         item.uid = uuid();
         this.props.urls.push(item);
-        console.log(this.props.urls);
 
         let html = dot.template(this.imageItemTemplate)({
             url: photo.thumbnail || photo.url,
