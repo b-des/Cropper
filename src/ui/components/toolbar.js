@@ -60,6 +60,9 @@ export class ToolbarComponent extends Component {
     componentDidMount() {
        this.addControlTooltip()
     }
+    componentWillUpdate(nextProps, nextState, nextContext) {
+        console.log('update');
+    }
 
     render(props, state, context) {
 

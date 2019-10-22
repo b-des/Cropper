@@ -18,7 +18,6 @@ import Image from './model/Image';
 import Options from './model/Options';
 import Swal from "sweetalert2";
 
-
 /**
  * Cropper module.
  * @module Cropper
@@ -47,6 +46,7 @@ class Cropper extends Component {
             immediate: false,
             dest: '',
             maxHeight: 500,
+            sizes: null
         };
 
         Object.assign(this.options, options);
@@ -66,6 +66,9 @@ class Cropper extends Component {
 
 
         this.state.sizes = config.sizes;
+        if(this.options.sizes){
+            this.state.sizes = this.options.sizes;
+        }
 
         this.sizesInPixel = this.state.sizes.map((item, index) => {
             return {
@@ -168,6 +171,8 @@ class Cropper extends Component {
         });
     }
 
+
+
     /**
      * Add photos for immediate processing.
      * @param {Image[]} items - Array with photos.
@@ -184,9 +189,14 @@ class Cropper extends Component {
         });
     }
 
+    /**
+     * Set sizes for images
+     * @param {Array} sizes - Array of sizes
+     */
     setPhotoSizes(sizes) {
-        this.state.sizes.concat(sizes);
+        this.state.sizes = sizes;
         this.setState(this.state);
+        this.child.current.updateSizes(this.state.sizes);
     }
 
     /**

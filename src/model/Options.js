@@ -10,6 +10,7 @@
  * @property {boolean} immediate - Specify if want to process images after Order button click
  * @property {string} dest - Specify destination path for storing images
  * @property {string} maxHeight - The height of photo container
+ * @property {Array} sizes - The list of image sizes
  */
 export default class Options {
 
@@ -71,6 +72,14 @@ export default class Options {
          * @default 500
          */
         maxHeight;
+
+        /**
+         * @memberOf Options
+         * @property sizes
+         * @type Array
+         * @name sizes - The list of image sizes.
+         */
+        sizes;
     }
 
 }

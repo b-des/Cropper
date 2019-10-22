@@ -4,6 +4,8 @@ let gulp = require('gulp'),
     webpack = require('webpack'),
     WebpackDevServer = require('webpack-dev-server'),
     webpackConfig = require('./webpack.config.js'),
+    csso = require('gulp-csso')
+    rename      = require('gulp-rename'),
     LOCAL_SERVER_PORT = 4000;
 const path = require('path');
 
@@ -11,7 +13,12 @@ sass.compiler = require('node-sass');
 
 gulp.task('sass', function () {
     return gulp.src('./src/ui/styles/*.scss')
-        .pipe(sass().on('error', sass.logError))
+        .pipe(sass({
+            outputStyle: 'expanded',
+            includePaths: ['node_modules']
+        }))
+        .pipe(csso())
+        .pipe(rename({ suffix: '.min' }))
         .pipe(gulp.dest('./dist'));
 });
 

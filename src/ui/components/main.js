@@ -448,6 +448,11 @@ export class MainComponent extends Component {
         }
     }
 
+
+    updateSizes(sizes){
+        this.props.sizes = sizes;
+    }
+
     /*Pagination*/
     goToPage(page) {
         this.paginator.set('current', page);
