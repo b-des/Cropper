@@ -53,8 +53,8 @@
 
     let c = new Cropper({
         container: 'app',
-        handlerUrl: 'http://localhost:1234',
-        dest: ['C:/\Node/\Cropper/\dist', 'uploads/12334'],
+        handlerUrl: 'http://localhost:5567',
+        dest: ['../cropper/dist', 'uploads/12334'],
         immediate: false,
         itemsPerPage: 8,
         sizes: [
@@ -70,11 +70,12 @@
     ]);
 
     let items = [];
-    for (let i = 0; i <= 10; i++) {
+    for (let i = 0; i <= 1; i++) {
         items.push(imgs[Math.floor(Math.random() * ((imgs.length - 1) - 0 + 1) + 0)]);
     }
 
     c.addPhotos(items);
+    c.addPhotos(['https://pechat.photo/image/customer/guest/3d685054081df4204c636b82034d7057/1234_f130b44b88b615463748e732de0a1fbf.jpg']);
 
     c.onProcessingStart((data) => {
         console.log(data);

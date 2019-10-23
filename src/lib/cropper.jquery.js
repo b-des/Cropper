@@ -66,7 +66,7 @@
             if (!this.obj.hasClass('cropper-container'))
                 this.obj.addClass('cropper-container');
 
-            if (this.imgInitH && this.imgInitW) {
+            if (this.imgInitH && this.imgInitW && !this.options.rotate) {
                 methods.zoomByDelta.call(this, -this.imgInitW);
                 methods.zoomByDelta.call(this, this.options.initialZoom);
             }
@@ -508,8 +508,9 @@
         update: function (options) {
             return this.each(function () {
                 if (options) {
-                    this.options = $.extend(this.options, options);
+                    this.options.rotate = false;
                     this.options.createUI = true;
+                    this.options = $.extend(this.options, options);
                 }
 
                 this.options.initialZoom = parseFloat(this.obj.attr('data-zoom'));

@@ -271,15 +271,19 @@ export class MainComponent extends Component {
             dest: this.props.dest
         }).then(response => {
 
-            let target = $(`#crop-container-${uid}`);
-            target.attr('data-rotate', response.data.deg >= 360 ? 0 : response.data.deg);
-            target.html('');
-            target.attr('data-src', `${response.data.filename}?v=${new Date().getTime()}`);
-            target.cropper('update');
+            setTimeout(() => {
+                let target = $(`#crop-container-${uid}`);
+                target.attr('data-rotate', response.data.deg >= 360 ? 0 : response.data.deg);
+                target.html('');
+                target.attr('data-src', `${response.data.filename}?v=${new Date().getTime()}`);
+                // target.cropper('reset');
+                target.cropper('update', {rotate: true, createUI: target.hasClass('enabled')});
 
-            if(this.border && this.border !== 'none'){
-                target.find('.border-frame').css('z-index', `99`);
-            }
+                if(this.border && this.border !== 'none'){
+                    target.find('.border-frame').css('z-index', `99`);
+                }
+            }, 1000);
+
         }).catch(error => {
             $(`#crop-container-${uid} .lds-ring`).remove();
         })
