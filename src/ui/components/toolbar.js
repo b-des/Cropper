@@ -28,29 +28,29 @@ export class ToolbarComponent extends Component {
         this.props.onFramingChange.call(this, framing);
     }
 
-    onBorderChange(border){
+    onBorderChange(border) {
         if (border === 'black') {
             $(`.dropdown.border-select button`).html(`Черная рамка`);
-        }else if(border === 'white'){
+        } else if (border === 'white') {
             $(`.dropdown.border-select button`).html(`Белая рамка`);
-        }else{
+        } else {
             $(`.dropdown.border-select button`).html(`Без рамки`);
         }
 
         this.props.onBorderChange(border)
     }
 
-    addControlTooltip(){
+    addControlTooltip() {
         $('.dropdown').find('button').addClass('disabled');
-        if(!this.tooltip)
+        if (!this.tooltip)
             this.tooltip = tippy('.dropdown .disabled', {content: 'Для изменения опций отметьте фотографии', theme: 'light',});
         this.tooltip.forEach((tooltip) => {
             tooltip.enable();
         });
     }
 
-    removeControlTooltip(){
-        if(this.tooltip)
+    removeControlTooltip() {
+        if (this.tooltip)
             this.tooltip.forEach((tooltip) => {
                 tooltip.disable();
             });
@@ -58,18 +58,40 @@ export class ToolbarComponent extends Component {
     }
 
     componentDidMount() {
-       this.addControlTooltip()
+        this.addControlTooltip()
+    }
+
+    onOptionChange(id, value, name) {
+
+        console.log(id, value, name );
+        $(`.dropdown[data-option-id='${id}'] button`).html(name)
+        this.props.onOptionChange(id, value, name)
     }
 
     render(props, state, context) {
 
+        this.options = this.props.options.map((item) =>
+            <div  className={`dropdown ${item.label}`} data-option-id={item.option_id}>
+                <button className="btn btn-sm btn-primary dropdown-toggle disabled" type="button" data-toggle="dropdown"
+                        aria-haspopup="true" aria-expanded="false">
+                    {item.name}
+
+                </button>
+                <div className="dropdown-menu">
+                    {item.option_values.map((option) => {
+                        return <a className="dropdown-item" href="#" onClick={(e) => {this.onOptionChange(item.option_id, option.option_value_id, option.name); e.preventDefault();}}>{option.name}</a>
+                    })}
+                </div>
+            </div>
+        );
         this.sizes = props.sizes.map((item, key) =>
             <a className="dropdown-item" href="#" onClick={(e) => {
                 this.props.onSizeChange(item.value);
-               // $('.dropdown.size button').html(`Формат: ${item.title}`);
+                // $('.dropdown.size button').html(`Формат: ${item.title}`);
                 e.preventDefault();
             }}>{item.title}</a>
         );
+
 
 
         return <nav className="bp3-dark" id="cropper-toolbar">
@@ -90,6 +112,7 @@ export class ToolbarComponent extends Component {
                             </div>
                         </div>
                     </div>
+                    {this.options}
                     <div className="dropdown size">
                         <button className="btn btn-sm btn-primary dropdown-toggle disabled" type="button" data-toggle="dropdown"
                                 aria-haspopup="true" aria-expanded="false">
@@ -162,12 +185,11 @@ export class ToolbarComponent extends Component {
                     </div>
 
 
-
                     <button type="button" className="btn btn-sm btn-success border"
                             onClick={() => this.props.onOrderClick()}>Заказать
                     </button>
 
-                    <div className="right-toolbar-tools" >
+                    <div className="right-toolbar-tools">
                         <div>
                             <span>Кол-во: </span><input type="number" name="quantity" value="1" min="1" style="width: 50px"/>
                         </div>
@@ -183,4 +205,6 @@ export class ToolbarComponent extends Component {
         </nav>
 
     }
+
+
 }

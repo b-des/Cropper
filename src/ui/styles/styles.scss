@@ -167,6 +167,10 @@
     .right-toolbar-tools {
       float: right;
 
+      @include mobile-only {
+        flex-basis: 100%;
+      }
+
       & > * {
         display: inline-block;
         margin-left: 10px;
@@ -460,6 +464,78 @@
       height: 100%;
     }
   }
+
+  #popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+  }
+
+  #overlay {
+    position: fixed;
+    z-index: 100;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.58);
+  }
+
+  #border-popup {
+    position: absolute;
+    left: 0;
+    right: 0;
+    margin: auto;
+    z-index: 101;
+    border-radius: 10px;
+    height: auto;
+    background: white;
+    padding: 50px 15px 15px;
+    max-width: 300px;
+    text-align: center;
+
+    .close{
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #cc4d4d;
+      color: #fff;
+      cursor: pointer;
+      width: 30px;
+      height: 30px;
+      border: 50px;
+      display: block;
+      border-radius: 50px;
+      font-size: 15px;
+      line-height: 29px;
+      text-align: center;
+    }
+
+    #border-size {
+      display: flex;
+      flex-direction: row;
+      height: 45px;
+      align-items: center;
+      justify-content: center;
+
+      label {
+        font-size: 12px;
+        margin: 0 10px 0 0;
+      }
+
+      input {
+        width: 70px;
+        font-size: 13px;
+        color: #191919;
+        height: 25px;
+      }
+    }
+
+    .a-color-picker{
+      box-shadow: none;
+    }
+  }
 }
 
 .cut-line {
@@ -470,7 +546,7 @@
 
 .cut-line.line-left {
   left: 0;
- // width: 10px;
+  // width: 10px;
   top: 0;
   height: 100%;
   border-right: 2px dashed white;

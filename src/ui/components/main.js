@@ -1,5 +1,6 @@
 import {h, Component, createRef} from "preact";
 import {ToolbarComponent} from "./toolbar";
+import {BorderComponent} from "./border-popup";
 import {ImageItem} from "./item";
 import uuid from 'uuid/v4';
 const dot = require('dot');
@@ -9,7 +10,6 @@ import Scrollbar from "smooth-scrollbar";
 import pagination from 'pagination';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-
 export class MainComponent extends Component {
 
 
@@ -23,13 +23,14 @@ export class MainComponent extends Component {
             checkAll: false,
             framing: 'whole',
             waiting: false,
-            progress: false
+            progress: false,
+            openBorderModal: false
         };
         this.framing = 'whole';
         this.size = {width: 15, height: 10};
         this.progress = 0;
         this.imageItemTemplate = new ImageItem().getHtml();
-
+        this.options = [];
         this.child = createRef();
     }
 
@@ -523,6 +524,21 @@ export class MainComponent extends Component {
         });
     }
 
+    onOptionChange(id, value){
+        let option = {
+            option_id: id,
+            option_value_id: value,
+        };
+        let index = this.options.findIndex((item) => item.option_id === id);
+        console.log(index);
+        if(index === -1){
+            this.options.push(option)
+        }else{
+            this.options[index] = option;
+        }
+        console.log(this.options);
+    }
+
     render(props, state, context) {
 
         let items = '';
@@ -548,6 +564,8 @@ export class MainComponent extends Component {
             <div id="toolbar">
                 <ToolbarComponent ref={this.child}
                                   sizes={this.props.sizes}
+                                  options={this.props.options.options}
+                                  onOptionChange={(id, value) => this.onOptionChange.call(this, id, value)}
                                   progress={this.progress}
                                   waiting={this.state.waiting}
                                   onSelectChange={(state) => this.onSelectAllItems(state)}
@@ -562,6 +580,9 @@ export class MainComponent extends Component {
             <div id="main-section" style={{'max-height': this.props.options.maxHeight+'px'}}>
                 <div className="placeholder">Фотографии не загружены</div>
             </div>
+
+            { this.state.openBorderModal && <BorderComponent
+                onModalClose={() => {this.state.openBorderModal = false; this.setState(this.state)}}/> }
             <div id="pagination-bar"></div>
             <div id="tippy-content-1" style="display: none;">
                 <strong>Фото нестандартного формата.</strong>
@@ -585,6 +606,7 @@ export class MainComponent extends Component {
         this.state.urls = this.props.urls;
 
         this.setState(this.state);
+
 
         $(document).on('click', '.image-container .remove-item', (e) => {
             let uid = $(e.target).closest('.image-container').find('.crop-container').attr('data-uid');
@@ -631,6 +653,10 @@ export class MainComponent extends Component {
 
         $('#pagination-bar').html(this.paginator.render());
 
+        setTimeout(() => {
+            this.state.openBorderModal = true;
+            this.setState(this.state);
+        }, 1000)
 
     }
 
