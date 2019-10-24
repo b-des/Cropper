@@ -45,7 +45,7 @@
                         setTimeout(methods.initCropper.bind(that), 50);
                     };
 
-                    tmpImage.onerror  = function () {
+                    tmpImage.onerror = function () {
                         that.obj.closest('.image-container').remove();
                     }
 
@@ -123,18 +123,22 @@
         createUI: function () {
             let html = '';
 
-            let ratio = this.img.width() / this.img.height();
-            let pratio = this.obj.width() / this.obj.height();
+            let ratio = this.img.width() / this.obj.width();
+            let pratio = this.img.height() / this.obj.height();
 
             this.outputDiv.find(".slider").slider('destroy');
             this.outputDiv.find('*').not('img, .border-frame').remove();
+            let width = (parseInt(this.obj.closest('.image-item').width()) - parseInt(this.obj.width()))/2;
+            let height = (parseInt(this.obj.closest('.image-item').height()) - parseInt(this.obj.height()))/2;
+            if (width) {
 
-            if (ratio > pratio) {
-                 html += '<div class="cut-line line-left"  data-tippy-placement="left"> </div>';
-                html += '<div class="cut-line line-right"  data-tippy-placement="right"> </div>';
-            } else {
-                 html += '<div class="cut-line line-top" data-tippy-placement="top"> </div>';
-                html += '<div class="cut-line line-bottom"  data-tippy-placement="bottom"> </div>';
+
+                html += `<div class="cut-line line-left" style="width: ${width}px; left: -${width}px" data-tippy-placement="left"> </div>`;
+                html += `<div class="cut-line line-right"   style="width: ${width}px; right: -${width}px"  data-tippy-placement="right"> </div>`;
+            } else if (height) {
+
+                html += `<div class="cut-line line-top" style="height: ${height}px; top: -${height}px" data-tippy-placement="top"> </div>`;
+                html += `<div class="cut-line line-bottom" style="height: ${height}px; bottom: -${height}px" data-tippy-placement="bottom"> </div>`;
             }
 
             html += '<div class="cross-drag"><i class="fa fa-arrows-alt"></i></div>';
@@ -525,18 +529,18 @@
                         that.obj.html(this);
 
                         that.obj.append('<div class="border-frame"></div>');
-                        if(that.options.onLoad) that.options.onLoad(that.obj.attr('data-uid'), this.width, this.height, true);
+                        if (that.options.onLoad) that.options.onLoad(that.obj.attr('data-uid'), this.width, this.height, true);
                         if (that.obj.hasClass('enabled'))
                             that.obj.find('.border-frame').css('border', `3px solid ${that.obj.attr('data-border')}`).css('z-index', '-1');
 
-                        if(that.obj.attr('data-border') && that.obj.attr('data-border') !== 'none')
+                        if (that.obj.attr('data-border') && that.obj.attr('data-border') !== 'none')
                             that.obj.find('.border-frame').css('z-index', '99');
 
 
                         setTimeout(methods.initCropper.bind(that), 10);
                     };
 
-                    tmpImage.onerror  = function () {
+                    tmpImage.onerror = function () {
                         console.log('load failed');
                     }
 

@@ -348,7 +348,7 @@
         & > div {
           width: 100%;
           height: 100%;
-          overflow: hidden;
+          //overflow: hidden;
           position: relative;
           // box-shadow: 0px 0px 4px 1px #d73b3b;
 
@@ -464,13 +464,13 @@
 
 .cut-line {
   position: absolute;
-  background: rgba(74, 74, 74, 0.57);
+  background: rgba(223, 223, 223, 0.57);
   z-index: 100;
 }
 
 .cut-line.line-left {
   left: 0;
-  width: 10px;
+ // width: 10px;
   top: 0;
   height: 100%;
   border-right: 2px dashed white;
@@ -478,7 +478,7 @@
 
 .cut-line.line-right {
   right: 0;
-  width: 10px;
+  //width: 10px;
   top: 0;
   height: 100%;
   border-left: 2px dashed white;
