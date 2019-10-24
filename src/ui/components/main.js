@@ -582,6 +582,7 @@ export class MainComponent extends Component {
             </div>
 
             { this.state.openBorderModal && <BorderComponent
+                charge={this.state.borderCharge}
                 onModalClose={() => {this.state.openBorderModal = false; this.setState(this.state)}}/> }
             <div id="pagination-bar"></div>
             <div id="tippy-content-1" style="display: none;">
@@ -654,6 +655,7 @@ export class MainComponent extends Component {
         $('#pagination-bar').html(this.paginator.render());
 
         setTimeout(() => {
+            this.state.borderCharge = this.props.urls[0].uid;
             this.state.openBorderModal = true;
             this.setState(this.state);
         }, 1000)

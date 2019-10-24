@@ -61,11 +61,24 @@ export class ToolbarComponent extends Component {
         this.addControlTooltip()
     }
 
-    onOptionChange(id, value, name) {
+    onOptionChange(id, value, name, item_label, option_label) {
 
-        console.log(id, value, name );
-        $(`.dropdown[data-option-id='${id}'] button`).html(name)
-        this.props.onOptionChange(id, value, name)
+        console.log(id, value, name, item_label, option_label );
+        $(`.dropdown[data-option-id='${id}'] button`).html(name);
+        this.props.onOptionChange(id, value, name);
+        switch (item_label) {
+            case 'size':
+                this.props.onSizeChange(option_label);
+                break;
+            case 'paper':
+                break;
+            case 'framing':
+                this.onFramingChange(option_label);
+                break;
+            case 'border-select':
+                this.onBorderChange(option_label);
+                break;
+        }
     }
 
     render(props, state, context) {
@@ -79,7 +92,10 @@ export class ToolbarComponent extends Component {
                 </button>
                 <div className="dropdown-menu">
                     {item.option_values.map((option) => {
-                        return <a className="dropdown-item" href="#" onClick={(e) => {this.onOptionChange(item.option_id, option.option_value_id, option.name); e.preventDefault();}}>{option.name}</a>
+                        return <a className="dropdown-item" href="#" onClick={(e) => {
+                            this.onOptionChange(item.option_id, option.option_value_id, option.name, item.label, option.label || option.value);
+                            e.preventDefault();
+                        }}>{option.name}</a>
                     })}
                 </div>
             </div>
