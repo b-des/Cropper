@@ -2,45 +2,76 @@ import {h, Component} from "preact";
 
 const AColorPicker = require('a-color-picker');
 
-export class BorderComponent extends Component {
+export class BorderComponent {
     constructor() {
-        super();
         this.color = '';
+        this.isInititalized = false;
+        this.isOpen = false;
+        this.charge = null;
+
     }
 
-    componentDidMount() {
-        this.initPopup()
+    isInitialized(){
+        return this.isInititalized;
     }
 
-    componentDidUpdate(previousProps, previousState, previousContext) {
-        console.log('componentDidUpdate');
-
-        this.initPopup()
-    }
-
-    componentWillUnmount(){
-        console.log('componentWillUnmount');
-    }
-
-    initPopup() {
+    show(charge){
+        if(this.isOpen){
+            this.onModalClose();
+        }
+        $("#border-popup").show();
+        this.charge = charge;
         $('div#color-picker').html('');
-        $("#thickness").val($(`#crop-container-${this.props.charge}`).attr('data-border-thickness') || 3);
+
+        $("#thickness").val(+$(`#crop-container-${this.charge}`).attr('data-border-thickness') || 3);
+        console.log(+$(`#crop-container-${this.charge}`).attr('data-border-thickness') || 3);
 
         AColorPicker.from('div#color-picker').on('change', (picker, color) => {
-            let thickness = $("#thickness").val();
+            let thickness = $("#thickness").val() / window.MM_KOEF;
             this.color = AColorPicker.parseColor(color, "hex");
-            $(`#crop-container-${this.props.charge}`).find(".border-frame").css('border', `${thickness}px solid ${this.color}`);
+            $(`#crop-container-${this.charge}`).find(".border-frame").css('border', `${thickness}px solid ${this.color}`);
         });
 
         this.adjustPopupPosition('left');
 
+        this.isOpen = true;
+        this.color = $(`#crop-container-${this.charge}`).find(".crop-container").attr('data-border');
+    }
 
-        this.color = $(`#crop-container-${this.props.charge}`).find(".crop-container").attr('data-border');
+    hide(){
+        $("#border-popup").hide();
+        this.isOpen = false;
+    }
+
+    initPopup(container) {
+
+
+        console.log($(`#${container}`));
+        $(`#${container}`).append(this.render());
+        this.hide();
+
+        $(document).on('change input', "#thickness", (event) => {
+            console.log(event.target.value);
+            this.changeThickness(event);
+        });
+
+        $(document).on('click', "#border-popup .apply", () => {
+            this.applyBorder();
+        });
+
+        $(document).on('click', "#border-popup .cancel", () => {
+           this.onModalClose();
+        });
     }
 
     adjustPopupPosition(outOfSide) {
-        let charge = $(`#crop-container-${this.props.charge}`);
+        let charge = $(`#crop-container-${this.charge}`);
+        console.log(charge);
+        console.log(this.charge);
+
         let offset = charge.offset();
+        if(!offset)
+            return;
         let height = charge.height();
         let width = charge.width();
         let css = {
@@ -62,7 +93,6 @@ export class BorderComponent extends Component {
                 break;
         }
         let isMobile = window.matchMedia("only screen and (max-width: 760px)").matches;
-        console.log(isMobile);
         if (isMobile) {
             $('#border-popup').attr('class', 'top');
             css = {
@@ -79,26 +109,19 @@ export class BorderComponent extends Component {
 
     outOfViewport() {
         let bounding = document.getElementById("border-popup").getBoundingClientRect();
-        console.log(bounding);
-        console.log(window.innerWidth);
+
         if (
             bounding.top >= 0 &&
             bounding.left >= 0 &&
             bounding.right <= (window.innerWidth || document.documentElement.clientWidth) &&
             bounding.bottom <= (window.innerHeight || document.documentElement.clientHeight)
-        ) {
-            console.log('In the viewport!');
-        } else {
-            console.log('Not in the viewport... whomp whomp');
+        ) {} else {
             if (bounding.top < 0) {
                 // Top is out of viewport
-                console.log('Top is out of viewport');
             } else if (bounding.left < 0) {
                 // Left side is out of viewport
-                console.log('Left side is out of viewport');
             } else if (bounding.right > (window.innerWidth || document.documentElement.clientWidth)) {
                 // Right side is out of viewport
-                console.log('Right side is out of viewport');
                 this.adjustPopupPosition('right');
             }
 
@@ -106,44 +129,45 @@ export class BorderComponent extends Component {
     }
 
     changeThickness(event) {
-        $(`#crop-container-${this.props.charge}`).find(".border-frame").css('border-width', `${event.target.value}px`);
-        $(`#crop-container-${this.props.charge}`).css('padding', `${event.target.value}px`);
-        $(`#crop-container-${this.props.charge}`).cropper('update');
+        console.log(event);
+        let thickness = event.target.value / window.MM_KOEF;
+        $(`#crop-container-${this.charge}`).find(".border-frame").css('border-width', `${thickness}px`);
+        $(`#crop-container-${this.charge}`).css('padding', `${thickness}px`);
+        $(`#crop-container-${this.charge}`).cropper('update');
     }
 
-    render(props, state, context) {
-        return <div id="border-popup" className="right">
+    render() {
+        this.isInititalized = true;
+        const self = this;
+        return `<div id="border-popup" class="right">
             <div id="image-container">
 
             </div>
             <div id="border-size">
-                <label htmlFor="thickness">Толщина(мм): </label>
-                <input type="number" value={3} name="" min={1} max={20} id="thickness"
-                       onChange={this.changeThickness.bind(this)}/>
+                <label for="thickness">Толщина(мм): </label>
+                <input type="number" value="3" name="" min="1" max="20" id="thickness"/>
             </div>
-            <div id="color-picker" acp-color={this.color} acp-palette="PALETTE_MATERIAL_CHROME" acp-palette-editable
+            <div id="color-picker" acp-color='${this.color}' acp-palette="PALETTE_MATERIAL_CHROME" acp-palette-editable
                  acp-show-rgb="no" acp-show-hsl="no" acp-show-hex="no">
             </div>
             <div style="display:flex; flex-direction:row;justify-content: center;">
-                <button style="margin-right:15px" className="btn btn-success btn-sm"
-                        onClick={() => this.applyBorder()}>Применить
-                </button>
-                <button className="btn btn-danger btn-sm" onClick={() => this.onModalClose()}>Отмена</button>
+                <button style="margin-right:15px" class="btn btn-success btn-sm apply">Применить</button>
+                <button class="btn btn-danger btn-sm cancel" >Отмена</button>
             </div>
-        </div>
+        </div>`
 
     }
 
     applyBorder() {
-        $(`#crop-container-${this.props.charge}`).attr('data-border', this.color);
-        $(`#crop-container-${this.props.charge}`).attr('data-border-thickness', $("#thickness").val());
-        this.props.onModalClose();
+        $(`#crop-container-${this.charge}`).attr('data-border', this.color);
+        $(`#crop-container-${this.charge}`).attr('data-border-thickness', $("#thickness").val());
+        this.hide();
     }
 
     onModalClose() {
-        let color = $(`#crop-container-${this.props.charge}`).attr('data-border');
-        let thickness = $(`#crop-container-${this.props.charge}`).attr('data-border-thickness') || 3;
-        $(`#crop-container-${this.props.charge}`).find(".border-frame").css('border', `${thickness}px solid ${color}`);
-        this.props.onModalClose();
+        let color = $(`#crop-container-${this.charge}`).attr('data-border');
+        let thickness = $(`#crop-container-${this.charge}`).attr('data-border-thickness') || 3;
+        $(`#crop-container-${this.charge}`).find(".border-frame").css('border', `${thickness / window.MM_KOEF}px solid ${color}`);
+        this.hide();
     }
 }

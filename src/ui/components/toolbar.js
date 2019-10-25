@@ -61,13 +61,10 @@ export class ToolbarComponent extends Component {
         $('.dropdown').find('button').removeClass('disabled');
     }
 
-    componentDidMount() {
-        this.addControlTooltip()
-    }
 
     onOptionChange(id, value, name, item_label, option_label) {
 
-        this.props.onOptionChange(id, value, name);
+        this.props.onOptionChange(id, value);
         switch (item_label) {
             case 'size':
                 this.props.onSizeChange(option_label);
@@ -89,7 +86,37 @@ export class ToolbarComponent extends Component {
    }
 
     componentDidMount() {
-        console.log('componentDidMount');
+        this.addControlTooltip();
+    }
+
+    componentWillMount() {
+        this.options = this.props.options.map((item) => {
+                let default_id = this.props.defaultOptions.filter(option => +option.option_id === +item.option_id).map(option => option.option_value_id)[0];
+                let default_option = item.option_values.filter(value => +value.option_value_id === +default_id)[0];
+
+                if(default_id && default_option){
+                    this.onOptionChange(+item.option_id, +default_option.option_value_id, null, item.label, default_option.value || '')
+                }
+                return  <div>
+                    <span>{item.name}:</span>
+                    <div className={`dropdown ${item.label}`} data-option-id={item.option_id}>
+                    <button className="btn btn-sm btn-primary dropdown-toggle disabled" type="button" data-toggle="dropdown"
+                            aria-haspopup="true" aria-expanded="false">
+                        {default_option? default_option.name : item.name}
+
+                    </button>
+                    <div className="dropdown-menu">
+                        {item.option_values.map((option) => {
+                            return <a className="dropdown-item" href="#" onClick={(e) => {
+                                this.onOptionChange(item.option_id, option.option_value_id, option.name, item.label, option.label || option.value);
+                                e.preventDefault();
+                            }}>{option.name}</a>
+                        })}
+                    </div>
+                </div>
+                </div>
+            }
+        );
     }
 
     componentDidUpdate(previousProps, previousState, previousContext) {
@@ -98,23 +125,7 @@ export class ToolbarComponent extends Component {
 
     render(props, state, context) {
 
-        this.options = this.props.options.map((item) =>
-            <div  className={`dropdown ${item.label}`} data-option-id={item.option_id}>
-                <button className="btn btn-sm btn-primary dropdown-toggle disabled" type="button" data-toggle="dropdown"
-                        aria-haspopup="true" aria-expanded="false">
-                    {item.name}
 
-                </button>
-                <div className="dropdown-menu">
-                    {item.option_values.map((option) => {
-                        return <a className="dropdown-item" href="#" onClick={(e) => {
-                            this.onOptionChange(item.option_id, option.option_value_id, option.name, item.label, option.label || option.value);
-                            e.preventDefault();
-                        }}>{option.name}</a>
-                    })}
-                </div>
-            </div>
-        );
         this.sizes = props.sizes.map((item, key) =>
             <a className="dropdown-item" href="#" onClick={(e) => {
                 this.props.onSizeChange(item.value);

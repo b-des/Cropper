@@ -50,8 +50,8 @@ export class ImageItem {
                 <div class="image-item">
                
                     <div id="crop-container-{{=it.uid}}" class='crop-container {{? it.checked }} enabled {{?}}' data-uid="{{=it.uid}}" data-rotate="{{=it.rotate}}"
-                         style="width:100%; height:100%" data-src="{{=it.url}}" data-border="{{=it.border}}" data-zoom="{{=it.zoom}}" data-top="{{=it.top}}" data-left="{{=it.left}}"
-                         data-border-thickness="{{=it.borderThickness}}">
+                         style="width:100%; height:100%; padding: {{=it.borderThickness/3.75}}px;" data-src="{{=it.url}}" data-border="{{=it.border}}" data-zoom="{{=it.zoom}}" data-top="{{=it.top}}" data-left="{{=it.left}}"
+                         data-border-thickness="{{=it.borderThickness}}" >
                         <div class="lds-ring"><div></div><div></div><div></div><div></div></div>
                     </div>
                 </div>

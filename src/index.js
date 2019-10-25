@@ -14,6 +14,7 @@ import './lib/cropper.jquery.js'
 
 window.tippy = require('tippy.js').default;
 window.toPixel = require('unit-to-px').default;
+window.MM_KOEF = 3.75; // to convert pixel to millimeter
 import Image from './model/Image';
 import Options from './model/Options';
 import Swal from "sweetalert2";
@@ -46,14 +47,16 @@ class Cropper extends Component {
             immediate: false,
             dest: '',
             maxHeight: 500,
-            sizes: null
+            sizes: null,
+            options: [],
+            defaultOptions: [],
         };
 
         Object.assign(this.options, options);
 
         this.state.urls = [];
         this.state.handlerUrl = '';
-        this.state.urls = ls.get('urls') ? ls.get('urls') : [];
+        //this.state.urls = ls.get('urls') ? ls.get('urls') : [];
 
         window.onbeforeunload = () => {
             if (this.options.saveOnRefresh) {
@@ -93,6 +96,7 @@ class Cropper extends Component {
 
     }
 
+
     /**
      * Add photos.
      * @param {Image[]} images - Array with photos.
@@ -127,7 +131,7 @@ class Cropper extends Component {
                     zoom: photo.zoom || 0,
                     uid: photo.uid,
                     border: photo.border || '',
-                    borderThickness: photo.borderThickness || 3,
+                    borderThickness: photo.borderThickness  || 0,
                     rotate: photo.rotate || '',
                     checked: photo.zoom && (photo.left || photo.top) || photo.original === false || null
                 });
@@ -154,7 +158,7 @@ class Cropper extends Component {
                         }
                         if (photo.border) {
                             setTimeout(() => {
-                                $(`#${uid}`).find('.border-frame').css('border', `${photo.borderThickness}px solid ${photo.border}`).css('z-index', '99');
+                                $(`#${uid}`).find('.border-frame').css('border', `${photo.borderThickness / window.MM_KOEF}px solid ${photo.border}`).css('z-index', '99');
                             }, 500)
 
                         }

@@ -118,6 +118,11 @@
         margin: 0 5px;
         display: inline-block;
 
+        & > span{
+          font-size: 12px;
+          color: #b5b5b5;
+        }
+
         &:not(.select-items) > * {
           @include mobile-only {
             width: 100%;
@@ -166,9 +171,11 @@
 
     .right-toolbar-tools {
       float: right;
+      margin-top: 17px;
 
       @include mobile-only {
         flex-basis: 100%;
+        margin-top: 0;
       }
 
       & > * {
@@ -649,4 +656,10 @@
   100% {
     transform: rotate(360deg);
   }
+}
+
+.tline{
+  position: absolute !important;
+  background: #FFF;
+  z-index: 99999;
 }

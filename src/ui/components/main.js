@@ -3,6 +3,7 @@ import {ToolbarComponent} from "./toolbar";
 import {BorderComponent} from "./border-popup";
 import {ImageItem} from "./item";
 import uuid from 'uuid/v4';
+
 const dot = require('dot');
 import 'perfect-scrollbar/css/perfect-scrollbar.css'
 import {Scrollbars} from 'react-custom-scrollbars';
@@ -10,6 +11,7 @@ import Scrollbar from "smooth-scrollbar";
 import pagination from 'pagination';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+
 export class MainComponent extends Component {
 
 
@@ -19,7 +21,6 @@ export class MainComponent extends Component {
         this.state = {
             width: '100%',
             height: '100%',
-            urls: [],
             checkAll: false,
             framing: 'whole',
             waiting: false,
@@ -32,7 +33,11 @@ export class MainComponent extends Component {
         this.imageItemTemplate = new ImageItem().getHtml();
         this.options = [];
         this.child = createRef();
+
+        this.borderSettings = new BorderComponent();
+
     }
+
 
 
     /*Fire when changed size*/
@@ -40,11 +45,11 @@ export class MainComponent extends Component {
         this.size = {width: size[1], height: size[0]};
         this.changePhotoSize($(`.crop-container.enabled`), this.size);
         $(`.image-container:visible .crop-container.enabled`).cropper('update', {fitToContainer: this.framing !== 'cropp'});
-       /* $(`.crop-container.enabled`).each((i, obj) => {
-            setTimeout(() => {
-                $(obj).cropper('update', {fitToContainer: this.framing !== 'cropp'})
-            }, 10)
-        });*/
+        /* $(`.crop-container.enabled`).each((i, obj) => {
+             setTimeout(() => {
+                 $(obj).cropper('update', {fitToContainer: this.framing !== 'cropp'})
+             }, 10)
+         });*/
     };
 
     /*Fired on paper change*/
@@ -69,11 +74,15 @@ export class MainComponent extends Component {
         if (border === 'none') {
             $(`.crop-container.enabled`).find('.border-frame').css('border', 'none').css('z-index', '-1');
             $(`.crop-container.enabled`).attr('data-border', 'none');
+            $(`.crop-container.enabled`).css('padding', 0);
         } else {
             //$(`.crop-container.enabled`).css('border', `3px solid ${border}`);
-            $(`.crop-container.enabled`).find('.border-frame').css('border', `3px solid ${border}`).css('z-index', 99);
+            let thickness = 3 / window.MM_KOEF;
+            $(`.crop-container.enabled`).find('.border-frame').css('border', `${thickness}px solid ${border}`).css('z-index', 99);
             $(`.crop-container.enabled`).attr('data-border', border);
+            $(`.crop-container.enabled`).css('padding', thickness);
         }
+        $(`.crop-container.enabled`).cropper('update');
     }
 
 
@@ -93,15 +102,16 @@ export class MainComponent extends Component {
             setTimeout(() => {
                 this.changePhotoSize($(`.crop-container.enabled`), this.size);
                 $(visibleItems.join(',')).find('.crop-container').cropper('update', {fitToContainer: this.framing === 'whole'});
-                if($(`.crop-container.enabled`).attr('data-border'))
-                    $(`.crop-container.enabled`).find('.border-frame').css('border', `3px solid ${$(`.crop-container.enabled`).attr('data-border')}`);
+                let thickness = $(`.crop-container.enabled`).attr('data-border-thickness') / window.MM_KOEF;
+                if ($(`.crop-container.enabled`).attr('data-border'))
+                    $(`.crop-container.enabled`).find('.border-frame').css('border', `${thickness}px solid ${$(`.crop-container.enabled`).attr('data-border')}`);
                 if (this.border)
-                    $(`.crop-container.enabled`).find('.border-frame').css('border', `3px solid ${this.border}`);
+                    $(`.crop-container.enabled`).find('.border-frame').css('border', `${thickness}px solid ${this.border}`);
             }, 10);
             this.child.current.removeControlTooltip();
         } else {
             $('.image-container .crop-container').removeClass('enabled');
-                $(visibleItems.join(',')).find('.crop-container').css({
+            $(visibleItems.join(',')).find('.crop-container').css({
                 width: '100%',
                 height: '100%'
             }).cropper('reset');
@@ -128,8 +138,10 @@ export class MainComponent extends Component {
             this.changePhotoSize(target, this.size);
             target.cropper('update', {fitToContainer: this.framing === 'whole'});
 
+
+            let thickness = target.attr('data-border-thickness') / window.MM_KOEF;
             if (this.border) {
-                target.find('.border-frame').css('border', `3px solid ${this.border}`);
+                target.find('.border-frame').css('border', `${thickness}px solid ${this.border}`);
             } else {
                 target.find('.border-frame').css('z-index', '-1');
             }
@@ -139,9 +151,9 @@ export class MainComponent extends Component {
             target.removeClass('enabled');
         }
 
-        if(checkAll){
+        if (checkAll) {
             this.child.current.removeControlTooltip();
-        }else{
+        } else {
             this.child.current.addControlTooltip();
         }
 
@@ -152,7 +164,7 @@ export class MainComponent extends Component {
     /*Calculate sizes for photo*/
     changePhotoSize(container, size) {
         let containerSize = {width: 280, height: 180};
-        if(size.width !== 0 && size.height !== 0){
+        if (size.width !== 0 && size.height !== 0) {
             if (size.width === size.height) {
                 //this.setState({width: '180px', height: '180px'});
                 container.css({width: '180px', height: '180px'});
@@ -172,14 +184,14 @@ export class MainComponent extends Component {
             }
             this.size = {width: size.width, height: size.height};
             $('.dropdown.size button').html(`Формат: ${size.height}x${size.width}`);
-        }else{
+        } else {
 
         }
 
     }
 
     /*Clone image*/
-    cloneItem(uid){
+    cloneItem(uid) {
         const index = this.props.urls.findIndex(a => a.uid === uid);
         let photo = this.props.urls[index];
         let item = JSON.parse(JSON.stringify(photo));
@@ -194,11 +206,14 @@ export class MainComponent extends Component {
             uid: item.uid,
             border: photo.border || '',
             rotate: photo.rotate || '',
-            checked:  null
+            checked: null
         });
 
         $(html).insertAfter(`#${uid}`);
-        $(`#${item.uid}`).find('.crop-container').cropper({onLoad: () => {}, createUI: false});
+        $(`#${item.uid}`).find('.crop-container').cropper({
+            onLoad: () => {
+            }, createUI: false
+        });
         this.paginator.set('totalResult', this.props.urls.length);
         $('#pagination-bar').html(this.paginator.render());
         tippy('[data-tippy-content]', {'theme': 'light'});
@@ -244,7 +259,7 @@ export class MainComponent extends Component {
     }
 
     /*Delet all images*/
-    deleteAllItems(){
+    deleteAllItems() {
         let confirmedRemove = () => {
             this.props.urls = [];
             $('.image-container').remove();
@@ -283,9 +298,12 @@ export class MainComponent extends Component {
                 target.html('');
                 target.attr('data-src', `${response.data.filename}?v=${new Date().getTime()}`);
                 // target.cropper('reset');
-                target.cropper('update', {rotate: true, createUI: target.hasClass('enabled'), onLoad: () => {}});
+                target.cropper('update', {
+                    rotate: true, createUI: target.hasClass('enabled'), onLoad: () => {
+                    }
+                });
 
-                if(this.border && this.border !== 'none'){
+                if (this.border && this.border !== 'none') {
                     target.find('.border-frame').css('z-index', `99`);
                 }
             }, 1000);
@@ -307,36 +325,43 @@ export class MainComponent extends Component {
                 size: this.size,
                 dest: this.props.dest,
                 paper: this.paper || '',
-                crop:false,
+                crop: false,
                 original: true,
                 quantity: parseInt($('[name="quantity"]').val())
             };
             if ($(e).hasClass('enabled')) {
 
+                let imgWidth = (parseFloat($(e).find('img').css('width')) );
+                let imgHeight = (parseFloat($(e).find('img').css('height')) );
+                let offset = parseInt($(e).attr('data-border-thickness'))+2;
 
-                let left = 100 * Math.abs(parseFloat($(e).find('img').css('left'))) / (parseFloat($(e).find('img').css('width')) + parseFloat($(e).css('padding-top'))*2) || 0;
-                let top = 100 * Math.abs(parseFloat($(e).find('img').css('top'))) / parseFloat($(e).find('img').css('height')) || 0;
-                let cropX = 100 * parseFloat($(e).css('width')) / (parseFloat($(e).find('img').css('width')) + parseFloat($(e).css('padding-top'))*2);
-                let cropY = 100 * parseFloat($(e).css('height')) / (parseFloat($(e).find('img').css('height')) + parseFloat($(e).css('padding-top'))*2);
-                console.log(parseFloat($(e).css('height')));
-                console.log(parseFloat($(e).find('img').css('height')));
-                console.log(parseFloat($(e).css('padding-top')));
+                //let left = (parseFloat($(e).find('img').css('width')) );
+                let left = 100 * ((Math.abs( parseFloat($(e).find('img').css('left')) ) ) / imgWidth) || 0;
+                //let top = (parseFloat($(e).find('img').css('height')));
+                let top = 100 * ((Math.abs( parseFloat($(e).find('img').css('top'))) / imgHeight)) || 0;
+
+                let width = 100 * (($(e).innerWidth() - offset / 2) / imgWidth);
+
+                let height = 100 * (($(e).innerHeight() - offset / 2)/ imgHeight);
+
+
                 item = Object.assign(item, {
                     crop: $(e).attr('data-crop') === 'true' ? {
                         x: isFinite(left) ? left : 0,
-                        y: isFinite(top) ? top: 0,
-                        w: isFinite(cropX)? cropX: 0,
-                        h: isFinite(cropY)? cropY: 0} : false,
+                        y: isFinite(top) ? top : 0,
+                        w: isFinite(width) ? width : 0,
+                        h: isFinite(height) ? height : 0
+                    } : false,
                     rotate: $(e).attr('data-rotate') || 0,
                     border: $(e).attr('data-border') || '',
-                    borderThickness: $(e).attr('data-border-thickness') || 3,
+                    borderThickness: $(e).attr('data-border-thickness') || 0,
                     zoom: $(e).attr('data-zoom'),
                     original: false
                 });
 
-                console.log(item.crop.w, item.crop.h);
-                if(this.props.urls[i].crop && (item.crop.w === 0 || item.crop.h === 0)){
-                    //item.crop = this.props.urls[i].crop;
+                //console.log(item.crop.w, item.crop.h);
+                if (this.props.urls[i].crop && (item.crop.w === 0 || item.crop.h === 0)) {
+                    item.crop = this.props.urls[i].crop;
                 }
 
             }
@@ -355,10 +380,10 @@ export class MainComponent extends Component {
             this.props.onProcessingStart({status: 'start', count: items.length});
 
             axios.post(`${this.props.handlerUrl}/processing`, items).then(response => {
-                if(this.props.onOrderClick)
+                if (this.props.onOrderClick)
                     this.props.onOrderClick({options: this.options, photos: response.data});
             }).catch(error => {
-                if(this.props.onOrderClick)
+                if (this.props.onOrderClick)
                     this.props.onOrderClick(error);
             });
 
@@ -393,13 +418,13 @@ export class MainComponent extends Component {
         }
     }
 
-     chunkArray(myArray, chunk_size){
+    chunkArray(myArray, chunk_size) {
         var index = 0;
         var arrayLength = myArray.length;
         var tempArray = [];
 
         for (index = 0; index < arrayLength; index += chunk_size) {
-           let myChunk = myArray.slice(index, index+chunk_size);
+            let myChunk = myArray.slice(index, index + chunk_size);
             tempArray.push(myChunk);
         }
 
@@ -434,29 +459,29 @@ export class MainComponent extends Component {
         });
         let length = $('.image-container input[type=checkbox]:checked').length;
         $('#cropper-toolbar .selected-items').html(length);
-        if (length){
+        if (length) {
             $('#cropper-toolbar input[type=checkbox]').prop('checked', 'checked');
             $(`.dropdown.framing button`).html('Кадр целиком');
             this.child.current.removeControlTooltip();
         }
 
-        if (firstElement.size || lastElement.size){
+        if (firstElement.size || lastElement.size) {
             this.changePhotoSize($(`.crop-container.enabled`), firstElement.size || lastElement.size);
-            if(crop){
+            if (crop) {
                 this.framing = 'cropp';
                 $(`.dropdown.framing button`).html('Кадр в обрез');
             }
         }
 
-        if (border.color){
+        if (border.color) {
             this.border = border.color;
             if (border.color === 'black') {
                 $(`.dropdown.border-select button`).html(`Черная рамка`);
-            }else if(border.color === 'white'){
+            } else if (border.color === 'white') {
                 $(`.dropdown.border-select button`).html(`Белая рамка`);
-            }else if(border.color){
+            } else if (border.color) {
                 $(`.dropdown.border-select button`).html(`Цветная рамка`);
-            }else{
+            } else {
                 $(`.dropdown.border-select button`).html(`Без рамки`);
             }
 
@@ -467,7 +492,7 @@ export class MainComponent extends Component {
     }
 
 
-    updateSizes(sizes){
+    updateSizes(sizes) {
         this.props.sizes = sizes;
     }
 
@@ -537,17 +562,23 @@ export class MainComponent extends Component {
         });
     }
 
-    onOptionChange(id, value){
+    onOptionChange(id, value, size) {
         let option = {
             option_id: id,
             option_value_id: value,
         };
         let index = this.options.findIndex((item) => item.option_id === id);
-        if(index === -1){
+        if (index === -1) {
             this.options.push(option)
-        }else{
+        } else {
             this.options[index] = option;
         }
+        console.log(id, value, size);
+
+    }
+    componentDidUpdate(previousProps, previousState, previousContext) {
+        console.log(previousProps.urls);
+       this.props.urls = previousProps.urls;
     }
 
     render(props, state, context) {
@@ -565,8 +596,6 @@ export class MainComponent extends Component {
         });
 
 
-
-
         let html = <div id="cropper-container">
             <div className="spinner-container" id="loader" style="display: none">
                 <div className="spinner"></div>
@@ -576,7 +605,8 @@ export class MainComponent extends Component {
                 <ToolbarComponent ref={this.child}
                                   sizes={this.props.sizes}
                                   options={this.props.options.options}
-                                  onOptionChange={(id, value) => this.onOptionChange.call(this, id, value)}
+                                  defaultOptions={this.props.options.defaultOptions}
+                                  onOptionChange={(id, value, extra) => this.onOptionChange.call(this, id, value, extra)}
                                   onSelectChange={(state) => this.onSelectAllItems(state)}
                                   onDeleteAllClick={() => this.deleteAllItems()}
                                   onSizeChange={size => this.onFormatChange.call(this, size)}
@@ -586,14 +616,10 @@ export class MainComponent extends Component {
                                   onOrderClick={(val) => this.onOrderClick()}
                 />
             </div>
-            <div id="main-section" style={{'max-height': this.props.options.maxHeight+'px'}}>
+            <div id="main-section" style={{'max-height': this.props.options.maxHeight + 'px'}}>
                 <div className="placeholder">Фотографии не загружены</div>
             </div>
 
-            { this.state.openBorderModal && <BorderComponent
-                charge={this.state.borderCharge}
-                applyBorder={()=>{}}
-                onModalClose={() => {this.state.openBorderModal = false; this.setState(this.state)}}/> }
             <div id="pagination-bar"></div>
             <div id="tippy-content-1" style="display: none;">
                 <strong>Фото нестандартного формата.</strong>
@@ -614,10 +640,9 @@ export class MainComponent extends Component {
 
 
     componentDidMount() {
+        this.borderSettings.initPopup("cropper-container");
         this.state.urls = this.props.urls;
-
         this.setState(this.state);
-
 
         $(document).on('click', '.image-container .remove-item', (e) => {
             let uid = $(e.target).closest('.image-container').find('.crop-container').attr('data-uid');
@@ -640,16 +665,12 @@ export class MainComponent extends Component {
             let border = $(e.target).closest('.image-container').find('.crop-container').attr('data-border');
             let enabled = $(e.target).closest('.image-container').find('.crop-container.enabled').length;
 
-            if(!border || border === 'none' || !enabled){
+            if (!border || border === 'none' || !enabled) {
                 Swal.fire({
                     text: 'Для управления рамкой, отметьте фотографию и выберите рамку'
                 });
-            }else{
-                this.state.borderCharge = uid;
-                this.state.openBorderModal = true;
-                this.setState({openBorderModal: this.state.openBorderModal});
-                this.setState({borderCharge: this.state.borderCharge});
-
+            } else {
+                this.borderSettings.show(uid)
             }
         });
 
