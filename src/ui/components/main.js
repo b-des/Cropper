@@ -27,7 +27,7 @@ export class MainComponent extends Component {
             openBorderModal: false
         };
         this.framing = 'whole';
-        this.size = {width: 15, height: 10};
+        this.size = {width: 0, height: 0};
         this.progress = 0;
         this.imageItemTemplate = new ImageItem().getHtml();
         this.options = [];
@@ -106,7 +106,7 @@ export class MainComponent extends Component {
                 height: '100%'
             }).cropper('reset');
 
-            $(`.crop-container.enabled`).find('.border-frame').css('border', 'none');
+            $(`.crop-container`).find('.border-frame').css('border', '0px solid #fff');
             this.child.current.addControlTooltip();
         }
 
@@ -152,25 +152,30 @@ export class MainComponent extends Component {
     /*Calculate sizes for photo*/
     changePhotoSize(container, size) {
         let containerSize = {width: 280, height: 180};
-        if (size.width === size.height) {
-            //this.setState({width: '180px', height: '180px'});
-            container.css({width: '180px', height: '180px'});
-        } else {
-            let ratio = size.width / size.height;
-            if (ratio >= containerSize.width / containerSize.height) {
-                //280/size[1]:180/x
-                let height = 280 / size.width * size.height;
-                //this.setState({width: '280px', height: `${height}px`});
-                container.css({width: '280px', height: `${height}px`});
+        if(size.width !== 0 && size.height !== 0){
+            if (size.width === size.height) {
+                //this.setState({width: '180px', height: '180px'});
+                container.css({width: '180px', height: '180px'});
             } else {
-                let width = 180 / size.height * size.width;
-                //this.setState({width: `${width}px`, height: '180px'});
-                container.css({width: `${width}px`, height: '180px'});
+                let ratio = size.width / size.height;
+                if (ratio >= containerSize.width / containerSize.height) {
+                    //280/size[1]:180/x
+                    let height = 280 / size.width * size.height;
+                    //this.setState({width: '280px', height: `${height}px`});
+                    container.css({width: '280px', height: `${height}px`});
+                } else {
+                    let width = 180 / size.height * size.width;
+                    //this.setState({width: `${width}px`, height: '180px'});
+                    container.css({width: `${width}px`, height: '180px'});
+                }
+
             }
+            this.size = {width: size.width, height: size.height};
+            $('.dropdown.size button').html(`Формат: ${size.height}x${size.width}`);
+        }else{
 
         }
-        this.size = {width: size.width, height: size.height};
-        $('.dropdown.size button').html(`Формат: ${size.height}x${size.width}`);
+
     }
 
     /*Clone image*/
@@ -278,7 +283,7 @@ export class MainComponent extends Component {
                 target.html('');
                 target.attr('data-src', `${response.data.filename}?v=${new Date().getTime()}`);
                 // target.cropper('reset');
-                target.cropper('update', {rotate: true, createUI: target.hasClass('enabled')});
+                target.cropper('update', {rotate: true, createUI: target.hasClass('enabled'), onLoad: () => {}});
 
                 if(this.border && this.border !== 'none'){
                     target.find('.border-frame').css('z-index', `99`);
@@ -308,11 +313,14 @@ export class MainComponent extends Component {
             };
             if ($(e).hasClass('enabled')) {
 
-                let left = 100 * Math.abs(parseFloat($(e).find('img').css('left'))) / parseFloat($(e).find('img').css('width')) || 0;
-                let top = 100 * Math.abs(parseFloat($(e).find('img').css('top'))) / parseFloat($(e).find('img').css('height')) || 0;
-                let cropX = 100 * (parseFloat($(e).css('width'))) / parseFloat($(e).find('img').css('width'));
-                let cropY = 100 * (parseFloat($(e).css('height'))) / parseFloat($(e).find('img').css('height'));
 
+                let left = 100 * Math.abs(parseFloat($(e).find('img').css('left'))) / (parseFloat($(e).find('img').css('width')) + parseFloat($(e).css('padding-top'))*2) || 0;
+                let top = 100 * Math.abs(parseFloat($(e).find('img').css('top'))) / parseFloat($(e).find('img').css('height')) || 0;
+                let cropX = 100 * parseFloat($(e).css('width')) / (parseFloat($(e).find('img').css('width')) + parseFloat($(e).css('padding-top'))*2);
+                let cropY = 100 * parseFloat($(e).css('height')) / (parseFloat($(e).find('img').css('height')) + parseFloat($(e).css('padding-top'))*2);
+                console.log(parseFloat($(e).css('height')));
+                console.log(parseFloat($(e).find('img').css('height')));
+                console.log(parseFloat($(e).css('padding-top')));
                 item = Object.assign(item, {
                     crop: $(e).attr('data-crop') === 'true' ? {
                         x: isFinite(left) ? left : 0,
@@ -321,12 +329,14 @@ export class MainComponent extends Component {
                         h: isFinite(cropY)? cropY: 0} : false,
                     rotate: $(e).attr('data-rotate') || 0,
                     border: $(e).attr('data-border') || '',
+                    borderThickness: $(e).attr('data-border-thickness') || 3,
                     zoom: $(e).attr('data-zoom'),
                     original: false
                 });
 
-                if(this.props.urls[i].crop && (!item.crop.w || !item.crop.h)){
-                    item.crop = this.props.urls[i].crop;
+                console.log(item.crop.w, item.crop.h);
+                if(this.props.urls[i].crop && (item.crop.w === 0 || item.crop.h === 0)){
+                    //item.crop = this.props.urls[i].crop;
                 }
 
             }
@@ -336,7 +346,7 @@ export class MainComponent extends Component {
                     left: (!item.crop.w && !item.crop.h) ? '' : parseFloat($(e).find('img').css('left')),
                 });
             }
-
+            console.log(item);
             items.push(item);
         });
 
@@ -346,7 +356,7 @@ export class MainComponent extends Component {
 
             axios.post(`${this.props.handlerUrl}/processing`, items).then(response => {
                 if(this.props.onOrderClick)
-                    this.props.onOrderClick(response.data);
+                    this.props.onOrderClick({options: this.options, photos: response.data});
             }).catch(error => {
                 if(this.props.onOrderClick)
                     this.props.onOrderClick(error);
@@ -379,7 +389,7 @@ export class MainComponent extends Component {
                 });
             }*/
         } else {
-            this.props.onOrderClick(items.reverse());
+            this.props.onOrderClick({options: this.options, photos: items.reverse()});
         }
     }
 
@@ -438,18 +448,21 @@ export class MainComponent extends Component {
             }
         }
 
-        if (border){
-            this.border = border;
-            if (border === 'black') {
+        if (border.color){
+            this.border = border.color;
+            if (border.color === 'black') {
                 $(`.dropdown.border-select button`).html(`Черная рамка`);
-            }else if(border === 'white'){
+            }else if(border.color === 'white'){
                 $(`.dropdown.border-select button`).html(`Белая рамка`);
+            }else if(border.color){
+                $(`.dropdown.border-select button`).html(`Цветная рамка`);
             }else{
                 $(`.dropdown.border-select button`).html(`Без рамки`);
             }
 
-            $(`.crop-container.enabled`).attr('data-border', border);
-            $('.border-frame').css('border', `3px solid ${border}`);
+            $(`.crop-container.enabled`).attr('data-border', border.color);
+            $(`.crop-container.enabled`).attr('data-border-thickness', border.thickness);
+            $('.border-frame').css('border', `${border.thickness}px solid ${border}`);
         }
     }
 
@@ -530,13 +543,11 @@ export class MainComponent extends Component {
             option_value_id: value,
         };
         let index = this.options.findIndex((item) => item.option_id === id);
-        console.log(index);
         if(index === -1){
             this.options.push(option)
         }else{
             this.options[index] = option;
         }
-        console.log(this.options);
     }
 
     render(props, state, context) {
@@ -566,8 +577,6 @@ export class MainComponent extends Component {
                                   sizes={this.props.sizes}
                                   options={this.props.options.options}
                                   onOptionChange={(id, value) => this.onOptionChange.call(this, id, value)}
-                                  progress={this.progress}
-                                  waiting={this.state.waiting}
                                   onSelectChange={(state) => this.onSelectAllItems(state)}
                                   onDeleteAllClick={() => this.deleteAllItems()}
                                   onSizeChange={size => this.onFormatChange.call(this, size)}
@@ -583,6 +592,7 @@ export class MainComponent extends Component {
 
             { this.state.openBorderModal && <BorderComponent
                 charge={this.state.borderCharge}
+                applyBorder={()=>{}}
                 onModalClose={() => {this.state.openBorderModal = false; this.setState(this.state)}}/> }
             <div id="pagination-bar"></div>
             <div id="tippy-content-1" style="display: none;">
@@ -625,6 +635,24 @@ export class MainComponent extends Component {
             this.rotateImage(uid, deg > 360 ? 90 : deg);
         });
 
+        $(document).on('click', '.image-container .border-adjust', (e) => {
+            let uid = $(e.target).closest('.image-container').find('.crop-container').attr('data-uid');
+            let border = $(e.target).closest('.image-container').find('.crop-container').attr('data-border');
+            let enabled = $(e.target).closest('.image-container').find('.crop-container.enabled').length;
+
+            if(!border || border === 'none' || !enabled){
+                Swal.fire({
+                    text: 'Для управления рамкой, отметьте фотографию и выберите рамку'
+                });
+            }else{
+                this.state.borderCharge = uid;
+                this.state.openBorderModal = true;
+                this.setState({openBorderModal: this.state.openBorderModal});
+                this.setState({borderCharge: this.state.borderCharge});
+
+            }
+        });
+
         $(document).on('change', '.image-container input[type=checkbox]', (e) => {
             this.onItemSelect($(e.target).closest('.image-container').find('.crop-container'), $(e.target).prop('checked'));
         });
@@ -654,11 +682,6 @@ export class MainComponent extends Component {
 
         $('#pagination-bar').html(this.paginator.render());
 
-        setTimeout(() => {
-            this.state.borderCharge = this.props.urls[0].uid;
-            this.state.openBorderModal = true;
-            this.setState(this.state);
-        }, 1000)
 
     }
 

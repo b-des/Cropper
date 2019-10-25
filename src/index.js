@@ -127,6 +127,7 @@ class Cropper extends Component {
                     zoom: photo.zoom || 0,
                     uid: photo.uid,
                     border: photo.border || '',
+                    borderThickness: photo.borderThickness || 3,
                     rotate: photo.rotate || '',
                     checked: photo.zoom && (photo.left || photo.top) || photo.original === false || null
                 });
@@ -141,7 +142,7 @@ class Cropper extends Component {
                     createUI: photo.original === false,
                     fitToContainer: !photo.crop || photo.crop === false,
                     onLoad: (uid, width, height, existItem) => {
-                        let fitSizes = this.sizesInPixel.filter((item) => item.width <= width || item.height <= height).map((item, index) => item.title);
+                        let fitSizes = this.sizesInPixel.filter((item) => item.width <= width && item.height <= height).map((item, index) => item.title);
 
                         if (fitSizes.length === 0 && !existItem) {
                             let item = $(`#crop-container-${uid}`).closest('.image-container').find('.warning').css('display', 'block');
@@ -153,7 +154,7 @@ class Cropper extends Component {
                         }
                         if (photo.border) {
                             setTimeout(() => {
-                                $(`#${uid}`).find('.border-frame').css('border', `3px solid ${photo.border}`).css('z-index', '99');
+                                $(`#${uid}`).find('.border-frame').css('border', `${photo.borderThickness}px solid ${photo.border}`).css('z-index', '99');
                             }, 500)
 
                         }

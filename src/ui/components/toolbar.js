@@ -3,7 +3,7 @@ import {h, Component} from "preact";
 export class ToolbarComponent extends Component {
     constructor() {
         super();
-        this.state = {sizeLabel: 'Формат', paperLabel: 'Бумага', framingLabel: 'Кадрирование', borderLabel: 'Рамка'}
+        //this.state = {sizeLabel: 'Формат', paperLabel: 'Бумага', framingLabel: 'Кадрирование', borderLabel: 'Рамка'}
         this.tooltip;
     }
 
@@ -31,11 +31,15 @@ export class ToolbarComponent extends Component {
     onBorderChange(border) {
         if (border === 'black') {
             $(`.dropdown.border-select button`).html(`Черная рамка`);
+            this.state.borderLabel = `Черная рамка`;
         } else if (border === 'white') {
             $(`.dropdown.border-select button`).html(`Белая рамка`);
+            this.state.borderLabel = `Белая рамка`;
         } else {
             $(`.dropdown.border-select button`).html(`Без рамки`);
+            this.state.borderLabel = `Без рамки`;
         }
+
 
         this.props.onBorderChange(border)
     }
@@ -63,14 +67,13 @@ export class ToolbarComponent extends Component {
 
     onOptionChange(id, value, name, item_label, option_label) {
 
-        console.log(id, value, name, item_label, option_label );
-        $(`.dropdown[data-option-id='${id}'] button`).html(name);
         this.props.onOptionChange(id, value, name);
         switch (item_label) {
             case 'size':
                 this.props.onSizeChange(option_label);
                 break;
             case 'paper':
+                this.onPaperChange(option_label);
                 break;
             case 'framing':
                 this.onFramingChange(option_label);
@@ -79,6 +82,18 @@ export class ToolbarComponent extends Component {
                 this.onBorderChange(option_label);
                 break;
         }
+    }
+
+   shouldComponentUpdate(nextProps, nextState, nextContext){
+       return false;
+   }
+
+    componentDidMount() {
+        console.log('componentDidMount');
+    }
+
+    componentDidUpdate(previousProps, previousState, previousContext) {
+        console.log('componentDidUpdate');
     }
 
     render(props, state, context) {
@@ -129,7 +144,7 @@ export class ToolbarComponent extends Component {
                         </div>
                     </div>
                     {this.options}
-                    <div className="dropdown size">
+                    {/* <div className="dropdown size">
                         <button className="btn btn-sm btn-primary dropdown-toggle disabled" type="button" data-toggle="dropdown"
                                 aria-haspopup="true" aria-expanded="false">
                             {this.state.sizeLabel}
@@ -199,7 +214,7 @@ export class ToolbarComponent extends Component {
                             }}>Без рамки</a>
                         </div>
                     </div>
-
+                    */}
 
                     <button type="button" className="btn btn-sm btn-success border"
                             onClick={() => this.props.onOrderClick()}>Заказать

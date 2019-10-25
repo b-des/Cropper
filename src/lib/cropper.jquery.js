@@ -66,7 +66,10 @@
             if (!this.obj.hasClass('cropper-container'))
                 this.obj.addClass('cropper-container');
 
-            if (this.imgInitH && this.imgInitW && !this.options.rotate) {
+
+            this.imgInitW = this.imgW = this.img.width();
+            this.imgInitH = this.imgH = this.img.height();
+            if (this.imgInitH && this.imgInitW ) {
                 methods.zoomByDelta.call(this, -this.imgInitW);
                 methods.zoomByDelta.call(this, this.options.initialZoom);
             }
@@ -530,8 +533,12 @@
 
                         that.obj.append('<div class="border-frame"></div>');
                         if (that.options.onLoad) that.options.onLoad(that.obj.attr('data-uid'), this.width, this.height, true);
-                        if (that.obj.hasClass('enabled'))
-                            that.obj.find('.border-frame').css('border', `3px solid ${that.obj.attr('data-border')}`).css('z-index', '-1');
+                        if (that.obj.hasClass('enabled')){
+
+                            let thickness = that.obj.attr('data-border-thickness') || 4;
+                            let color = that.obj.attr('data-border');
+                            that.obj.find('.border-frame').css('border', `${thickness}px solid ${color}`).css('z-index', '-1');
+                        }
 
                         if (that.obj.attr('data-border') && that.obj.attr('data-border') !== 'none')
                             that.obj.find('.border-frame').css('z-index', '99');
