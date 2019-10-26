@@ -55,12 +55,9 @@
         container: 'app',
         handlerUrl: 'http://localhost:5567',
         dest: ['C:/Node/Cropper/dist', 'uploads/12334'],
-        immediate: true,
+        immediate: false,
         itemsPerPage: 8,
-        sizes: [
-            {"title": "10x15", "value": [10, 15]},
-            {"title": "10x20", "value": [10, 20]}
-        ],
+
         defaultOptions: [
             {option_id: 9, option_value_id: 4},
             {option_id: 10, option_value_id: 2},
@@ -164,12 +161,6 @@
             },
         ]
     });
-
-    //overwrite sizes
-    c.setPhotoSizes([
-        {"title": "10x15", "value": [10, 15]},
-        {"title": "20x25", "value": [20, 25]}
-    ]);
 
     let items = [];
     for (let i = 0; i <= 2; i++) {
