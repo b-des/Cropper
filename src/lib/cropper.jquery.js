@@ -131,12 +131,14 @@
 
             this.outputDiv.find(".slider").slider('destroy');
             this.outputDiv.find('*').not('img, .border-frame').remove();
-            let width = (parseInt(this.obj.closest('.image-item').width()) - parseInt(this.obj.width()))/2 ;
-            let height = (parseInt(this.obj.closest('.image-item').height()) - parseInt(this.obj.height()))/2 ;
-            if (width) {
+            let width = (parseInt(this.obj.closest('.image-item').innerWidth()) - parseInt(this.obj.width()))/2 ;
+            let height = (parseInt(this.obj.closest('.image-item').innerHeight()) - parseInt(this.obj.height()))/2 ;
+
+            if (width && width > 0) {
                 html += `<div class="cut-line line-left" style="width: ${width}px; left: -${width}px" data-tippy-placement="left"> </div>`;
                 html += `<div class="cut-line line-right"   style="width: ${width}px; right: -${width}px"  data-tippy-placement="right"> </div>`;
-            } else if (height) {
+            }
+            if (height && height > 0) {
 
                 html += `<div class="cut-line line-top" style="height: ${height}px;  top: -${height}px" data-tippy-placement="top"> </div>`;
                 html += `<div class="cut-line line-bottom" style="height: ${height}px; bottom: -${height}px" data-tippy-placement="bottom"> </div>`;
@@ -173,7 +175,7 @@
         },
 
         fitToContainer: function (fit) {
-            this.obj.attr('data-crop', !fit)
+            this.obj.attr('data-crop', !fit);
             if (fit) {
                 let css;
                 let html = '';
@@ -201,7 +203,7 @@
                 this.outputDiv.find(".offset-line").remove();
                 if (this.options.createUI)
                     this.outputDiv.append(html);
-                let padding = parseInt(this.obj.css('padding-top'));
+                let padding = parseFloat(this.obj.css('padding-top'));
 
                 $(this).find('.offset-line.line-top, .offset-line.line-bottom').css({'height': `${top+padding}px`, 'width': `calc(100% - ${padding}px)`});
                 $(this).find('.offset-line.line-left, .offset-line.line-right').css({'width': `${left+padding}px`, 'height' : `calc(100% - ${padding}px)`});
@@ -290,7 +292,7 @@
                     pos_y = that.img.offset().top + drg_h - pageY,
                     pos_x = that.img.offset().left + drg_w - pageX;
 
-                that.img.css('z-index', 99);
+                //that.img.css('z-index', 99);
 
                 $('body').on("mousemove touchmove", function (e) {
 
@@ -532,11 +534,11 @@
 
                         that.obj.append('<div class="border-frame"></div>');
                         if (that.options.onLoad) that.options.onLoad(that.obj.attr('data-uid'), this.width, this.height, true);
-                        if (that.obj.hasClass('enabled')){
 
-                            let thickness = that.obj.attr('data-border-thickness') || 3 / window.MM_KOEF;
+                        if (that.obj.hasClass('enabled')){
+                            let thickness = (that.obj.attr('data-border-thickness') || 3) / window.MM_KOEF;
                             let color = that.obj.attr('data-border');
-                            that.obj.find('.border-frame').css('border', `${thickness}px solid ${color}`).css('z-index', '-1');
+                            that.obj.find('.border-frame').css('border', `${thickness}px solid ${color}`).css('z-index', '1');
                         }
 
                         if (that.obj.attr('data-border') && that.obj.attr('data-border') !== 'none')

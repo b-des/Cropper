@@ -54,15 +54,19 @@
     let c = new Cropper({
         container: 'app',
         handlerUrl: 'http://localhost:5567',
-        dest: ['../cropper/dist', 'uploads/12334'],
+        dest: ['C:/Node/Cropper/dist', 'uploads/12334'],
         immediate: true,
         itemsPerPage: 8,
         sizes: [
             {"title": "10x15", "value": [10, 15]},
             {"title": "10x20", "value": [10, 20]}
         ],
-        //defaultOptions: [{option_id: 9, option_value_id: 2},{option_id:10, option_value_id:2}],
-        "options": [
+        defaultOptions: [
+            {option_id: 9, option_value_id: 4},
+            {option_id: 10, option_value_id: 2},
+            {option_id: 12, option_value_id: 2}
+        ],
+        options: [
             {
                 "option_id": "9",
                 "name": "Формат бумаги",
@@ -70,10 +74,10 @@
                 "option_values": [
                     {
                         "option_value_id": "1",
-                        "name": "A6 (10x15)",
+                        "name": "A6 (100x100)",
                         "value": [
-                            10,
-                            15
+                            100,
+                            100
                         ]
                     },
                     {
@@ -82,6 +86,22 @@
                         "value": [
                             20,
                             15
+                        ]
+                    },
+                    {
+                        "option_value_id": "3",
+                        "name": "A5 (10x20)",
+                        "value": [
+                            10,
+                            20
+                        ]
+                    },
+                    {
+                        "option_value_id": "4",
+                        "name": "A5 (10x10)",
+                        "value": [
+                            10,
+                            10
                         ]
                     }
                 ]
@@ -152,82 +172,20 @@
     ]);
 
     let items = [];
-    for (let i = 0; i <= 1; i++) {
+    for (let i = 0; i <= 2; i++) {
         items.push(imgs[Math.floor(Math.random() * ((imgs.length - 1) - 0 + 1) + 0)]);
     }
 
-    c.addPhotos([{"url":"https://images3.alphacoders.com/675/675273.jpg","thumbnail":"https://images3.alphacoders.com/675/675273.jpg","size":{"width":15,"height":20},"dest":["../cropper/dist","uploads/12334"],"paper":"","crop":{"x":23.483365949119374,"y":4.964996772752098,"w":31.697730442500315,"h":76.63422484481569},"original":false,"quantity":1,"rotate":0,"border":"#ff0000","borderThickness":"20","zoom":"1.31","top":-13,"left":-102}] )
-    // c.addPhotos([imgs[2]]);
-    // c.addPhotos(['https://pechat.photo/image/customer/guest/3d685054081df4204c636b82034d7057/1234_f130b44b88b615463748e732de0a1fbf.jpg']);
 
-   /* c.addPhotos([{
-        "url": "https://images.pexels.com/photos/1236701/pexels-photo-1236701.jpeg",
-        "thumbnail": "https://images.pexels.com/photos/1236701/pexels-photo-1236701.jpeg",
-        "size": {"width": 15, "height": 20},
-        "dest": ["C:/Node/Cropper/dist", "uploads/12334"],
-        "paper": "",
-        "crop": {"x": 0, "y": 5.555555555555555, "w": 100, "h": 88.88888888888889},
-        "original": false,
-        "quantity": 1,
-        "rotate": 0,
-        "border": "black",
-        "borderThickness": "3",
-        "zoom": "0",
-        "top": -11.25,
-        "left": 0
-    }, {
-        "url": "https://images.pexels.com/photos/556416/pexels-photo-556416.jpeg",
-        "thumbnail": "https://images.pexels.com/photos/556416/pexels-photo-556416.jpeg",
-        "size": {"width": 15, "height": 20},
-        "dest": ["C:/Node/Cropper/dist", "uploads/12334"],
-        "paper": "",
-        "crop": {"x": 25.224820771097253, "y": 0, "w": 49.55637864009956, "h": 100},
-        "original": false,
-        "quantity": 1,
-        "rotate": 0,
-        "border": "#15e531",
-        "borderThickness": "10",
-        "zoom": "0",
-        "top": 0,
-        "left": -68.7167
-    }, {
-        "url": "https://assets.macroplant.com/assets/adapter/adapter-icon-hero-3977e6dc1fc7e2e44df058ea75dcbbb299bdf7b7953fccea23b0a0aefbb1958c.png",
-        "thumbnail": "https://assets.macroplant.com/assets/adapter/adapter-icon-hero-3977e6dc1fc7e2e44df058ea75dcbbb299bdf7b7953fccea23b0a0aefbb1958c.png",
-        "size": {"width": 15, "height": 20},
-        "dest": ["C:/Node/Cropper/dist", "uploads/12334"],
-        "paper": "",
-        "crop": {"x": 12.731481481481483, "y": 19.675925925925927, "w": 52.083333333333336, "h": 69.44444444444444},
-        "original": false,
-        "quantity": 1,
-        "rotate": 0,
-        "border": "#ce1c1c",
-        "borderThickness": "5",
-        "zoom": "1.44",
-        "top": -51,
-        "left": -33
-    }, {
-        "url": "https://pechat.photo/image/customer/guest/3d685054081df4204c636b82034d7057/1234_f130b44b88b615463748e732de0a1fbf.jpg",
-        "thumbnail": "https://pechat.photo/image/customer/guest/3d685054081df4204c636b82034d7057/1234_f130b44b88b615463748e732de0a1fbf.jpg",
-        "size": {"width": 15, "height": 20},
-        "dest": ["C:/Node/Cropper/dist", "uploads/12334"],
-        "paper": "",
-        "crop": {"x": 26.55974469296829, "y": 0, "w": 46.880371709258355, "h": 100},
-        "original": false,
-        "quantity": 1,
-        "rotate": 0,
-        "border": "black",
-        "borderThickness": "3",
-        "zoom": "0",
-        "top": 0,
-        "left": -76.4833
-    }])*/
+    c.addPhotos(imgs);
     c.onProcessingStart((data) => {
         console.log(data);
     });
 
     c.onImagesProcessed((items) => {
+        console.log(items);
         console.log(JSON.stringify(items.photos));
     });
 
-</script>
+    </script>
 </html>

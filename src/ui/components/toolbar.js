@@ -63,11 +63,11 @@ export class ToolbarComponent extends Component {
 
 
     onOptionChange(id, value, name, item_label, option_label) {
-
         this.props.onOptionChange(id, value);
         switch (item_label) {
             case 'size':
                 this.props.onSizeChange(option_label);
+                $(`.dropdown.size button`).html(name);
                 break;
             case 'paper':
                 this.onPaperChange(option_label);
@@ -95,7 +95,7 @@ export class ToolbarComponent extends Component {
                 let default_option = item.option_values.filter(value => +value.option_value_id === +default_id)[0];
 
                 if(default_id && default_option){
-                    this.onOptionChange(+item.option_id, +default_option.option_value_id, null, item.label, default_option.value || '')
+                    this.onOptionChange(+item.option_id, +default_option.option_value_id, null, item.label, default_option.value || default_option.label)
                 }
                 return  <div>
                     <span>{item.name}:</span>
@@ -117,10 +117,6 @@ export class ToolbarComponent extends Component {
                 </div>
             }
         );
-    }
-
-    componentDidUpdate(previousProps, previousState, previousContext) {
-        console.log('componentDidUpdate');
     }
 
     render(props, state, context) {

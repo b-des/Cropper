@@ -74,12 +74,14 @@ export class MainComponent extends Component {
         if (border === 'none') {
             $(`.crop-container.enabled`).find('.border-frame').css('border', 'none').css('z-index', '-1');
             $(`.crop-container.enabled`).attr('data-border', 'none');
+            $(`.crop-container.enabled`).attr('data-border-thickness', 0);
             $(`.crop-container.enabled`).css('padding', 0);
         } else {
             //$(`.crop-container.enabled`).css('border', `3px solid ${border}`);
             let thickness = 3 / window.MM_KOEF;
             $(`.crop-container.enabled`).find('.border-frame').css('border', `${thickness}px solid ${border}`).css('z-index', 99);
             $(`.crop-container.enabled`).attr('data-border', border);
+            $(`.crop-container.enabled`).attr('data-border-thickness', 3);
             $(`.crop-container.enabled`).css('padding', thickness);
         }
         $(`.crop-container.enabled`).cropper('update');
@@ -101,23 +103,31 @@ export class MainComponent extends Component {
             $('.image-container .crop-container').addClass('enabled');
             setTimeout(() => {
                 this.changePhotoSize($(`.crop-container.enabled`), this.size);
-                $(visibleItems.join(',')).find('.crop-container').cropper('update', {fitToContainer: this.framing === 'whole'});
-                let thickness = $(`.crop-container.enabled`).attr('data-border-thickness') / window.MM_KOEF;
+
+                let thickness = 3 / window.MM_KOEF;
+                console.log(thickness);
                 if ($(`.crop-container.enabled`).attr('data-border'))
                     $(`.crop-container.enabled`).find('.border-frame').css('border', `${thickness}px solid ${$(`.crop-container.enabled`).attr('data-border')}`);
                 if (this.border)
-                    $(`.crop-container.enabled`).find('.border-frame').css('border', `${thickness}px solid ${this.border}`);
+                    $(`.crop-container.enabled`).find('.border-frame').css('border', `${thickness}px solid ${this.border}`).css('z-index', 1);
+
+                if(this.border && this.border !== 'none'){
+                    $(`.crop-container.enabled`).attr('data-border', this.border).css('padding', thickness);
+                }
+                $(visibleItems.join(',')).find('.crop-container').cropper('update', {fitToContainer: this.framing === 'whole'});
             }, 10);
             this.child.current.removeControlTooltip();
         } else {
             $('.image-container .crop-container').removeClass('enabled');
+
+
+            $(`.crop-container`).find('.border-frame').css('border', 'none').css('z-index', -1);
+            $(`.crop-container`).css('padding', 0);
+            this.child.current.addControlTooltip();
             $(visibleItems.join(',')).find('.crop-container').css({
                 width: '100%',
                 height: '100%'
             }).cropper('reset');
-
-            $(`.crop-container`).find('.border-frame').css('border', '0px solid #fff');
-            this.child.current.addControlTooltip();
         }
 
         $('.image-container input[type=checkbox]').prop('checked', checked);
@@ -138,14 +148,18 @@ export class MainComponent extends Component {
             this.changePhotoSize(target, this.size);
             target.cropper('update', {fitToContainer: this.framing === 'whole'});
 
-
+            if(this.border && !+target.attr('data-border-thickness') ){
+                target.attr('data-border-thickness', 3);
+                target.attr('data-border', this.border);
+            }
             let thickness = target.attr('data-border-thickness') / window.MM_KOEF;
             if (this.border) {
-                target.find('.border-frame').css('border', `${thickness}px solid ${this.border}`);
+                target.find('.border-frame').css('border', `${thickness}px solid ${target.attr('data-border')}`).css('z-index', '1');
             } else {
                 target.find('.border-frame').css('z-index', '-1');
             }
         } else {
+            target.css('padding', 0);
             target.find('.border-frame').css('border', 'none').css('z-index', '-1');
             target.cropper('reset');
             target.removeClass('enabled');
@@ -183,7 +197,7 @@ export class MainComponent extends Component {
 
             }
             this.size = {width: size.width, height: size.height};
-            $('.dropdown.size button').html(`Формат: ${size.height}x${size.width}`);
+           // $('.dropdown.size button').html(`Формат: ${size.height}x${size.width}`);
         } else {
 
         }
@@ -299,8 +313,7 @@ export class MainComponent extends Component {
                 target.attr('data-src', `${response.data.filename}?v=${new Date().getTime()}`);
                 // target.cropper('reset');
                 target.cropper('update', {
-                    rotate: true, createUI: target.hasClass('enabled'), onLoad: () => {
-                    }
+                    rotate: true, createUI: target.hasClass('enabled'), onLoad: () => {}
                 });
 
                 if (this.border && this.border !== 'none') {
@@ -316,6 +329,13 @@ export class MainComponent extends Component {
     /*Fire when clicked ORDER button*/
     onOrderClick() {
         let items = [];
+
+        if($('.crop-container.enabled').length && !this.size.width){
+            Swal.fire({
+                text: 'Выберите формат'
+            });
+            return;
+        }
 
         $('#cropper-container .image-item > div').each((i, e) => {
 
@@ -359,7 +379,6 @@ export class MainComponent extends Component {
                     original: false
                 });
 
-                //console.log(item.crop.w, item.crop.h);
                 if (this.props.urls[i].crop && (item.crop.w === 0 || item.crop.h === 0)) {
                     item.crop = this.props.urls[i].crop;
                 }
@@ -371,7 +390,6 @@ export class MainComponent extends Component {
                     left: (!item.crop.w && !item.crop.h) ? '' : parseFloat($(e).find('img').css('left')),
                 });
             }
-            console.log(item);
             items.push(item);
         });
 
@@ -395,15 +413,12 @@ export class MainComponent extends Component {
             }else{
                 items = [items];
             }
-            console.log(items.length);
             let tmpResponse = [];
             let i = 0;
             for (let item of items){
                 axios.post(`${this.props.handlerUrl}/processing`, item).then(response => {
                     tmpResponse.push(response.data);
-                    console.log(++i);
                     if(i === items.length){
-                        console.log(items.length);
                         if(this.props.onOrderClick)
                             this.props.onOrderClick([].concat(...tmpResponse));
                     }
@@ -461,7 +476,8 @@ export class MainComponent extends Component {
         $('#cropper-toolbar .selected-items').html(length);
         if (length) {
             $('#cropper-toolbar input[type=checkbox]').prop('checked', 'checked');
-            $(`.dropdown.framing button`).html('Кадр целиком');
+            if(firstElement.zoom && (firstElement.left || firstElement.top) || firstElement.original === false)
+                $(`.dropdown.framing button`).html('Кадр целиком');
             this.child.current.removeControlTooltip();
         }
 
@@ -564,8 +580,8 @@ export class MainComponent extends Component {
 
     onOptionChange(id, value, size) {
         let option = {
-            option_id: id,
-            option_value_id: value,
+            option_id: +id,
+            option_value_id: +value,
         };
         let index = this.options.findIndex((item) => item.option_id === id);
         if (index === -1) {
@@ -573,12 +589,7 @@ export class MainComponent extends Component {
         } else {
             this.options[index] = option;
         }
-        console.log(id, value, size);
 
-    }
-    componentDidUpdate(previousProps, previousState, previousContext) {
-        console.log(previousProps.urls);
-       this.props.urls = previousProps.urls;
     }
 
     render(props, state, context) {

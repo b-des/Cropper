@@ -11,10 +11,11 @@ import 'tippy.js/dist/tippy.css'
 import 'tippy.js/themes/light.css';
 import 'pretty-checkbox/'
 import './lib/cropper.jquery.js'
+import 'rangeslider-js/dist/styles.min.css'
 
 window.tippy = require('tippy.js').default;
 window.toPixel = require('unit-to-px').default;
-window.MM_KOEF = 3.75; // to convert pixel to millimeter
+window.MM_KOEF = 2; // to convert pixel to millimeter
 import Image from './model/Image';
 import Options from './model/Options';
 import Swal from "sweetalert2";
@@ -186,7 +187,9 @@ class Cropper extends Component {
     process(items, callback) {
         this.startProcessingCallback({status: 'start', count: items.length});
         axios.post(`${this.options.handlerUrl}/processing`, items).then(response => {
-            if(callback)
+            if(this.startProcessingCallback)
+                this.startProcessingCallback(response.data);
+            else if(callback)
                 callback(response.data);
         }).catch(error => {
             if(callback)
@@ -194,10 +197,7 @@ class Cropper extends Component {
         });
     }
 
-    /**
-     * Set sizes for images
-     * @param {Array} sizes - Array of sizes
-     */
+
     setPhotoSizes(sizes) {
         this.state.sizes = sizes;
         this.setState(this.state);
