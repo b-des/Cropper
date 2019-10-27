@@ -583,7 +583,7 @@ export class MainComponent extends Component {
             option_id: +id,
             option_value_id: +value,
         };
-        let index = this.options.findIndex((item) => item.option_id === id);
+        let index = this.options.findIndex((item) => item.option_id === +id);
         if (index === -1) {
             this.options.push(option)
         } else {
