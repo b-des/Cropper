@@ -273,7 +273,7 @@ export class MainComponent extends Component {
     }
 
     /*Delet all images*/
-    deleteAllItems() {
+    deleteAllItems(forced) {
         let confirmedRemove = () => {
             this.props.urls = [];
             $('.image-container').remove();
@@ -281,18 +281,23 @@ export class MainComponent extends Component {
             $('#pagination-bar').html(this.paginator.render());
             $('.placeholder').show();
         };
-        Swal.fire({
-            title: 'Вы уверены?',
-            text: 'Удалить все фото?',
-            type: 'question',
-            showCancelButton: true,
-            cancelButtonText: 'Отмена',
-            confirmButtonText: 'Удалить'
-        }).then(res => {
-            if (res.value) {
-                confirmedRemove();
-            }
-        })
+        if(!forced){
+            Swal.fire({
+                title: 'Вы уверены?',
+                text: 'Удалить все фото?',
+                type: 'question',
+                showCancelButton: true,
+                cancelButtonText: 'Отмена',
+                confirmButtonText: 'Удалить'
+            }).then(res => {
+                if (res.value) {
+                    confirmedRemove();
+                }
+            })
+        }else{
+            confirmedRemove();
+        }
+
     }
 
     /*Rotate image*/

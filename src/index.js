@@ -197,6 +197,9 @@ class Cropper extends Component {
         });
     }
 
+    clear(){
+        this.child.current.deleteAllItems(true);
+    }
 
     setPhotoSizes(sizes) {
         this.state.sizes = sizes;
