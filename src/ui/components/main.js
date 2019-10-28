@@ -352,7 +352,7 @@ export class MainComponent extends Component {
                 paper: this.paper || '',
                 crop: false,
                 original: true,
-                quantity: parseInt($('[name="quantity"]').val())
+                quantity: parseInt($(e).closest('.image-container').find('[name="quantity"]').val()) || parseInt($('[name="quantity"]').val())
             };
             if ($(e).hasClass('enabled')) {
 

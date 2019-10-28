@@ -64,6 +64,7 @@ export class ToolbarComponent extends Component {
 
     onOptionChange(id, value, name, item_label, option_label) {
         this.props.onOptionChange(id, value);
+        $(`[data-option-id="${id}"]`).find('button').html(name);
         switch (item_label) {
             case 'size':
                 this.props.onSizeChange(option_label);
@@ -87,6 +88,12 @@ export class ToolbarComponent extends Component {
 
     componentDidMount() {
         this.addControlTooltip();
+        $(document).on('input change', '#cropper-toolbar [name="quantity"]', (e) => {
+            if(e.target.value > 0){
+                $('.image-container').find('[name="quantity"]').val(e.target.value)
+            }
+        });
+
     }
 
     componentWillMount() {
