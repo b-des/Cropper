@@ -10,6 +10,7 @@
  * @property {boolean} immediate - Specify if want to process images after Order button click
  * @property {string} dest - Specify destination path for storing images
  * @property {string} maxHeight - The height of photo container
+ * @property {number} borderWidth - Default width for borders
  * @property {Array} options - The list options
  * @property {Array} defaultOptions - The list default options
  */

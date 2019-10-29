@@ -50,12 +50,14 @@ class Cropper extends Component {
             maxHeight: 500,
             sizes: null,
             options: [],
+            borderWidth:3,
             defaultOptions: [],
         };
 
         Object.assign(this.options, options);
+        window.defaultBorderWidth = this.options.borderWidth;
 
-        this.state.urls = [];
+            this.state.urls = [];
         this.state.handlerUrl = '';
         //this.state.urls = ls.get('urls') ? ls.get('urls') : [];
 

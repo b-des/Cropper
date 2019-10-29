@@ -71,17 +71,18 @@ export class MainComponent extends Component {
     /*On change photo border*/
     onBorderChange(border) {
         this.border = border;
+        console.log(border);
         if (border === 'none') {
             $(`.crop-container.enabled`).find('.border-frame').css('border', 'none').css('z-index', '-1');
             $(`.crop-container.enabled`).attr('data-border', 'none');
             $(`.crop-container.enabled`).attr('data-border-thickness', 0);
             $(`.crop-container.enabled`).css('padding', 0);
         } else {
-            //$(`.crop-container.enabled`).css('border', `3px solid ${border}`);
-            let thickness = 3 / window.MM_KOEF;
+            let thickness = this.props.options.borderWidth / window.MM_KOEF;
+            console.log(this.props.options.borderWidth);
             $(`.crop-container.enabled`).find('.border-frame').css('border', `${thickness}px solid ${border}`).css('z-index', 99);
             $(`.crop-container.enabled`).attr('data-border', border);
-            $(`.crop-container.enabled`).attr('data-border-thickness', 3);
+            $(`.crop-container.enabled`).attr('data-border-thickness', this.props.options.borderWidth);
             $(`.crop-container.enabled`).css('padding', thickness);
         }
         $(`.crop-container.enabled`).cropper('update');
@@ -104,7 +105,7 @@ export class MainComponent extends Component {
             setTimeout(() => {
                 this.changePhotoSize($(`.crop-container.enabled`), this.size);
 
-                let thickness = 3 / window.MM_KOEF;
+                let thickness = this.props.options.borderWidth / window.MM_KOEF;
                 console.log(thickness);
                 if ($(`.crop-container.enabled`).attr('data-border'))
                     $(`.crop-container.enabled`).find('.border-frame').css('border', `${thickness}px solid ${$(`.crop-container.enabled`).attr('data-border')}`);
@@ -113,6 +114,7 @@ export class MainComponent extends Component {
 
                 if(this.border && this.border !== 'none'){
                     $(`.crop-container.enabled`).attr('data-border', this.border).css('padding', thickness);
+                    $(`.crop-container.enabled`).attr('data-border-thickness', this.props.options.borderWidth);
                 }
                 $(visibleItems.join(',')).find('.crop-container').cropper('update', {fitToContainer: this.framing === 'whole'});
             }, 10);
@@ -149,7 +151,7 @@ export class MainComponent extends Component {
             target.cropper('update', {fitToContainer: this.framing === 'whole'});
 
             if(this.border && !+target.attr('data-border-thickness') ){
-                target.attr('data-border-thickness', 3);
+                target.attr('data-border-thickness', this.props.options.borderWidth);
                 target.attr('data-border', this.border);
             }
             let thickness = target.attr('data-border-thickness') / window.MM_KOEF;

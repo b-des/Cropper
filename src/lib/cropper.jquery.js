@@ -536,7 +536,7 @@
                         if (that.options.onLoad) that.options.onLoad(that.obj.attr('data-uid'), this.width, this.height, true);
 
                         if (that.obj.hasClass('enabled')){
-                            let thickness = (that.obj.attr('data-border-thickness') || 3) / window.MM_KOEF;
+                            let thickness = (that.obj.attr('data-border-thickness') || window.defaultBorderWidth) / window.MM_KOEF;
                             let color = that.obj.attr('data-border');
                             that.obj.find('.border-frame').css('border', `${thickness}px solid ${color}`).css('z-index', '1');
                         }
