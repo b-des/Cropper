@@ -50,14 +50,14 @@ class Cropper extends Component {
             maxHeight: 500,
             sizes: null,
             options: [],
-            borderWidth:3,
+            borderWidth: 3,
             defaultOptions: [],
         };
 
         Object.assign(this.options, options);
         window.defaultBorderWidth = this.options.borderWidth;
 
-            this.state.urls = [];
+        this.state.urls = [];
         this.state.handlerUrl = '';
         //this.state.urls = ls.get('urls') ? ls.get('urls') : [];
 
@@ -67,12 +67,14 @@ class Cropper extends Component {
             }
         };
 
-        this.orderCallback = () => {};
-        this.startProcessingCallback = () => {};
+        this.orderCallback = () => {
+        };
+        this.startProcessingCallback = () => {
+        };
 
 
         this.state.sizes = config.sizes;
-        if(this.options.sizes){
+        if (this.options.sizes) {
             this.state.sizes = this.options.sizes;
         }
 
@@ -106,7 +108,7 @@ class Cropper extends Component {
      */
     addPhotos(images) {
 
-        if(images.length > 1000){
+        if (images.length > 1000) {
             Swal.fire({
                 title: 'Предупреждение',
                 text: 'Максимальное допустимое количество фотографи не должно превышать 1000 штук',
@@ -125,7 +127,7 @@ class Cropper extends Component {
                 }
 
                 this.state.urls.unshift(photo);
-
+                console.log(this.state.urls);
 
                 let html = dot.template(this.imageItemTemplate)({
                     url: photo.thumbnail || photo.url,
@@ -134,7 +136,7 @@ class Cropper extends Component {
                     zoom: photo.zoom || 0,
                     uid: photo.uid,
                     border: photo.border || '',
-                    borderThickness: photo.borderThickness  || 0,
+                    borderThickness: photo.borderThickness || 0,
                     rotate: photo.rotate || '',
                     checked: photo.zoom && (photo.left || photo.top) || photo.original === false || null
                 });
@@ -168,7 +170,7 @@ class Cropper extends Component {
                         $(`#crop-container-${uid}`).attr('data-fit-sizes', fitSizes.join(','));
                     }
                 });
-                this.setState(this.state);
+                this.setState({urls: this.state.urls});
                 if (images.length === key + 1) {
                     let cropItems = images.filter((item) => item.crop);
                     let borderItems = images.filter((item) => item.border);
@@ -180,7 +182,6 @@ class Cropper extends Component {
     }
 
 
-
     /**
      * Add photos for immediate processing.
      * @param {Image[]} items - Array with photos.
@@ -189,17 +190,21 @@ class Cropper extends Component {
     process(items, callback) {
         this.startProcessingCallback({status: 'start', count: items.length});
         axios.post(`${this.options.handlerUrl}/processing`, items).then(response => {
-            if(this.startProcessingCallback)
+            if (this.startProcessingCallback)
                 this.startProcessingCallback(response.data);
-            else if(callback)
+            else if (callback)
                 callback(response.data);
         }).catch(error => {
-            if(callback)
+            if (callback)
                 callback(error);
         });
     }
 
-    clear(){
+    clear() {
+        this.state.urls = [];
+        console.log(this.state);
+        this.setState({ state: this.state });
+        //this.forceUpdate();
         this.child.current.deleteAllItems(true);
     }
 
@@ -207,6 +212,7 @@ class Cropper extends Component {
         this.state.sizes = sizes;
         this.setState(this.state);
         this.child.current.updateSizes(this.state.sizes);
+
     }
 
     /**

@@ -277,7 +277,8 @@ export class MainComponent extends Component {
     /*Delet all images*/
     deleteAllItems(forced) {
         let confirmedRemove = () => {
-            this.props.urls = [];
+            //this.props.urls = [];
+            this.forceUpdate();
             $('.image-container').remove();
             this.paginator.set('totalResult', this.props.urls.length);
             $('#pagination-bar').html(this.paginator.render());
@@ -333,6 +334,10 @@ export class MainComponent extends Component {
         })
     }
 
+    componentWillUpdate(r,s,h){
+        console.log('componentWillUpdate');
+    }
+
     /*Fire when clicked ORDER button*/
     onOrderClick() {
         let items = [];
@@ -346,9 +351,11 @@ export class MainComponent extends Component {
 
         $('#cropper-container .image-item > div').each((i, e) => {
 
+            let photo = this.props.urls.filter(item => item.uid === $(e).attr('data-uid'))[0];
+
             let item = {
-                url: this.props.urls[i].url,
-                thumbnail: $(e).attr('data-src') || this.props.urls[i].thumbnail || this.props.urls[i].url,
+                url: photo.url,
+                thumbnail: $(e).attr('data-src') || photo.thumbnail || photo.url,
                 size: this.size,
                 dest: this.props.dest,
                 paper: this.paper || '',
@@ -386,8 +393,8 @@ export class MainComponent extends Component {
                     original: false
                 });
 
-                if (this.props.urls[i].crop && (item.crop.w === 0 || item.crop.h === 0)) {
-                    item.crop = this.props.urls[i].crop;
+                if (photo.crop && (item.crop.w === 0 || item.crop.h === 0)) {
+                    item.crop = photo.crop;
                 }
 
             }
@@ -395,6 +402,7 @@ export class MainComponent extends Component {
                 item = Object.assign(item, {
                     top: (!item.crop.w && !item.crop.h) ? '' : parseFloat($(e).find('img').css('top')),
                     left: (!item.crop.w && !item.crop.h) ? '' : parseFloat($(e).find('img').css('left')),
+                    params: photo ? photo.params : ''
                 });
             }
             items.push(item);
@@ -456,11 +464,11 @@ export class MainComponent extends Component {
     /*Fire when add photo*/
     onPhotoAdded(border, crop, firstElement, lastElement) {
         $('#main-section .placeholder').hide();
-
         this.paginator.set('totalResult', this.props.urls.length);
         $('#pagination-bar').html(this.paginator.render());
 
         let pagination = this.paginator.getPaginationData();
+        console.log(this.props.urls);
         if (pagination.current === 1) {
 
             let hidden = this.props.urls.slice(this.props.itemsPerPage).map((item, i) => {
@@ -512,6 +520,7 @@ export class MainComponent extends Component {
             $(`.crop-container.enabled`).attr('data-border-thickness', border.thickness);
             $('.border-frame').css('border', `${border.thickness}px solid ${border}`);
         }
+
     }
 
 
@@ -659,8 +668,8 @@ export class MainComponent extends Component {
 
     componentDidMount() {
         this.borderSettings.initPopup("cropper-container");
-        this.state.urls = this.props.urls;
-        this.setState(this.state);
+        //this.state.urls = this.props.urls;
+       // this.setState(this.state);
 
         $(document).on('click', '.image-container .remove-item', (e) => {
             let uid = $(e.target).closest('.image-container').find('.crop-container').attr('data-uid');
