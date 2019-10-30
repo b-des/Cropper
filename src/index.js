@@ -94,6 +94,7 @@ class Cropper extends Component {
                                   onProcessingStart={(result) => this.startProcessingCallback(result)}
                                   urls={this.state.urls}
                                   dest={this.options.dest}
+                                  clear={this.clear.bind(this)}
                                   itemsPerPage={this.options.itemsPerPage}
                                   handlerUrl={this.options.handlerUrl}/>, document.getElementById(this.options.container));
 
@@ -127,8 +128,6 @@ class Cropper extends Component {
                 }
 
                 this.state.urls.unshift(photo);
-                console.log(this.state.urls);
-
                 let html = dot.template(this.imageItemTemplate)({
                     url: photo.thumbnail || photo.url,
                     top: photo.top === 0 ? 0 : photo.top || '',
@@ -170,7 +169,7 @@ class Cropper extends Component {
                         $(`#crop-container-${uid}`).attr('data-fit-sizes', fitSizes.join(','));
                     }
                 });
-                this.setState({urls: this.state.urls});
+               // this.setState({urls: this.state.urls});
                 if (images.length === key + 1) {
                     let cropItems = images.filter((item) => item.crop);
                     let borderItems = images.filter((item) => item.border);
@@ -200,11 +199,11 @@ class Cropper extends Component {
         });
     }
 
+    /**
+     * Clear all photos
+     */
     clear() {
-        this.state.urls = [];
-        console.log(this.state);
-        this.setState({ state: this.state });
-        //this.forceUpdate();
+        this.state.urls.splice(0, this.state.urls.length);
         this.child.current.deleteAllItems(true);
     }
 

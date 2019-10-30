@@ -71,7 +71,6 @@ export class MainComponent extends Component {
     /*On change photo border*/
     onBorderChange(border) {
         this.border = border;
-        console.log(border);
         if (border === 'none') {
             $(`.crop-container.enabled`).find('.border-frame').css('border', 'none').css('z-index', '-1');
             $(`.crop-container.enabled`).attr('data-border', 'none');
@@ -79,7 +78,6 @@ export class MainComponent extends Component {
             $(`.crop-container.enabled`).css('padding', 0);
         } else {
             let thickness = this.props.options.borderWidth / window.MM_KOEF;
-            console.log(this.props.options.borderWidth);
             $(`.crop-container.enabled`).find('.border-frame').css('border', `${thickness}px solid ${border}`).css('z-index', 99);
             $(`.crop-container.enabled`).attr('data-border', border);
             $(`.crop-container.enabled`).attr('data-border-thickness', this.props.options.borderWidth);
@@ -106,7 +104,6 @@ export class MainComponent extends Component {
                 this.changePhotoSize($(`.crop-container.enabled`), this.size);
 
                 let thickness = this.props.options.borderWidth / window.MM_KOEF;
-                console.log(thickness);
                 if ($(`.crop-container.enabled`).attr('data-border'))
                     $(`.crop-container.enabled`).find('.border-frame').css('border', `${thickness}px solid ${$(`.crop-container.enabled`).attr('data-border')}`);
                 if (this.border)
@@ -278,11 +275,12 @@ export class MainComponent extends Component {
     deleteAllItems(forced) {
         let confirmedRemove = () => {
             //this.props.urls = [];
-            this.forceUpdate();
             $('.image-container').remove();
             this.paginator.set('totalResult', this.props.urls.length);
             $('#pagination-bar').html(this.paginator.render());
             $('.placeholder').show();
+            $('#cropper-toolbar input[type=checkbox]').prop('checked', false);
+            $('#cropper-toolbar .selected-items').html(0);
         };
         if(!forced){
             Swal.fire({
@@ -294,7 +292,7 @@ export class MainComponent extends Component {
                 confirmButtonText: 'Удалить'
             }).then(res => {
                 if (res.value) {
-                    confirmedRemove();
+                    this.props.clear()
                 }
             })
         }else{
@@ -334,9 +332,6 @@ export class MainComponent extends Component {
         })
     }
 
-    componentWillUpdate(r,s,h){
-        console.log('componentWillUpdate');
-    }
 
     /*Fire when clicked ORDER button*/
     onOrderClick() {
@@ -468,7 +463,6 @@ export class MainComponent extends Component {
         $('#pagination-bar').html(this.paginator.render());
 
         let pagination = this.paginator.getPaginationData();
-        console.log(this.props.urls);
         if (pagination.current === 1) {
 
             let hidden = this.props.urls.slice(this.props.itemsPerPage).map((item, i) => {
