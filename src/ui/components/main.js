@@ -334,10 +334,10 @@ export class MainComponent extends Component {
 
 
     /*Fire when clicked ORDER button*/
-    onOrderClick() {
+    onOrderClick(optionChanged) {
         let items = [];
 
-        if($('.crop-container.enabled').length && !this.size.width){
+        if($('.crop-container.enabled').length && !this.size.width && !optionChanged){
             Swal.fire({
                 text: 'Выберите формат'
             });
@@ -408,11 +408,11 @@ export class MainComponent extends Component {
             this.props.onProcessingStart({status: 'start', count: items.length});
 
             axios.post(`${this.props.handlerUrl}/processing`, items).then(response => {
-                if (this.props.onOrderClick)
-                    this.props.onOrderClick({options: this.options, photos: response.data});
+                if (this.props.onOrder )
+                    this.props.onOrder({options: this.options, photos: response.data});
             }).catch(error => {
-                if (this.props.onOrderClick)
-                    this.props.onOrderClick(error);
+                if (this.props.onOrder)
+                    this.props.onOrder(error);
             });
 
 
@@ -429,17 +429,22 @@ export class MainComponent extends Component {
                 axios.post(`${this.props.handlerUrl}/processing`, item).then(response => {
                     tmpResponse.push(response.data);
                     if(i === items.length){
-                        if(this.props.onOrderClick)
-                            this.props.onOrderClick([].concat(...tmpResponse));
+                        if(this.props.onOrder)
+                            this.props.onOrder([].concat(...tmpResponse));
                     }
 
                 }).catch(error => {
-                    if(this.props.onOrderClick)
-                        this.props.onOrderClick(error);
+                    if(this.props.onOrder)
+                        this.props.onOrder(error);
                 });
             }*/
         } else {
-            this.props.onOrderClick({options: this.options, photos: items.reverse()});
+
+            if(optionChanged){
+                this.props.onOptionChanged({options: this.options, photos: items.reverse()});
+            }else{
+                this.props.onOrder({options: this.options, photos: items.reverse()});
+            }
         }
     }
 
@@ -600,6 +605,7 @@ export class MainComponent extends Component {
             this.options[index] = option;
         }
 
+        this.onOrderClick(true);
     }
 
     render(props, state, context) {

@@ -71,6 +71,8 @@ class Cropper extends Component {
         };
         this.startProcessingCallback = () => {
         };
+        this.onOptionChangedCallback = () => {
+        };
 
 
         this.state.sizes = config.sizes;
@@ -90,7 +92,8 @@ class Cropper extends Component {
                                   immediate={this.options.immediate}
                                   options={this.options}
                                   sizes={this.state.sizes}
-                                  onOrderClick={(items) => this.orderCallback(items)}
+                                  onOrder={(items) => this.orderCallback(items)}
+                                  onOptionChanged={(items) => this.onOptionChangedCallback(items)}
                                   onProcessingStart={(result) => this.startProcessingCallback(result)}
                                   urls={this.state.urls}
                                   dest={this.options.dest}
@@ -229,6 +232,14 @@ class Cropper extends Component {
      */
     onImagesProcessed(callback) {
         this.orderCallback = callback;
+    }
+
+    /**
+     * Callback function triggered when option changed
+     * @param callback
+     */
+    onOptionChanged(callback){
+        this.onOptionChangedCallback = callback;
     }
 }
 
