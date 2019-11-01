@@ -238,7 +238,7 @@ class Cropper extends Component {
      * Callback function triggered when option changed
      * @param callback
      */
-    onOptionChanged(callback){
+    onPropertiesChanged(callback){
         this.onOptionChangedCallback = callback;
     }
 }

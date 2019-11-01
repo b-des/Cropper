@@ -230,6 +230,7 @@ export class MainComponent extends Component {
         this.paginator.set('totalResult', this.props.urls.length);
         $('#pagination-bar').html(this.paginator.render());
         tippy('[data-tippy-content]', {'theme': 'light'});
+        this.onOrderClick(true);
     }
 
     /*Delete item*/
@@ -255,6 +256,7 @@ export class MainComponent extends Component {
 
             $('.image-container').hide();
             $(visible.join(',')).show().find('.crop-container').cropper('update').cropper('update');
+            this.onOrderClick(true);
         };
 
         Swal.fire({
@@ -281,6 +283,7 @@ export class MainComponent extends Component {
             $('.placeholder').show();
             $('#cropper-toolbar input[type=checkbox]').prop('checked', false);
             $('#cropper-toolbar .selected-items').html(0);
+            this.onOrderClick(true);
         };
         if(!forced){
             Swal.fire({
