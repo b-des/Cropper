@@ -140,7 +140,7 @@ class Cropper extends Component {
                     border: photo.border || '',
                     borderThickness: photo.borderThickness || 0,
                     rotate: photo.rotate || '',
-                    checked: photo.zoom && (photo.left || photo.top) || photo.original === false || null
+                    checked: photo.zoom && (photo.left || photo.top) || photo.original === false || true
                 });
 
                 if ($('#main-section').find('.scroll-content').length) {

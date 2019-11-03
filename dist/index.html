@@ -65,9 +65,9 @@
         itemsPerPage: 8,
         borderWidth:10,//толщина рамки по умолчанию
         defaultOptions: [
-            {option_id: 9, option_value_id: 4},
-            {option_id: 10, option_value_id: 2},
-            {option_id: 12, option_value_id: 2}
+           // {option_id: 9, option_value_id: 4},
+           // {option_id: 10, option_value_id: 2},
+           // {option_id: 12, option_value_id: 2}
         ],
         options: [
             {
@@ -77,6 +77,16 @@
                 "option_values": [
                     {
                         "option_value_id": "1",
+                        "relation_options":[
+                            {
+                                "option_id":10,
+                                "option_value_id": [1]
+                            },
+                            {
+                                "option_id":13,
+                                "option_value_id": [1]
+                            }
+                        ],
                         "name": "A6 (100x100)",
                         "value": [
                             100,
@@ -85,6 +95,16 @@
                     },
                     {
                         "option_value_id": "2",
+                        "relation_options":[
+                            {
+                                "option_id":10,
+                                "option_value_id": [1]
+                            },
+                            {
+                                "option_id":13,
+                                "option_value_id": [2]
+                            }
+                        ],
                         "name": "A5 (20x15)",
                         "value": [
                             20,
@@ -93,6 +113,16 @@
                     },
                     {
                         "option_value_id": "3",
+                        "relation_options":[
+                            {
+                                "option_id":10,
+                                "option_value_id": [2]
+                            },
+                            {
+                                "option_id":13,
+                                "option_value_id": [2]
+                            }
+                        ],
                         "name": "A5 (10x20)",
                         "value": [
                             10,
@@ -101,6 +131,16 @@
                     },
                     {
                         "option_value_id": "4",
+                        "relation_options":[
+                            {
+                                "option_id":10,
+                                "option_value_id": [2]
+                            },
+                            {
+                                "option_id":13,
+                                "option_value_id": [1]
+                            }
+                        ],
                         "name": "A5 (10x10)",
                         "value": [
                             10,
@@ -116,11 +156,31 @@
                 "option_values": [
                     {
                         "option_value_id": "1",
+                        "relation_options":[
+                            {
+                                "option_id":9,
+                                "option_value_id": [1,2]
+                            },
+                            {
+                                "option_id":13,
+                                "option_value_id": [1]
+                            }
+                        ],
                         "label": "embossed",
                         "name": "Тиснёная"
                     },
                     {
                         "option_value_id": "2",
+                        "relation_options":[
+                            {
+                                "option_id":9,
+                                "option_value_id": [3,4]
+                            },
+                            {
+                                "option_id":13,
+                                "option_value_id": [2,3,4,5,6]
+                            }
+                        ],
                         "label": "glossy",
                         "name": "Глянцевая"
                     }
@@ -208,8 +268,8 @@
     });
 
     c.onPropertiesChanged(result => {
-        console.log("Option changed");
-        console.log(result);
+       // console.log("Option changed");
+       // console.log(result);
     })
 
     </script>

@@ -597,17 +597,18 @@ export class MainComponent extends Component {
     }
 
     onOptionChange(id, value, size) {
-        let option = {
-            option_id: +id,
-            option_value_id: +value,
-        };
-        let index = this.options.findIndex((item) => item.option_id === +id);
-        if (index === -1) {
-            this.options.push(option)
-        } else {
-            this.options[index] = option;
+        if(id && value){
+            let option = {
+                option_id: +id,
+                option_value_id: +value,
+            };
+            let index = this.options.findIndex((item) => item.option_id === +id);
+            if (index === -1) {
+                this.options.push(option)
+            } else {
+                this.options[index] = option;
+            }
         }
-
         this.onOrderClick(true);
     }
 
@@ -717,6 +718,9 @@ export class MainComponent extends Component {
             if ($(e.target).closest('.image-container').length === 0) {
                 $('.cropper-container').removeClass('active');
             }
+        });
+        $(document).on('change', '.image-container [name="quantity"]', (e) => {
+            this.onOptionChange();
         });
 
         setTimeout(() => {

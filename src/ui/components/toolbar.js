@@ -4,7 +4,8 @@ export class ToolbarComponent extends Component {
     constructor() {
         super();
         //this.state = {sizeLabel: 'Формат', paperLabel: 'Бумага', framingLabel: 'Кадрирование', borderLabel: 'Рамка'}
-        this.tooltip;
+        this.tooltip = null;
+        this.tooltipOptionItem = null;
     }
 
     onPaperChange(type) {
@@ -47,7 +48,10 @@ export class ToolbarComponent extends Component {
     addControlTooltip() {
         $('.dropdown').find('button').addClass('disabled');
         if (!this.tooltip)
-            this.tooltip = tippy('.dropdown .disabled', {content: 'Для изменения опций отметьте фотографии', theme: 'light',});
+            this.tooltip = tippy('.dropdown .disabled', {
+                content: 'Для изменения опций отметьте фотографии',
+                theme: 'light',
+            });
         this.tooltip.forEach((tooltip) => {
             tooltip.enable();
         });
@@ -82,16 +86,32 @@ export class ToolbarComponent extends Component {
         }
     }
 
-   shouldComponentUpdate(nextProps, nextState, nextContext){
-       return false;
-   }
+    excludeUnsuitableOptions(current_option, relative_options) {
+        if (!relative_options)
+            return;
+
+        //$(`#cropper-toolbar .dropdown[data-option-id=${current_option}]`).find('a').removeClass('disabled');
+        console.log(relative_options);
+        relative_options.map(option => {
+            $(`#cropper-toolbar .dropdown[data-option-id=${option.option_id}] a`).addClass('disabled');
+            option.option_value_id.map(value_id => {
+                $(`#cropper-toolbar .dropdown[data-option-id=${option.option_id}]`).find(`a[data-value-id=${value_id}]`).removeClass('disabled');
+            });
+
+        });
+    }
+
+    shouldComponentUpdate(nextProps, nextState, nextContext) {
+        return false;
+    }
 
     componentDidMount() {
         this.addControlTooltip();
         $(document).on('input change', '#cropper-toolbar [name="quantity"]', (e) => {
-            if(e.target.value > 0){
+            if (e.target.value > 0) {
                 $('.image-container').find('[name="quantity"]').val(e.target.value)
             }
+            this.props.onOptionChange();
         });
 
     }
@@ -101,26 +121,31 @@ export class ToolbarComponent extends Component {
                 let default_id = this.props.defaultOptions.filter(option => +option.option_id === +item.option_id).map(option => option.option_value_id)[0];
                 let default_option = item.option_values.filter(value => +value.option_value_id === +default_id)[0];
 
-                if(default_id && default_option){
-                    this.onOptionChange(+item.option_id, +default_option.option_value_id, null, item.label, default_option.value || default_option.label)
+
+                if (default_id && default_option) {
+                    this.onOptionChange(+item.option_id, +default_option.option_value_id, null, item.label, default_option.value || default_option.label);
+                    this.excludeUnsuitableOptions(item.option_id, default_option.relation_options);
                 }
-                return  <div>
+                return <div>
                     <span>{item.name}:</span>
                     <div className={`dropdown ${item.label}`} data-option-id={item.option_id}>
-                    <button className="btn btn-sm btn-primary dropdown-toggle disabled" type="button" data-toggle="dropdown"
-                            aria-haspopup="true" aria-expanded="false">
-                        {default_option? default_option.name : item.name}
+                        <button className="btn btn-sm btn-primary dropdown-toggle disabled" type="button"
+                                data-toggle="dropdown"
+                                aria-haspopup="true" aria-expanded="false">
+                            {default_option ? default_option.name : item.name}
 
-                    </button>
-                    <div className="dropdown-menu">
-                        {item.option_values.map((option) => {
-                            return <a className="dropdown-item" href="#" onClick={(e) => {
-                                this.onOptionChange(item.option_id, option.option_value_id, option.name, item.label, option.label || option.value);
-                                e.preventDefault();
-                            }}>{option.name}</a>
-                        })}
+                        </button>
+                        <div className="dropdown-menu">
+                            {item.option_values.map((option) => {
+                                return <a className="dropdown-item" href="#" data-value-id={option.option_value_id}
+                                          onClick={(e) => {
+                                              this.onOptionChange(item.option_id, option.option_value_id, option.name, item.label, option.label || option.value);
+                                              this.excludeUnsuitableOptions(item.option_id, option.relation_options);
+                                              e.preventDefault();
+                                          }}>{option.name}</a>
+                            })}
+                        </div>
                     </div>
-                </div>
                 </div>
             }
         );
@@ -136,7 +161,6 @@ export class ToolbarComponent extends Component {
                 e.preventDefault();
             }}>{item.title}</a>
         );
-
 
 
         return <nav className="bp3-dark" id="cropper-toolbar">
@@ -236,9 +260,11 @@ export class ToolbarComponent extends Component {
 
                     <div className="right-toolbar-tools">
                         <div>
-                            <span>Кол-во: </span><input type="number" name="quantity" value="1" min="1" style="width: 50px"/>
+                            <span>Кол-во: </span><input type="number" name="quantity" value="1" min="1"
+                                                        style="width: 50px"/>
                         </div>
-                        <button className="btn btn-sm btn-danger" onClick={() => this.props.onDeleteAllClick()}>Удалить все
+                        <button className="btn btn-sm btn-danger" onClick={() => this.props.onDeleteAllClick()}>Удалить
+                            все
                             фото
                         </button>
                     </div>
