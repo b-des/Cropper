@@ -347,7 +347,7 @@ export class MainComponent extends Component {
             return;
         }
 
-        $('#cropper-container .image-item > div').each((i, e) => {
+        $('#cropper-container .image-item > div.enabled').each((i, e) => {
 
             let photo = this.props.urls.filter(item => item.uid === $(e).attr('data-uid'))[0];
 
