@@ -91,7 +91,6 @@ export class ToolbarComponent extends Component {
             return;
 
         //$(`#cropper-toolbar .dropdown[data-option-id=${current_option}]`).find('a').removeClass('disabled');
-        console.log(relative_options);
         relative_options.map(option => {
             $(`#cropper-toolbar .dropdown[data-option-id=${option.option_id}] a`).addClass('disabled');
             option.option_value_id.map(value_id => {

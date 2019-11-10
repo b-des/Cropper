@@ -173,6 +173,7 @@ export class MainComponent extends Component {
 
         $('#cropper-toolbar input[type=checkbox]').prop('checked', checkAll);
         $('#cropper-toolbar .selected-items').html($('.image-container input[type=checkbox]:checked').length);
+        this.onOrderClick(true);
     }
 
     /*Calculate sizes for photo*/
