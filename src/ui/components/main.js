@@ -131,6 +131,7 @@ export class MainComponent extends Component {
 
         $('.image-container input[type=checkbox]').prop('checked', checked);
         $('#cropper-toolbar .selected-items').html($('.image-container input[type=checkbox]:checked').length);
+        this.onOrderClick(true);
     }
 
     /*Select/unselect single item*/
