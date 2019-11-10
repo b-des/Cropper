@@ -1,4 +1,5 @@
 import {h, Component} from "preact";
+import findDuplicates from 'array-find-duplicates';
 
 export class ToolbarComponent extends Component {
     constructor() {
@@ -6,6 +7,7 @@ export class ToolbarComponent extends Component {
         //this.state = {sizeLabel: 'Формат', paperLabel: 'Бумага', framingLabel: 'Кадрирование', borderLabel: 'Рамка'}
         this.tooltip = null;
         this.tooltipOptionItem = null;
+        this.exludedOptions = {};
     }
 
     onPaperChange(type) {
@@ -92,12 +94,33 @@ export class ToolbarComponent extends Component {
 
         //$(`#cropper-toolbar .dropdown[data-option-id=${current_option}]`).find('a').removeClass('disabled');
         relative_options.map(option => {
-            $(`#cropper-toolbar .dropdown[data-option-id=${option.option_id}] a`).addClass('disabled');
-            option.option_value_id.map(value_id => {
-                $(`#cropper-toolbar .dropdown[data-option-id=${option.option_id}]`).find(`a[data-value-id=${value_id}]`).removeClass('disabled');
-            });
-
+            if (!this.exludedOptions[current_option])
+                this.exludedOptions[current_option] = {[option.option_id]: option.option_value_id};
+            else
+                this.exludedOptions[current_option][option.option_id] = option.option_value_id;
         });
+
+        // console.log(this.exludedOptions);
+        let enabled = {};
+        $(`#cropper-toolbar .dropdown a`).addClass('disabled');
+
+        Object.entries(this.exludedOptions).map(option => {
+            Object.entries(option[1]).map(item => {
+                enabled[item[0]] = enabled[item[0]] ? this.unionDuplicates(enabled[item[0]], item[1]) : item[1];
+            })
+        });
+
+        Object.entries(enabled).map(option => {
+            option[1].map(value_id => {
+                console.log(`Enabled ${option[0]} - ${value_id}`);
+                $(`#cropper-toolbar .dropdown[data-option-id=${option[0]}]`).find(`a[data-value-id=${value_id}]`).removeClass('disabled');
+            });
+        });
+    }
+
+    unionDuplicates(arr1, arr2) {
+        //return [...new Set(arr1.concat(...arr2))];
+        return [...new Set([].concat(...findDuplicates(arr1.concat(arr2))))];
     }
 
     shouldComponentUpdate(nextProps, nextState, nextContext) {
@@ -123,7 +146,9 @@ export class ToolbarComponent extends Component {
 
                 if (default_id && default_option) {
                     this.onOptionChange(+item.option_id, +default_option.option_value_id, null, item.label, default_option.value || default_option.label);
-                    this.excludeUnsuitableOptions(item.option_id, default_option.relation_options);
+                    setTimeout(() => {
+                        this.excludeUnsuitableOptions(item.option_id, default_option.relation_options);
+                    }, 1000);
                 }
                 return <div>
                     <span>{item.name}:</span>
