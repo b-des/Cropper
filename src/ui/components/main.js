@@ -349,6 +349,13 @@ export class MainComponent extends Component {
             return;
         }
 
+        if(this.props.options.options.length > this.options.length && !optionChanged){
+            Swal.fire({
+                text: 'Укажите все опции'
+            });
+            return;
+        }
+
         $('#cropper-container .image-item > div.enabled').each((i, e) => {
 
             let photo = this.props.urls.filter(item => item.uid === $(e).attr('data-uid'))[0];
