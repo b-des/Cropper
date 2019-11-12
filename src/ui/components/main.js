@@ -3,6 +3,7 @@ import {ToolbarComponent} from "./toolbar";
 import {BorderComponent} from "./border-popup";
 import {ImageItem} from "./item";
 import uuid from 'uuid/v4';
+import findDuplicates from 'array-find-duplicates';
 
 const dot = require('dot');
 import 'perfect-scrollbar/css/perfect-scrollbar.css'
@@ -349,6 +350,19 @@ export class MainComponent extends Component {
             return;
         }
 
+        console.log(this.options);
+        console.log(this.props.options.options);
+        let selectedOptions = this.options.map(item => item.option_id);
+        let requiredOptions = this.props.options.options.map(item => {
+
+            if(!selectedOptions.includes(+item.option_id)){
+                console.log(+item.option_id);
+                $(`[data-option-id='${item.option_id}']`).find('button').addClass('btn-danger');
+            }
+        });
+       // console.log(selectedOptions);
+       // console.log(requiredOptions);
+       // console.log([...new Set([].concat(...requiredOptions.concat(selectedOptions)))]);
         if(this.props.options.options.length > this.options.length && !optionChanged){
             Swal.fire({
                 text: 'Укажите все опции'

@@ -70,7 +70,7 @@ export class ToolbarComponent extends Component {
 
     onOptionChange(id, value, name, item_label, option_label) {
         this.props.onOptionChange(id, value);
-        $(`[data-option-id="${id}"]`).find('button').html(name);
+        $(`[data-option-id="${id}"]`).find('button').removeClass('btn-danger').html(name);
         switch (item_label) {
             case 'size':
                 this.props.onSizeChange(option_label);
