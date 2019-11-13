@@ -343,24 +343,16 @@ export class MainComponent extends Component {
     onOrderClick(optionChanged) {
         let items = [];
 
-        if($('.crop-container.enabled').length && !this.size.width && !optionChanged){
+       // console.log(selectedOptions);
+       // console.log(requiredOptions);
+       // console.log([...new Set([].concat(...requiredOptions.concat(selectedOptions)))]);
+        if(this.props.options.options.length > this.options.length && !optionChanged){
             let selectedOptions = this.options.map(item => item.option_id);
             this.props.options.options.map(item => {
                 if(!selectedOptions.includes(+item.option_id)){
                     $(`[data-option-id='${item.option_id}']`).find('button').addClass('btn-danger');
                 }
             });
-            Swal.fire({
-                text: 'Выберите формат'
-            });
-            return;
-        }
-
-
-       // console.log(selectedOptions);
-       // console.log(requiredOptions);
-       // console.log([...new Set([].concat(...requiredOptions.concat(selectedOptions)))]);
-        if(this.props.options.options.length > this.options.length && !optionChanged){
             Swal.fire({
                 text: 'Укажите все опции'
             });
