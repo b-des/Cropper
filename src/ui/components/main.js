@@ -343,9 +343,6 @@ export class MainComponent extends Component {
     onOrderClick(optionChanged) {
         let items = [];
 
-       // console.log(selectedOptions);
-       // console.log(requiredOptions);
-       // console.log([...new Set([].concat(...requiredOptions.concat(selectedOptions)))]);
         if(this.props.options.options.length > this.options.length && !optionChanged){
             let selectedOptions = this.options.map(item => item.option_id);
             this.props.options.options.map(item => {
