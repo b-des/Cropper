@@ -137,6 +137,7 @@ class Cropper extends Component {
                     left: photo.left === 0 ? 0 : photo.left || '',
                     zoom: photo.zoom || 0,
                     uid: photo.uid,
+                    quantity: photo.quantity || 1,
                     border: photo.border || '',
                     borderThickness: photo.borderThickness || 0,
                     rotate: photo.rotate || '',

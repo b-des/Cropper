@@ -344,22 +344,19 @@ export class MainComponent extends Component {
         let items = [];
 
         if($('.crop-container.enabled').length && !this.size.width && !optionChanged){
+            let selectedOptions = this.options.map(item => item.option_id);
+            this.props.options.options.map(item => {
+                if(!selectedOptions.includes(+item.option_id)){
+                    $(`[data-option-id='${item.option_id}']`).find('button').addClass('btn-danger');
+                }
+            });
             Swal.fire({
                 text: 'Выберите формат'
             });
             return;
         }
 
-        console.log(this.options);
-        console.log(this.props.options.options);
-        let selectedOptions = this.options.map(item => item.option_id);
-        let requiredOptions = this.props.options.options.map(item => {
 
-            if(!selectedOptions.includes(+item.option_id)){
-                console.log(+item.option_id);
-                $(`[data-option-id='${item.option_id}']`).find('button').addClass('btn-danger');
-            }
-        });
        // console.log(selectedOptions);
        // console.log(requiredOptions);
        // console.log([...new Set([].concat(...requiredOptions.concat(selectedOptions)))]);
