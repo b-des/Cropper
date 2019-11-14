@@ -18,7 +18,7 @@ export class ImageItem {
                         </div>
                     </div>
                     <div class="item-manipulation" style="width: auto">
-                        <input type="number" name="quantity" value="1" min="1" id="" style="border-color: transparent;width: 50px; display: inline-block;padding: 0px 0px;line-height: 120%;" data-tippy-content="Количество">
+                        <input type="number" name="quantity" value="{{=it.quantity}}" min="1" id="" style="border-color: transparent;width: 50px; display: inline-block;padding: 0px 0px;line-height: 120%;" data-tippy-content="Количество">
                     </div>
                        
                      <div class="item-manipulation remove-item tippy" data-tippy-content="Удалить фото">

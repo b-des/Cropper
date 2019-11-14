@@ -3,6 +3,7 @@ import {ToolbarComponent} from "./toolbar";
 import {BorderComponent} from "./border-popup";
 import {ImageItem} from "./item";
 import uuid from 'uuid/v4';
+import findDuplicates from 'array-find-duplicates';
 
 const dot = require('dot');
 import 'perfect-scrollbar/css/perfect-scrollbar.css'
@@ -342,14 +343,13 @@ export class MainComponent extends Component {
     onOrderClick(optionChanged) {
         let items = [];
 
-        if($('.crop-container.enabled').length && !this.size.width && !optionChanged){
-            Swal.fire({
-                text: 'Выберите формат'
-            });
-            return;
-        }
-
         if(this.props.options.options.length > this.options.length && !optionChanged){
+            let selectedOptions = this.options.map(item => item.option_id);
+            this.props.options.options.map(item => {
+                if(!selectedOptions.includes(+item.option_id)){
+                    $(`[data-option-id='${item.option_id}']`).find('button').addClass('btn-danger');
+                }
+            });
             Swal.fire({
                 text: 'Укажите все опции'
             });
