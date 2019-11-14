@@ -356,6 +356,13 @@ export class MainComponent extends Component {
             return;
         }
 
+        if($('#cropper-container .image-item > div').length === 0){
+            Swal.fire({
+                text: 'Вы не загрузили ни одной фотографии!'
+            });
+            return;
+        }
+
         $('#cropper-container .image-item > div.enabled').each((i, e) => {
 
             let photo = this.props.urls.filter(item => item.uid === $(e).attr('data-uid'))[0];
@@ -532,6 +539,7 @@ export class MainComponent extends Component {
             $('.border-frame').css('border', `${border.thickness}px solid ${border}`);
         }
 
+        this.goToPage(0);
     }
 
 
