@@ -192,9 +192,7 @@ class Cropper extends Component {
     process(items, callback) {
         this.startProcessingCallback({status: 'start', count: items.length});
         axios.post(`${this.options.handlerUrl}/processing`, items).then(response => {
-            if (this.startProcessingCallback)
-                this.startProcessingCallback(response.data);
-            else if (callback)
+           if (callback)
                 callback(response.data);
         }).catch(error => {
             if (callback)
