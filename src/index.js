@@ -15,7 +15,7 @@ import 'rangeslider-js/dist/styles.min.css'
 
 window.tippy = require('tippy.js').default;
 window.toPixel = require('unit-to-px').default;
-window.MM_KOEF = 2; // to convert pixel to millimeter
+window.MM_KOEF = 1; // to convert pixel to millimeter
 import Image from './model/Image';
 import Options from './model/Options';
 import Swal from "sweetalert2";
