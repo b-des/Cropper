@@ -356,7 +356,7 @@ export class MainComponent extends Component {
             return;
         }
 
-        if($('#cropper-container .image-item > div').length === 0){
+        if($('#cropper-container .image-item > div').length === 0 && !optionChanged){
             Swal.fire({
                 text: 'Вы не загрузили ни одной фотографии!'
             });
