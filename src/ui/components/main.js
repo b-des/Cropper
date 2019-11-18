@@ -423,10 +423,10 @@ export class MainComponent extends Component {
         });
 
 
-        if (this.props.immediate) {
+        if (this.props.immediate && !optionChanged) {
             this.props.onProcessingStart({status: 'start', count: items.length});
 
-            axios.post(`${this.props.handlerUrl}/processing`, items).then(response => {
+            axios.post(`${this.props.handlerUrl}/processing`, items, {timeout: 600000}).then(response => {
                 if (this.props.onOrder )
                     this.props.onOrder({options: this.options, photos: response.data});
             }).catch(error => {
@@ -482,6 +482,7 @@ export class MainComponent extends Component {
 
     /*Fire when add photo*/
     onPhotoAdded(border, crop, firstElement, lastElement) {
+
         $('#main-section .placeholder').hide();
         this.paginator.set('totalResult', this.props.urls.length);
         $('#pagination-bar').html(this.paginator.render());
@@ -539,7 +540,9 @@ export class MainComponent extends Component {
             $('.border-frame').css('border', `${border.thickness}px solid ${border}`);
         }
 
-        this.goToPage(0);
+        setTimeout(() => {
+            this.goToPage(1);
+        }, 500);
     }
 
 

@@ -180,7 +180,7 @@ class Cropper extends Component {
 
                     this.child.current.onPhotoAdded(borderItems[0] ? borderItems[0].border : 'none', cropItems.length > 0, images[0], images[images.length - 1]);
                 }
-            }, 100);
+            }, 50);
         });
     }
 
@@ -191,7 +191,7 @@ class Cropper extends Component {
      */
     process(items, callback) {
         this.startProcessingCallback({status: 'start', count: items.length});
-        axios.post(`${this.options.handlerUrl}/processing`, items).then(response => {
+        axios.post(`${this.options.handlerUrl}/processing`, items, {timeout: 600000}).then(response => {
            if (callback)
                 callback(response.data);
         }).catch(error => {
