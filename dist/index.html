@@ -51,6 +51,10 @@
         'https://cdn.guidingtech.com/media/assets/2019/07/Best-Star-Wars-HD-and-4K-Wallpapers-for-Phone-and-PC-9.jpg',
         'https://esossl-a.akamaihd.net/assets/img/cms/media/56274c7523aff0fa1744819a554d7af4_the-halls-of-the-colossus_wallpaper-1920x1080.jpg',
         'https://images3.alphacoders.com/675/675273.jpg',
+        'https://www.w3schools.com/w3css/img_lights.jpg',
+        'http://s2.fotokto.ru/topics/full/11/110164.jpg',
+        'https://www.bigstockphoto.com/images/homepage/module-6.jpg',
+        'https://cdn.pixabay.com/photo/2018/02/09/21/46/rose-3142529__340.jpg',
     ];
 
     function addPhoto() {
@@ -62,7 +66,7 @@
         handlerUrl: 'http://localhost:5567',
         dest: ['C:/Node/Cropper/dist', 'uploads/12334'],
         immediate: false,
-        itemsPerPage: 8,
+        itemsPerPage: 10,
         borderWidth: 10,//толщина рамки по умолчанию
         defaultOptions: [
            //  {option_id: 9, option_value_id: 4},
@@ -258,7 +262,7 @@
     });
 
     let items = [];
-    for (let i = 0; i <= 50; i++) {
+    for (let i = 0; i <= 500; i++) {
         items.push(imgs[Math.floor(Math.random() * ((imgs.length - 1) - 0 + 1) + 0)]);
     }
 
@@ -274,11 +278,8 @@
     });*/
 
     c.onImagesProcessed((items) => {
-        console.log(items);
-        //console.log(JSON.stringify(items.photos));
-
-        c.clear();
-            c.addPhotos(items.photos);
+         c.clear();
+        c.addPhotos(items.photos);
 
     });
 

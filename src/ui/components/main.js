@@ -79,12 +79,15 @@ export class MainComponent extends Component {
             $(`.crop-container.enabled`).css('padding', 0);
         } else {
             let thickness = this.props.options.borderWidth / window.MM_KOEF;
-            $(`.crop-container.enabled`).find('.border-frame').css('border', `${thickness}px solid ${border}`).css('z-index', 99);
+            $(`.image-container:visible  .crop-container.enabled`).find('.border-frame').css('border', `${thickness}px solid ${border}`).css('z-index', 99);
             $(`.crop-container.enabled`).attr('data-border', border);
             $(`.crop-container.enabled`).attr('data-border-thickness', this.props.options.borderWidth);
-            $(`.crop-container.enabled`).css('padding', thickness);
+            $(`.image-container:visible  .crop-container.enabled`).css('padding', thickness);
         }
-        $(`.crop-container.enabled`).cropper('update');
+
+
+        $(`.image-container:visible .crop-container.enabled`).cropper('update');
+        //$(`.crop-container.enabled`).cropper('update');
     }
 
 
@@ -571,6 +574,12 @@ export class MainComponent extends Component {
                 'height': 'auto'
             })
         }
+
+        let thickness = this.props.options.borderWidth / window.MM_KOEF;
+
+        $(visible.join(',')).show().find('.crop-container.enabled').find('.border-frame').css('border', `${thickness}px solid ${this.border}`).css('z-index', 99);
+        $(visible.join(',')).show().find('.crop-container.enabled').css('padding', thickness);
+
         //show items from current page and update cropper
         $(visible.join(',')).show().find('.crop-container.enabled').cropper('update', {fitToContainer: this.framing === 'whole'});
 
@@ -629,7 +638,7 @@ export class MainComponent extends Component {
                 this.options[index] = option;
             }
         }
-        this.onOrderClick(true);
+        //this.onOrderClick(true);
     }
 
     render(props, state, context) {
