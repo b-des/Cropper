@@ -79,10 +79,10 @@ export class MainComponent extends Component {
             $(`.crop-container.enabled`).css('padding', 0);
         } else {
             let thickness = this.props.options.borderWidth / window.MM_KOEF;
-            $(`.image-container:visible  .crop-container.enabled`).find('.border-frame').css('border', `${thickness}px solid ${border}`).css('z-index', 99);
-            $(`.crop-container.enabled`).attr('data-border', border);
-            $(`.crop-container.enabled`).attr('data-border-thickness', this.props.options.borderWidth);
-            $(`.image-container:visible  .crop-container.enabled`).css('padding', thickness);
+            $(`.image-container  .crop-container.enabled`).find('.border-frame').css('border', `${thickness}px solid ${border}`).css('z-index', 99);
+            $(`.image-container .crop-container.enabled`).attr('data-border', border);
+            $(`.image-container .crop-container.enabled`).attr('data-border-thickness', this.props.options.borderWidth);
+            $(`.image-container  .crop-container.enabled`).css('padding', thickness);
         }
 
 
@@ -575,13 +575,8 @@ export class MainComponent extends Component {
             })
         }
 
-        let thickness = this.props.options.borderWidth / window.MM_KOEF;
-
-        $(visible.join(',')).show().find('.crop-container.enabled').find('.border-frame').css('border', `${thickness}px solid ${this.border}`).css('z-index', 99);
-        $(visible.join(',')).show().find('.crop-container.enabled').css('padding', thickness);
-
-        //show items from current page and update cropper
-        $(visible.join(',')).show().find('.crop-container.enabled').cropper('update', {fitToContainer: this.framing === 'whole'});
+        $(visible.join(',')).show().find('.crop-container.enabled').cropper('update', {fitToContainer: this.framing !== 'cropp'});
+        $(visible.join(',')).show().find('.crop-container.enabled').cropper('update');
 
         //reset unchecked items
         $(visible.join(',')).find('.crop-container:not(.enabled)').css({

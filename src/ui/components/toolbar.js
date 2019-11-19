@@ -101,7 +101,7 @@ export class ToolbarComponent extends Component {
         });
 
         let enabled = {};
-        //$(`#cropper-toolbar .dropdown:not([data-option-id='${current_option}']) a`).addClass('disabled');
+        $(`#cropper-toolbar .dropdown:not([data-option-id='${current_option}']) a`).addClass('disabled');
 
         Object.entries(this.exludedOptions).map(option => {
             Object.entries(option[1]).map(item => {
@@ -117,7 +117,6 @@ export class ToolbarComponent extends Component {
     }
 
     unionDuplicates(arr1, arr2) {
-        //return [...new Set(arr1.concat(...arr2))];
         return [...new Set([].concat(...findDuplicates(arr1.concat(arr2))))];
     }
 
