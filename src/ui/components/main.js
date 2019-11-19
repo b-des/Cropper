@@ -638,6 +638,9 @@ export class MainComponent extends Component {
                 this.options[index] = option;
             }
         }
+
+        if (this.props.onOptionChanged )
+            this.props.onOptionChanged({options: this.options, photos: this.props.urls.length});
         //this.onOrderClick(true);
     }
 
