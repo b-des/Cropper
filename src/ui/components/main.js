@@ -372,7 +372,7 @@ export class MainComponent extends Component {
 
             let item = {
                 url: photo.url,
-                thumbnail: $(e).attr('data-src') || photo.thumbnail || photo.url,
+                thumbnail: photo.thumbnail || photo.url,
                 size: this.size,
                 dest: this.props.dest,
                 paper: this.paper || '',
