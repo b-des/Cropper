@@ -101,7 +101,7 @@ export class ToolbarComponent extends Component {
         });
 
         let enabled = {};
-        //$(`#cropper-toolbar .dropdown:not([data-option-id='${current_option}']) a`).addClass('disabled');
+        $(`#cropper-toolbar .dropdown:not([data-option-id='${current_option}']) a`).addClass('disabled');
 
         Object.entries(this.exludedOptions).map(option => {
             Object.entries(option[1]).map(item => {
