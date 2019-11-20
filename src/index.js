@@ -191,12 +191,30 @@ class Cropper extends Component {
      */
     process(items, callback) {
         this.startProcessingCallback({status: 'start', count: items.length});
-        axios.post(`${this.options.handlerUrl}/processing`, items, {timeout: 600000}).then(response => {
+       /* axios.post(`${this.options.handlerUrl}/processing`, items, {timeout: 600000}).then(response => {
            if (callback)
                 callback(response.data);
         }).catch(error => {
             if (callback)
                 callback(error);
+        });*/
+
+        console.log("Send data to render via jQuery AJAX");
+        console.log("Quantity of photos: " + items.length);
+        $.ajax({
+            url: `${this.options.handlerUrl}/processing`,
+            type: 'POST',
+            data: {data : items},
+            dataType: 'json',
+            error: function(error){
+                if (callback)
+                    callback(error);
+            },
+            success: function(response){
+                if (callback)
+                    callback(response);
+            },
+            timeout: 600000
         });
     }
 

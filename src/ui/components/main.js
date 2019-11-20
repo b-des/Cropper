@@ -79,10 +79,10 @@ export class MainComponent extends Component {
             $(`.crop-container.enabled`).css('padding', 0);
         } else {
             let thickness = this.props.options.borderWidth / window.MM_KOEF;
-            $(`.image-container  .crop-container.enabled`).find('.border-frame').css('border', `${thickness}px solid ${border}`).css('z-index', 99);
+            $(`.image-container .crop-container.enabled`).find('.border-frame').css('border', `${thickness}px solid ${border}`).css('z-index', 99);
             $(`.image-container .crop-container.enabled`).attr('data-border', border);
             $(`.image-container .crop-container.enabled`).attr('data-border-thickness', this.props.options.borderWidth);
-            $(`.image-container  .crop-container.enabled`).css('padding', thickness);
+            $(`.image-container .crop-container.enabled`).css('padding', thickness);
         }
 
 
