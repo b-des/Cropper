@@ -42,7 +42,7 @@
                         that.obj.append(this);
                         that.obj.append('<div class="border-frame"></div>');
 
-                        setTimeout(methods.initCropper.bind(that), 50);
+                        setTimeout(methods.initCropper.bind(that), 500);
                     };
 
                     tmpImage.onerror = function () {
@@ -56,6 +56,7 @@
 
             });
         },
+
         initCropper: function () {
 
             this.objW = this.obj.width();
@@ -71,7 +72,7 @@
             this.imgInitH = this.imgH = this.img.height();
             if (this.imgInitH && this.imgInitW ) {
                 methods.zoomByDelta.call(this, -this.imgInitW);
-                methods.zoomByDelta.call(this, this.options.initialZoom);
+                methods.zoomByDelta.call(this, +this.options.initialZoom);
             }
             this.imgInitW = this.imgW = this.img.width();
             this.imgInitH = this.imgH = this.img.height();
@@ -515,6 +516,8 @@
 
         update: function (options) {
             return this.each(function () {
+                if(!this.options)
+                    return;
                 if (options) {
                     this.options.rotate = false;
                     this.options.createUI = true;
@@ -535,7 +538,7 @@
                         that.obj.append('<div class="border-frame"></div>');
                         if (that.options.onLoad) that.options.onLoad(that.obj.attr('data-uid'), this.width, this.height, true);
 
-                        if (that.obj.hasClass('enabled')){
+                        if (that.obj.hasClass('enabled') && parseInt(that.obj.attr('data-border-thickness'))){
                             let thickness = (that.obj.attr('data-border-thickness') || window.defaultBorderWidth) / window.MM_KOEF;
                             let color = that.obj.attr('data-border');
                             that.obj.find('.border-frame').css('border', `${thickness}px solid ${color}`).css('z-index', '1');

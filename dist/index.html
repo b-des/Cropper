@@ -36,14 +36,16 @@
             thumbnail: 'https://cdn.pixabay.com/photo/2016/11/14/04/45/elephant-1822636__340.jpg',
             params: {
                 my_param: 'value of my param'
-            }
+            },
+            resolution: '28.35x28.35'
         },
         {
             url: 'https://assets.macroplant.com/assets/adapter/adapter-icon-hero-3977e6dc1fc7e2e44df058ea75dcbbb299bdf7b7953fccea23b0a0aefbb1958c.png',
             thumbnail: 'https://assets.macroplant.com/assets/adapter/adapter-icon-hero-3977e6dc1fc7e2e44df058ea75dcbbb299bdf7b7953fccea23b0a0aefbb1958c.png',
             params: {
                 some_custom_param: 'value of custom param'
-            }
+            },
+            resolution: '28.35x28.35'
         },
         'https://images.pexels.com/photos/556416/pexels-photo-556416.jpeg',
         'https://c4.wallpaperflare.com/wallpaper/410/867/750/vector-forest-sunset-forest-sunset-forest-wallpaper-thumb.jpg',
@@ -69,9 +71,9 @@
         itemsPerPage: 10,
         borderWidth: 10,//толщина рамки по умолчанию
         defaultOptions: [
-           //  {option_id: 9, option_value_id: 4},
-            // {option_id: 10, option_value_id: 2},
-            // {option_id: 12, option_value_id: 2}
+           // {option_id: 9, option_value_id: 4},
+             //{option_id: 10, option_value_id: 2},
+             //{option_id: 12, option_value_id: 2}
         ],
         options: [
             {
@@ -262,7 +264,7 @@
     });
 
     let items = [];
-    for (let i = 0; i <= 50; i++) {
+    for (let i = 0; i <= 11; i++) {
         items.push(imgs[Math.floor(Math.random() * ((imgs.length - 1) - 0 + 1) + 0)]);
     }
 
@@ -280,13 +282,13 @@
     c.onImagesProcessed((items) => {
         console.log(items);
          c.clear();
-        c.addPhotos(items.photos);
+       // c.addPhotos(items.photos);
 
     });
 
     c.onPropertiesChanged(result => {
-         console.log("Option changed");
-         console.log(result);
+       //  console.log("Option changed");
+        // console.log(result);
     })
 
 </script>

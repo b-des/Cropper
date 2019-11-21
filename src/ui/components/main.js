@@ -34,11 +34,10 @@ export class MainComponent extends Component {
         this.imageItemTemplate = new ImageItem().getHtml();
         this.options = [];
         this.child = createRef();
-
+        this.initializedPages = [];
         this.borderSettings = new BorderComponent();
 
     }
-
 
 
     /*Fire when changed size*/
@@ -46,6 +45,10 @@ export class MainComponent extends Component {
         this.size = {width: size[1], height: size[0]};
         this.changePhotoSize($(`.crop-container.enabled`), this.size);
         $(`.image-container:visible .crop-container.enabled`).cropper('update', {fitToContainer: this.framing !== 'cropp'});
+
+        setTimeout(() => {
+            this.checkResolutionOfPhotos();
+        }, 1000);
         /* $(`.crop-container.enabled`).each((i, obj) => {
              setTimeout(() => {
                  $(obj).cropper('update', {fitToContainer: this.framing !== 'cropp'})
@@ -113,7 +116,7 @@ export class MainComponent extends Component {
                 if (this.border)
                     $(`.crop-container.enabled`).find('.border-frame').css('border', `${thickness}px solid ${this.border}`).css('z-index', 1);
 
-                if(this.border && this.border !== 'none'){
+                if (this.border && this.border !== 'none') {
                     $(`.crop-container.enabled`).attr('data-border', this.border).css('padding', thickness);
                     $(`.crop-container.enabled`).attr('data-border-thickness', this.props.options.borderWidth);
                 }
@@ -152,7 +155,7 @@ export class MainComponent extends Component {
             this.changePhotoSize(target, this.size);
             target.cropper('update', {fitToContainer: this.framing === 'whole'});
 
-            if(this.border && !+target.attr('data-border-thickness') ){
+            if (this.border && !+target.attr('data-border-thickness')) {
                 target.attr('data-border-thickness', this.props.options.borderWidth);
                 target.attr('data-border', this.border);
             }
@@ -202,7 +205,7 @@ export class MainComponent extends Component {
 
             }
             this.size = {width: size.width, height: size.height};
-           // $('.dropdown.size button').html(`Формат: ${size.height}x${size.width}`);
+            // $('.dropdown.size button').html(`Формат: ${size.height}x${size.width}`);
         } else {
 
         }
@@ -245,6 +248,7 @@ export class MainComponent extends Component {
         let confirmedRemove = () => {
             const index = this.props.urls.findIndex(a => a.uid === uid);
             if (index === -1) return;
+            let params = this.props.urls[index].params;
             this.props.urls.splice(index, 1);
             $(`#crop-container-${uid}`).cropper('destroy');
             $(`#crop-container-${uid}`).closest('.image-container').remove();
@@ -260,9 +264,17 @@ export class MainComponent extends Component {
                 return `#${item.uid}`
             });
 
+
             $('.image-container').hide();
-            $(visible.join(',')).show().find('.crop-container').cropper('update').cropper('update');
-            this.onOrderClick(true);
+            $(visible.join(',')).show();
+            if(pagination.totalResult >= this.props.options.itemsPerPage){
+                let newItemOnPage = this.props.urls[pagination.toResult-1];
+                this.initPhotos(newItemOnPage);
+                $(`#${newItemOnPage.uid} .crop-container`).cropper('update', {fitToContainer: this.framing !== 'cropp'});
+                this.checkResolutionOfPhotos(newItemOnPage);
+            }
+
+            this.onOrderClick(true, params);
         };
 
         Swal.fire({
@@ -289,9 +301,18 @@ export class MainComponent extends Component {
             $('.placeholder').show();
             $('#cropper-toolbar input[type=checkbox]').prop('checked', false);
             $('#cropper-toolbar .selected-items').html(0);
+
+            this.initializedPages = [];
+            this.options = [];
+            this.props.options.options.map(option => {
+                $(`[data-option-id=${option.option_id}]`).find('button').html(option.name)
+            });
+            this.framing = 'whole';
+            this.size = {width: 0, height: 0};
+            this.border = null;
             this.onOrderClick(true);
         };
-        if(!forced){
+        if (!forced) {
             Swal.fire({
                 title: 'Вы уверены?',
                 text: 'Удалить все фото?',
@@ -304,7 +325,7 @@ export class MainComponent extends Component {
                     this.props.clear()
                 }
             })
-        }else{
+        } else {
             confirmedRemove();
         }
 
@@ -328,7 +349,8 @@ export class MainComponent extends Component {
                 target.attr('data-src', `${response.data.filename}?v=${new Date().getTime()}`);
                 // target.cropper('reset');
                 target.cropper('update', {
-                    rotate: true, createUI: target.hasClass('enabled'), onLoad: () => {}
+                    rotate: true, createUI: target.hasClass('enabled'), onLoad: () => {
+                    }
                 });
 
                 if (this.border && this.border !== 'none') {
@@ -343,13 +365,13 @@ export class MainComponent extends Component {
 
 
     /*Fire when clicked ORDER button*/
-    onOrderClick(optionChanged) {
+    onOrderClick(optionChanged, extra) {
         let items = [];
 
-        if(this.props.options.options.length > this.options.length && !optionChanged){
+        if (this.props.options.options.length > this.options.length && !optionChanged) {
             let selectedOptions = this.options.map(item => item.option_id);
             this.props.options.options.map(item => {
-                if(!selectedOptions.includes(+item.option_id)){
+                if (!selectedOptions.includes(+item.option_id)) {
                     $(`[data-option-id='${item.option_id}']`).find('button').addClass('btn-danger');
                 }
             });
@@ -359,7 +381,7 @@ export class MainComponent extends Component {
             return;
         }
 
-        if($('#cropper-container .image-item > div').length === 0 && !optionChanged){
+        if ($('#cropper-container .image-item > div').length === 0 && !optionChanged) {
             Swal.fire({
                 text: 'Вы не загрузили ни одной фотографии!'
             });
@@ -373,6 +395,7 @@ export class MainComponent extends Component {
             let item = {
                 url: photo.url,
                 thumbnail: photo.thumbnail || photo.url,
+                resolution: photo.resolution,
                 size: this.size,
                 dest: this.props.dest,
                 paper: this.paper || '',
@@ -382,18 +405,18 @@ export class MainComponent extends Component {
             };
             if ($(e).hasClass('enabled')) {
 
-                let imgWidth = (parseFloat($(e).find('img').css('width')) );
-                let imgHeight = (parseFloat($(e).find('img').css('height')) );
-                let offset = parseInt($(e).attr('data-border-thickness'))+2;
+                let imgWidth = (parseFloat($(e).find('img').css('width')));
+                let imgHeight = (parseFloat($(e).find('img').css('height')));
+                let offset = parseInt($(e).attr('data-border-thickness')) + 2;
 
                 //let left = (parseFloat($(e).find('img').css('width')) );
-                let left = 100 * ((Math.abs( parseFloat($(e).find('img').css('left')) ) ) / imgWidth) || 0;
+                let left = 100 * ((Math.abs(parseFloat($(e).find('img').css('left')))) / imgWidth) || 0;
                 //let top = (parseFloat($(e).find('img').css('height')));
-                let top = 100 * ((Math.abs( parseFloat($(e).find('img').css('top'))) / imgHeight)) || 0;
+                let top = 100 * ((Math.abs(parseFloat($(e).find('img').css('top'))) / imgHeight)) || 0;
 
                 let width = 100 * (($(e).innerWidth() - offset / 2) / imgWidth);
 
-                let height = 100 * (($(e).innerHeight() - offset / 2)/ imgHeight);
+                let height = 100 * (($(e).innerHeight() - offset / 2) / imgHeight);
 
 
                 item = Object.assign(item, {
@@ -430,7 +453,7 @@ export class MainComponent extends Component {
             this.props.onProcessingStart({status: 'start', count: items.length});
 
             axios.post(`${this.props.handlerUrl}/processing`, items, {timeout: 600000}).then(response => {
-                if (this.props.onOrder )
+                if (this.props.onOrder)
                     this.props.onOrder({options: this.options, photos: response.data});
             }).catch(error => {
                 if (this.props.onOrder)
@@ -462,9 +485,9 @@ export class MainComponent extends Component {
             }*/
         } else {
 
-            if(optionChanged){
-                this.props.onOptionChanged({options: this.options, photos: items.reverse()});
-            }else{
+            if (optionChanged) {
+                this.props.onOptionChanged({options: this.options, photos: items.reverse(), params: extra});
+            } else {
                 this.props.onOrder({options: this.options, photos: items.reverse()});
             }
         }
@@ -481,6 +504,63 @@ export class MainComponent extends Component {
         }
 
         return tempArray;
+    }
+
+
+    /*Initializing photo at first start*/
+    initPhotos(photo) {
+
+        if ($('#main-section').find(`#crop-container-${photo.uid}`).find('.lds-ring').length == 0)
+            return false;
+
+        if(this.border && this.border !== 'none'){
+            let thickness = this.props.options.borderWidth / window.MM_KOEF;
+            $('#main-section').find(`#crop-container-${photo.uid}`).find('.border-frame').css('border', `${thickness}px solid ${this.border}`).css('z-index', 99);
+            $('#main-section').find(`#crop-container-${photo.uid}`).attr('data-border', this.border);
+            $('#main-section').find(`#crop-container-${photo.uid}`).attr('data-border-thickness', this.props.options.borderWidth);
+            $('#main-section').find(`#crop-container-${photo.uid}`).css('padding', thickness);
+        }
+
+        $('#main-section').find(`#crop-container-${photo.uid}`).cropper({
+            createUI: photo.original === false,
+            fitToContainer: !photo.crop || photo.crop === false,
+            onLoad: (uid, width, height, existItem) => {
+            }
+        });
+    }
+
+    /*Check if photo is bigger than current format size*/
+    checkResolutionOfPhotos(photo) {
+        if(!photo && this.size.width){
+            let pagination = this.paginator.getPaginationData();
+            this.props.urls.slice(pagination.fromResult - 1, pagination.toResult).map((item, i) => {
+                this.calculateFitSize(item);
+            });
+        }else if(this.size.width){
+            this.calculateFitSize(photo);
+        }
+
+    }
+
+    calculateFitSize(item){
+        if (item.resolution) {
+            let resolution = item.resolution.split('x');
+            if(this.size.width * 2.835 > +resolution[0] || this.size.height * 2.835 > +resolution[1]){
+                let warning = $(`#crop-container-${item.uid}`).closest('.image-container').find('.warning').css('display', 'block');
+                let content = document.getElementById('tippy-content-3').innerHTML
+                    .replace('current', `${resolution[0]}x${resolution[1]}`)
+                    .replace('min', `${Math.ceil(this.size.width * 2.835)}x${Math.ceil(this.size.height * 2.835)}`);
+
+                warning.attr('data-tippy-content', this.size.width * 2.835);
+                if(!warning.get(0)._tippy){
+                    tippy(warning.get(0), {theme: 'light'}).setContent(content);
+                }else{
+                    warning.get(0)._tippy.setContent(content);
+                }
+            }else{
+                $(`#crop-container-${item.uid}`).closest('.image-container').find('.warning').css('display', 'none');
+            }
+        }
     }
 
     /*Fire when add photo*/
@@ -513,7 +593,7 @@ export class MainComponent extends Component {
         $('#cropper-toolbar .selected-items').html(length);
         if (length) {
             $('#cropper-toolbar input[type=checkbox]').prop('checked', 'checked');
-            if(firstElement.zoom && (firstElement.left || firstElement.top) || firstElement.original === false)
+            if (firstElement.zoom && (firstElement.left || firstElement.top) || firstElement.original === false)
                 $(`.dropdown.framing button`).html('Кадр целиком');
             this.child.current.removeControlTooltip();
         }
@@ -544,6 +624,8 @@ export class MainComponent extends Component {
         }
 
         setTimeout(() => {
+            let index = this.initializedPages.indexOf(1);
+            this.initializedPages[index] = 0;
             this.goToPage(1);
         }, 500);
     }
@@ -561,6 +643,16 @@ export class MainComponent extends Component {
 
         //get items from current page
         let visible = this.props.urls.slice(pagination.fromResult - 1, pagination.toResult).map((item, i) => {
+
+            //console.log(this.initializedPages.indexOf(page));
+            //console.log(this.props.options.itemsPerPage);
+            if (this.initializedPages.indexOf(+page) === -1) {
+                if (this.props.options.itemsPerPage === i + 1) {
+                    this.initializedPages.push(+page);
+                }
+                this.initPhotos(item);
+            }
+            this.checkResolutionOfPhotos(item);
             return `#${item.uid}`
         });
 
@@ -583,6 +675,8 @@ export class MainComponent extends Component {
             width: '100%',
             height: '100%'
         }).cropper('reset');
+
+
     }
 
     /*Create pagination instance*/
@@ -621,7 +715,7 @@ export class MainComponent extends Component {
     }
 
     onOptionChange(id, value, size) {
-        if(id && value){
+        if (id && value) {
             let option = {
                 option_id: +id,
                 option_value_id: +value,
@@ -634,7 +728,7 @@ export class MainComponent extends Component {
             }
         }
 
-        if (this.props.onOptionChanged )
+        if (this.props.onOptionChanged)
             this.props.onOptionChanged({options: this.options, photos: this.props.urls.length});
         //this.onOrderClick(true);
     }
@@ -700,7 +794,7 @@ export class MainComponent extends Component {
     componentDidMount() {
         this.borderSettings.initPopup("cropper-container");
         //this.state.urls = this.props.urls;
-       // this.setState(this.state);
+        // this.setState(this.state);
 
         $(document).on('click', '.image-container .remove-item', (e) => {
             let uid = $(e.target).closest('.image-container').find('.crop-container').attr('data-uid');
@@ -763,6 +857,12 @@ export class MainComponent extends Component {
         });
 
         $('#pagination-bar').html(this.paginator.render());
+
+        if(this.props.options.defaultOptions)
+            this.props.options.defaultOptions.map(option => {
+                console.log(option);
+                this.onOptionChange(option.option_id, option.option_value_id);
+            })
 
 
     }

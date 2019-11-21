@@ -105,6 +105,11 @@ class Cropper extends Component {
 
     }
 
+    destroy(){
+        //let elem = document.getElementById(this.options.container);
+       // elem.parentNode.removeChild(elem);
+        $(`#${this.options.container}`).html('');
+    }
 
     /**
      * Add photos.
@@ -120,6 +125,7 @@ class Cropper extends Component {
             });
             images = images.slice(0, 1000);
         }
+        let html = '';
         images.map((item, key) => {
             setTimeout(() => {
 
@@ -143,14 +149,10 @@ class Cropper extends Component {
                     rotate: photo.rotate || '',
                     checked: photo.zoom && (photo.left || photo.top) || photo.original === false || true
                 });
+                $('.selected-items').html(key+1);
+                $('#main-section').prepend(html);
 
-                if ($('#main-section').find('.scroll-content').length) {
-                    $('#main-section').find('.scroll-content').prepend(html);
-                } else {
-                    $('#main-section').prepend(html);
-                }
-
-                $('#main-section').find(`#crop-container-${photo.uid}`).cropper({
+               /* $('#main-section').find(`#crop-container-${photo.uid}`).cropper({
                     createUI: photo.original === false,
                     fitToContainer: !photo.crop || photo.crop === false,
                     onLoad: (uid, width, height, existItem) => {
@@ -172,15 +174,17 @@ class Cropper extends Component {
                         }
                         $(`#crop-container-${uid}`).attr('data-fit-sizes', fitSizes.join(','));
                     }
-                });
+                });*/
                // this.setState({urls: this.state.urls});
                 if (images.length === key + 1) {
                     let cropItems = images.filter((item) => item.crop);
                     let borderItems = images.filter((item) => item.border);
 
-                    this.child.current.onPhotoAdded(borderItems[0] ? borderItems[0].border : 'none', cropItems.length > 0, images[0], images[images.length - 1]);
+                    setTimeout(() => {
+                        this.child.current.onPhotoAdded(borderItems[0] ? borderItems[0].border : 'none', cropItems.length > 0, images[0], images[images.length - 1]);
+                    },100);
                 }
-            }, 50);
+            }, 5);
         });
     }
 
