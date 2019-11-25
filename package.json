@@ -82,6 +82,8 @@
     "react-bootstrap": "^1.0.0-beta.12",
     "react-custom-scrollbars": "^4.2.1",
     "react-flexible-progressbar": "^1.0.5",
+    "react-keyboard-event-handler": "^1.5.2",
+    "react-keydown": "^1.9.12",
     "react-progressbar": "^15.4.1",
     "react-transition-group": "^4.3.0",
     "smooth-scrollbar": "^8.4.1",

@@ -3,15 +3,11 @@ import {ToolbarComponent} from "./toolbar";
 import {BorderComponent} from "./border-popup";
 import {ImageItem} from "./item";
 import uuid from 'uuid/v4';
-import findDuplicates from 'array-find-duplicates';
-
-const dot = require('dot');
 import 'perfect-scrollbar/css/perfect-scrollbar.css'
-import {Scrollbars} from 'react-custom-scrollbars';
-import Scrollbar from "smooth-scrollbar";
 import pagination from 'pagination';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+const dot = require('dot');
 
 export class MainComponent extends Component {
 
@@ -729,9 +725,18 @@ export class MainComponent extends Component {
                 this.options[index] = option;
             }
         }
+        $('#toolbar [name="quantity"]').val();
+
+        let copies = 0;
+        $('#main-section [name="quantity"]').each(function () {
+            console.log($(this).val());
+            if($(this).val() > 1){
+                copies += $(this).val() - 1;
+            }
+        });
 
         if (this.props.onOptionChanged)
-            this.props.onOptionChanged({options: this.options, photos: this.props.urls.length});
+            this.props.onOptionChanged({options: this.options, photos: this.props.urls.length+copies});
         //this.onOrderClick(true);
     }
 
@@ -791,6 +796,7 @@ export class MainComponent extends Component {
         return html;
 
     }
+
 
 
     componentDidMount() {
@@ -866,6 +872,13 @@ export class MainComponent extends Component {
             })
 
 
+        $(document).keyup(function(e){
+            if(e.originalEvent.key === 'ArrowLeft'){
+
+            }else if(e.originalEvent.key === 'ArrowRight'){
+
+            }
+        });
     }
 
 
