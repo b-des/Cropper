@@ -307,10 +307,11 @@ export class MainComponent extends Component {
             this.props.options.options.map(option => {
                 $(`[data-option-id=${option.option_id}]`).find('button').html(option.name)
             });
+            $(`#cropper-toolbar .dropdown a`).removeClass('disabled');
             this.framing = 'whole';
             this.size = {width: 0, height: 0};
             this.border = null;
-            this.onOrderClick(true);
+
         };
         if (!forced) {
             Swal.fire({
@@ -322,7 +323,8 @@ export class MainComponent extends Component {
                 confirmButtonText: 'Удалить'
             }).then(res => {
                 if (res.value) {
-                    this.props.clear()
+                    this.props.clear();
+                    this.onOrderClick(true);
                 }
             })
         } else {
@@ -407,20 +409,20 @@ export class MainComponent extends Component {
 
                 let imgWidth = (parseFloat($(e).find('img').css('width')));
                 let imgHeight = (parseFloat($(e).find('img').css('height')));
-                let offset = parseInt($(e).attr('data-border-thickness')) + 2;
+                let offset = parseInt($(e).attr('data-border-thickness'));
 
                 //let left = (parseFloat($(e).find('img').css('width')) );
                 let left = 100 * ((Math.abs(parseFloat($(e).find('img').css('left')))) / imgWidth) || 0;
                 //let top = (parseFloat($(e).find('img').css('height')));
                 let top = 100 * ((Math.abs(parseFloat($(e).find('img').css('top'))) / imgHeight)) || 0;
 
-                let width = 100 * (($(e).innerWidth() - offset / 2) / imgWidth);
+                let width = 100 * (($(e).innerWidth() - offset * 2) / imgWidth);
 
-                let height = 100 * (($(e).innerHeight() - offset / 2) / imgHeight);
+                let height = 100 * (($(e).innerHeight() - offset * 2) / imgHeight);
 
 
                 item = Object.assign(item, {
-                    crop: $(e).attr('data-crop') === 'true' ? {
+                    crop: $(e).attr('data-crop') === 'true' || this.framing === 'cropp' ? {
                         x: isFinite(left) ? left : 0,
                         y: isFinite(top) ? top : 0,
                         w: isFinite(width) ? width : 0,
@@ -452,7 +454,7 @@ export class MainComponent extends Component {
         if (this.props.immediate && !optionChanged) {
             this.props.onProcessingStart({status: 'start', count: items.length});
 
-            axios.post(`${this.props.handlerUrl}/processing`, items, {timeout: 600000}).then(response => {
+            axios.post(`${this.props.handlerUrl}/processing`, {data:items}, {timeout: 600000}).then(response => {
                 if (this.props.onOrder)
                     this.props.onOrder({options: this.options, photos: response.data});
             }).catch(error => {
@@ -714,7 +716,7 @@ export class MainComponent extends Component {
         });
     }
 
-    onOptionChange(id, value, size) {
+    onOptionChange(id, value, size, isInit) {
         if (id && value) {
             let option = {
                 option_id: +id,
@@ -860,7 +862,6 @@ export class MainComponent extends Component {
 
         if(this.props.options.defaultOptions)
             this.props.options.defaultOptions.map(option => {
-                console.log(option);
                 this.onOptionChange(option.option_id, option.option_value_id);
             })
 
