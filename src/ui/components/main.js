@@ -872,10 +872,15 @@ export class MainComponent extends Component {
             })
 
 
-        $(document).keyup(function(e){
+        $(document).keyup((e) => {
             if(e.originalEvent.key === 'ArrowLeft'){
-
+                let pagination = this.paginator.getPaginationData();
+                if(pagination.current > 1)
+                    this.goToPage(pagination.current - 1);
             }else if(e.originalEvent.key === 'ArrowRight'){
+                let pagination = this.paginator.getPaginationData();
+                if(pagination.current < pagination.totalResult)
+                    this.goToPage(pagination.current + 1);
 
             }
         });
