@@ -134,7 +134,7 @@ export class MainComponent extends Component {
 
         $('.image-container input[type=checkbox]').prop('checked', checked);
         $('#cropper-toolbar .selected-items').html($('.image-container input[type=checkbox]:checked').length);
-        this.onOrderClick(true);
+        this.onOptionChange();
     }
 
     /*Select/unselect single item*/
@@ -176,7 +176,7 @@ export class MainComponent extends Component {
 
         $('#cropper-toolbar input[type=checkbox]').prop('checked', checkAll);
         $('#cropper-toolbar .selected-items').html($('.image-container input[type=checkbox]:checked').length);
-        this.onOrderClick(true);
+        this.onOptionChange();
     }
 
     /*Calculate sizes for photo*/
@@ -725,18 +725,17 @@ export class MainComponent extends Component {
                 this.options[index] = option;
             }
         }
-        $('#toolbar [name="quantity"]').val();
 
-        let copies = 0;
-        $('#main-section [name="quantity"]').each(function () {
-            console.log($(this).val());
-            if($(this).val() > 1){
-                copies += $(this).val() - 1;
-            }
+        let quantity = 0;
+        $('#main-section .crop-container.enabled').parent().parent().find('[name="quantity"]').each(function () {
+
+            ///if($(this).val() > 1){
+                quantity += +$(this).val() ;
+           // }
         });
 
         if (this.props.onOptionChanged)
-            this.props.onOptionChanged({options: this.options, photos: this.props.urls.length+copies});
+            this.props.onOptionChanged({options: this.options, photos: quantity});
         //this.onOrderClick(true);
     }
 
