@@ -7,6 +7,7 @@ import 'perfect-scrollbar/css/perfect-scrollbar.css'
 import pagination from 'pagination';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+
 const dot = require('dot');
 
 export class MainComponent extends Component {
@@ -41,7 +42,7 @@ export class MainComponent extends Component {
         this.size = {width: size[1], height: size[0]};
         this.changePhotoSize($(`.crop-container.enabled`), this.size);
         $(`.image-container:visible .crop-container.enabled`).cropper('update', {fitToContainer: this.framing !== 'cropp'});
-
+        this.adjustOrientation(true);
         setTimeout(() => {
             this.checkResolutionOfPhotos();
         }, 1000);
@@ -181,6 +182,11 @@ export class MainComponent extends Component {
 
     /*Calculate sizes for photo*/
     changePhotoSize(container, size) {
+
+
+        let photo = this.props.urls.filter(item => item.uid === container.attr('data-uid'))[0];
+        let resolution = photo && photo.resolution? photo.resolution.split('x') : null;
+
         let containerSize = {width: 280, height: 180};
         if (size.width !== 0 && size.height !== 0) {
             if (size.width === size.height) {
@@ -190,19 +196,24 @@ export class MainComponent extends Component {
                 let ratio = size.width / size.height;
                 if (ratio >= containerSize.width / containerSize.height) {
                     //280/size[1]:180/x
-                    let height = 280 / size.width * size.height;
+                    let height = containerSize.width / size.width * size.height;
                     //this.setState({width: '280px', height: `${height}px`});
                     container.css({width: '280px', height: `${height}px`});
                 } else {
-                    let width = 180 / size.height * size.width;
+                    let width = containerSize.height / size.height * size.width;
                     //this.setState({width: `${width}px`, height: '180px'});
                     container.css({width: `${width}px`, height: '180px'});
                 }
 
             }
             this.size = {width: size.width, height: size.height};
-            // $('.dropdown.size button').html(`Формат: ${size.height}x${size.width}`);
-        } else {
+            if (resolution && (+resolution[0] / +resolution[1] < 1)) {
+                if (this.size.width < this.size.height && container.attr('data-rotate') === '-90') {
+                    // setTimeout(this.rotateImage.bind(this, photo.uid, 0), 1000);
+                } else if (this.size.width > this.size.height && +container.attr('data-rotate') === 0) {
+                    // setTimeout(this.rotateImage.bind(this, photo.uid, -90), 1000);
+                }
+            }
 
         }
 
@@ -263,8 +274,8 @@ export class MainComponent extends Component {
 
             $('.image-container').hide();
             $(visible.join(',')).show();
-            if(pagination.totalResult >= this.props.options.itemsPerPage){
-                let newItemOnPage = this.props.urls[pagination.toResult-1];
+            if (pagination.totalResult >= this.props.options.itemsPerPage) {
+                let newItemOnPage = this.props.urls[pagination.toResult - 1];
                 this.initPhotos(newItemOnPage);
                 $(`#${newItemOnPage.uid} .crop-container`).cropper('update', {fitToContainer: this.framing !== 'cropp'});
                 this.checkResolutionOfPhotos(newItemOnPage);
@@ -332,11 +343,12 @@ export class MainComponent extends Component {
     /*Rotate image*/
     rotateImage(uid, deg) {
         let index = this.props.urls.findIndex(a => a.uid === uid);
+
         $(`#crop-container-${uid}`).append('<div class="lds-ring"><div></div><div></div><div></div><div></div></div>');
         axios.post(`${this.props.handlerUrl}/rotate`, {
-            url: this.props.urls[index].url,
+            url: this.props.urls[index].thumbnail || this.props.urls[index].url,
             uid: uid,
-            deg: deg || 90,
+            deg: deg,
             dest: this.props.dest
         }).then(response => {
 
@@ -450,7 +462,7 @@ export class MainComponent extends Component {
         if (this.props.immediate && !optionChanged) {
             this.props.onProcessingStart({status: 'start', count: items.length});
 
-            axios.post(`${this.props.handlerUrl}/processing`, {data:items}, {timeout: 600000}).then(response => {
+            axios.post(`${this.props.handlerUrl}/processing`, {data: items}, {timeout: 600000}).then(response => {
                 if (this.props.onOrder)
                     this.props.onOrder({options: this.options, photos: response.data});
             }).catch(error => {
@@ -507,55 +519,57 @@ export class MainComponent extends Component {
 
     /*Initializing photo at first start*/
     initPhotos(photo) {
-
         if ($('#main-section').find(`#crop-container-${photo.uid}`).find('.lds-ring').length == 0)
             return false;
-
-        if(this.border && this.border !== 'none'){
+        let container = $('#main-section').find(`#crop-container-${photo.uid}`);
+        if (this.border && this.border !== 'none') {
             let thickness = this.props.options.borderWidth / window.MM_KOEF;
-            $('#main-section').find(`#crop-container-${photo.uid}`).find('.border-frame').css('border', `${thickness}px solid ${this.border}`).css('z-index', 99);
-            $('#main-section').find(`#crop-container-${photo.uid}`).attr('data-border', this.border);
-            $('#main-section').find(`#crop-container-${photo.uid}`).attr('data-border-thickness', this.props.options.borderWidth);
-            $('#main-section').find(`#crop-container-${photo.uid}`).css('padding', thickness);
+            container.find('.border-frame').css('border', `${thickness}px solid ${this.border}`).css('z-index', 99);
+            container.attr('data-border', this.border);
+            container.attr('data-border-thickness', this.props.options.borderWidth);
+            container.css('padding', thickness);
         }
 
-        $('#main-section').find(`#crop-container-${photo.uid}`).cropper({
+        container.cropper({
             createUI: photo.original === false,
             fitToContainer: !photo.crop || photo.crop === false,
             onLoad: (uid, width, height, existItem) => {
             }
         });
+
+        if(container.attr('data-rotate') && +container.attr('data-rotate') !== 0)
+            setTimeout(this.rotateImage.bind(this, photo.uid, container.attr('data-rotate')), 1000);
     }
 
     /*Check if photo is bigger than current format size*/
     checkResolutionOfPhotos(photo) {
-        if(!photo && this.size.width){
+        if (!photo && this.size.width) {
             let pagination = this.paginator.getPaginationData();
             this.props.urls.slice(pagination.fromResult - 1, pagination.toResult).map((item, i) => {
                 this.calculateFitSize(item);
             });
-        }else if(this.size.width){
+        } else if (this.size.width) {
             this.calculateFitSize(photo);
         }
 
     }
 
-    calculateFitSize(item){
+    calculateFitSize(item) {
         if (item.resolution) {
             let resolution = item.resolution.split('x');
-            if(this.size.width * 2.835 > +resolution[0] || this.size.height * 2.835 > +resolution[1]){
+            if (this.size.width * 2.835 > +resolution[0] || this.size.height * 2.835 > +resolution[1]) {
                 let warning = $(`#crop-container-${item.uid}`).closest('.image-container').find('.warning').css('display', 'block');
                 let content = document.getElementById('tippy-content-3').innerHTML
                     .replace('current', `${resolution[0]}x${resolution[1]}`)
                     .replace('min', `${Math.ceil(this.size.width * 2.835)}x${Math.ceil(this.size.height * 2.835)}`);
 
                 warning.attr('data-tippy-content', this.size.width * 2.835);
-                if(!warning.get(0)._tippy){
+                if (!warning.get(0)._tippy) {
                     tippy(warning.get(0), {theme: 'light'}).setContent(content);
-                }else{
+                } else {
                     warning.get(0)._tippy.setContent(content);
                 }
-            }else{
+            } else {
                 $(`#crop-container-${item.uid}`).closest('.image-container').find('.warning').css('display', 'none');
             }
         }
@@ -620,7 +634,7 @@ export class MainComponent extends Component {
             $(`.crop-container.enabled`).attr('data-border-thickness', border.thickness);
             $('.border-frame').css('border', `${border.thickness}px solid ${border}`);
         }
-
+        this.adjustOrientation();
         setTimeout(() => {
             let index = this.initializedPages.indexOf(1);
             this.initializedPages[index] = 0;
@@ -642,17 +656,22 @@ export class MainComponent extends Component {
         //get items from current page
         let visible = this.props.urls.slice(pagination.fromResult - 1, pagination.toResult).map((item, i) => {
 
-            //console.log(this.initializedPages.indexOf(page));
-            //console.log(this.props.options.itemsPerPage);
-            if (this.initializedPages.indexOf(+page) === -1) {
+            if (!item.initialized) {
                 if (this.props.options.itemsPerPage === i + 1) {
                     this.initializedPages.push(+page);
                 }
+                item.initialized = true;
                 this.initPhotos(item);
+            }else if(item.oldRotation !== item.rotation){
+                setTimeout(this.rotateImage.bind(this, item.uid, item.rotation), 500);
+                item.oldRotation = item.rotation;
             }
+
+
             this.checkResolutionOfPhotos(item);
             return `#${item.uid}`
         });
+
 
         //hide all items
         $('.image-container').hide();
@@ -730,13 +749,49 @@ export class MainComponent extends Component {
         $('#main-section .crop-container.enabled').parent().parent().find('[name="quantity"]').each(function () {
 
             ///if($(this).val() > 1){
-                quantity += +$(this).val() ;
-           // }
+            quantity += +$(this).val();
+            // }
         });
 
         if (this.props.onOptionChanged)
             this.props.onOptionChanged({options: this.options, photos: quantity});
         //this.onOrderClick(true);
+    }
+
+    adjustOrientation(rotateImmediate) {
+
+        //return false;
+        if (rotateImmediate && this.paginator){
+            let pagination = this.paginator ? this.paginator.getPaginationData() : null;
+            this.props.urls.slice(pagination.fromResult - 1, pagination.toResult).map((photo, i) => {
+
+                let resolution = photo.resolution ? photo.resolution.split('x') : null;
+                let container = $('#main-section').find(`#crop-container-${photo.uid}`);
+                if (resolution && (+resolution[0] / +resolution[1] < 1)) {
+                    if (this.size.width < this.size.height && container.attr('data-rotate') === '-90') {
+                        setTimeout(this.rotateImage.bind(this, photo.uid, 0), 500);
+                        photo.oldRotation = 0;
+                    } else if (this.size.width > this.size.height && +container.attr('data-rotate') === 0) {
+                        setTimeout(this.rotateImage.bind(this, photo.uid, -90), 500);
+                        photo.oldRotation = -90;
+                    }
+                }
+            });
+        }
+
+        this.props.urls.map((photo, i) => {
+            let resolution = photo.resolution ? photo.resolution.split('x') : null;
+            let container = $('#main-section').find(`#crop-container-${photo.uid}`);
+            if (resolution && (+resolution[0] / +resolution[1] < 1)) {
+                if (this.size.width < this.size.height && container.attr('data-rotate') === '-90') {
+                    container.attr('data-rotate', '0');
+                    photo.rotation = 0;
+                } else if (this.size.width > this.size.height ) {
+                    container.attr('data-rotate', '-90');
+                    photo.rotation = -90;
+                }
+            }
+        });
     }
 
     render(props, state, context) {
@@ -797,7 +852,6 @@ export class MainComponent extends Component {
     }
 
 
-
     componentDidMount() {
         this.borderSettings.initPopup("cropper-container");
         //this.state.urls = this.props.urls;
@@ -816,6 +870,7 @@ export class MainComponent extends Component {
         $(document).on('click', '.image-container .rotate-item', (e) => {
             let uid = $(e.target).closest('.image-container').find('.crop-container').attr('data-uid');
             let deg = parseInt($(e.target).closest('.image-container').find('.crop-container').attr('data-rotate')) + 90;
+
             this.rotateImage(uid, deg > 360 ? 90 : deg);
         });
 
@@ -865,20 +920,20 @@ export class MainComponent extends Component {
 
         $('#pagination-bar').html(this.paginator.render());
 
-        if(this.props.options.defaultOptions)
+        if (this.props.options.defaultOptions)
             this.props.options.defaultOptions.map(option => {
                 this.onOptionChange(option.option_id, option.option_value_id);
             })
 
 
         $(document).keyup((e) => {
-            if(e.originalEvent.key === 'ArrowLeft'){
+            if (e.originalEvent.key === 'ArrowLeft') {
                 let pagination = this.paginator.getPaginationData();
-                if(pagination.current > 1)
+                if (pagination.current > 1)
                     this.goToPage(pagination.current - 1);
-            }else if(e.originalEvent.key === 'ArrowRight'){
+            } else if (e.originalEvent.key === 'ArrowRight') {
                 let pagination = this.paginator.getPaginationData();
-                if(pagination.current < pagination.totalResult)
+                if (pagination.current < pagination.totalResult)
                     this.goToPage(pagination.current + 1);
 
             }
