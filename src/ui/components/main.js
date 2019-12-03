@@ -537,8 +537,10 @@ export class MainComponent extends Component {
             }
         });
 
-        if(container.attr('data-rotate') && +container.attr('data-rotate') !== 0)
+        if(container.attr('data-rotate') && +container.attr('data-rotate') !== 0){
             setTimeout(this.rotateImage.bind(this, photo.uid, container.attr('data-rotate')), 1000);
+            photo.oldRotation = +container.attr('data-rotate');
+        }
     }
 
     /*Check if photo is bigger than current format size*/
@@ -759,7 +761,6 @@ export class MainComponent extends Component {
     }
 
     adjustOrientation(rotateImmediate) {
-
         //return false;
         if (rotateImmediate && this.paginator){
             let pagination = this.paginator ? this.paginator.getPaginationData() : null;
@@ -771,7 +772,7 @@ export class MainComponent extends Component {
                     if (this.size.width < this.size.height && container.attr('data-rotate') === '-90') {
                         setTimeout(this.rotateImage.bind(this, photo.uid, 0), 500);
                         photo.oldRotation = 0;
-                    } else if (this.size.width > this.size.height && +container.attr('data-rotate') === 0) {
+                    } else if (this.size.width === 0 || (this.size.width > this.size.height && +container.attr('data-rotate') === 0)) {
                         setTimeout(this.rotateImage.bind(this, photo.uid, -90), 500);
                         photo.oldRotation = -90;
                     }
@@ -786,7 +787,7 @@ export class MainComponent extends Component {
                 if (this.size.width < this.size.height && container.attr('data-rotate') === '-90') {
                     container.attr('data-rotate', '0');
                     photo.rotation = 0;
-                } else if (this.size.width > this.size.height ) {
+                } else if (this.size.width === 0 || (this.size.width > this.size.height) ) {
                     container.attr('data-rotate', '-90');
                     photo.rotation = -90;
                 }
@@ -869,8 +870,8 @@ export class MainComponent extends Component {
 
         $(document).on('click', '.image-container .rotate-item', (e) => {
             let uid = $(e.target).closest('.image-container').find('.crop-container').attr('data-uid');
-            let deg = parseInt($(e.target).closest('.image-container').find('.crop-container').attr('data-rotate')) + 90;
-
+            let currentDegree = parseInt($(e.target).closest('.image-container').find('.crop-container').attr('data-rotate'));
+            let deg = currentDegree ? currentDegree + 90 : 90;
             this.rotateImage(uid, deg > 360 ? 90 : deg);
         });
 
