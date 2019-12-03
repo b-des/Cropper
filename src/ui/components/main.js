@@ -331,7 +331,8 @@ export class MainComponent extends Component {
             }).then(res => {
                 if (res.value) {
                     this.props.clear();
-                    this.onOrderClick(true);
+                    this.props.onDeleteAllPhotos(true);
+                    //this.onOrderClick(true);
                 }
             })
         } else {

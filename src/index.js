@@ -73,6 +73,8 @@ class Cropper extends Component {
         };
         this.onOptionChangedCallback = () => {
         };
+        this.onDeleteAllPhotosCallback = () => {
+        };
 
 
         this.state.sizes = config.sizes;
@@ -95,6 +97,7 @@ class Cropper extends Component {
                                   onOrder={(items) => this.orderCallback(items)}
                                   onOptionChanged={(items) => this.onOptionChangedCallback(items)}
                                   onProcessingStart={(result) => this.startProcessingCallback(result)}
+                                  onDeleteAllPhotos={(result) => this.onDeleteAllPhotosCallback(result)}
                                   urls={this.state.urls}
                                   dest={this.options.dest}
                                   clear={this.clear.bind(this)}
@@ -243,6 +246,10 @@ class Cropper extends Component {
      */
     onProcessingStart(callback) {
         this.startProcessingCallback = callback;
+    }
+
+    onDeleteAllPhotos(callback){
+        this.onDeleteAllPhotosCallback = callback;
     }
 
 
