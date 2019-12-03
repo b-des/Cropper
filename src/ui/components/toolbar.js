@@ -22,10 +22,8 @@ export class ToolbarComponent extends Component {
     }
 
     onFramingChange(framing) {
-        if (framing === 'cropp') {
-            $(`.dropdown.framing button`).html('Кадр в обрез');
-        } else {
-            $(`.dropdown.framing button`).html('Кадр целиком');
+        if(framing !== 'whole' && framing !== 'cropp'){
+            framing = 'whole';
         }
 
         this.props.onFramingChange.call(this, framing);
