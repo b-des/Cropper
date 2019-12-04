@@ -344,10 +344,12 @@ export class MainComponent extends Component {
     /*Rotate image*/
     rotateImage(uid, deg) {
         let index = this.props.urls.findIndex(a => a.uid === uid);
-
+        let photo = null;
+        if(index === -1)
+            photo = this.props.urls.filter(item => item.uid === uid)[0];
         $(`#crop-container-${uid}`).append('<div class="lds-ring"><div></div><div></div><div></div><div></div></div>');
         axios.post(`${this.props.handlerUrl}/rotate`, {
-            url: this.props.urls[index].thumbnail || this.props.urls[index].url,
+            url: this.props.urls[index] ? this.props.urls[index].thumbnail || this.props.urls[index].url : photo.thumbnail || photo.url,
             uid: uid,
             deg: deg,
             dest: this.props.dest
