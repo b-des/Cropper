@@ -1,5 +1,6 @@
 import {h, Component} from "preact";
 import findDuplicates from 'array-find-duplicates';
+import Swal from "sweetalert2";
 
 export class ToolbarComponent extends Component {
     constructor() {
@@ -8,6 +9,7 @@ export class ToolbarComponent extends Component {
         this.tooltip = null;
         this.tooltipOptionItem = null;
         this.exludedOptions = {};
+        this.selectedOptions = {};
     }
 
     onPaperChange(type) {
@@ -22,7 +24,7 @@ export class ToolbarComponent extends Component {
     }
 
     onFramingChange(framing) {
-        if(framing !== 'whole' && framing !== 'cropp'){
+        if (framing !== 'whole' && framing !== 'cropp') {
             framing = 'whole';
         }
 
@@ -66,8 +68,13 @@ export class ToolbarComponent extends Component {
     }
 
 
-    onOptionChange(id, value, name, item_label, option_label) {
+    onOptionChange(event, id, value, name, item_label, option_label) {
+        if (event && $(event.target).hasClass('unsuitable'))
+            return;
         this.props.onOptionChange(id, value, null, true);
+        if (!value)
+            return;
+        this.selectedOptions[id] = value;
         $(`[data-option-id="${id}"]`).find('button').removeClass('btn-danger').html(name);
         switch (item_label) {
             case 'size':
@@ -86,10 +93,53 @@ export class ToolbarComponent extends Component {
         }
     }
 
-    excludeUnsuitableOptions(current_option, relative_options) {
-        if (!relative_options)
+    excludeUnsuitableOptions(event, current_option, relative_options, option_name, option_value, item_label, option_label) {
+
+        if (!relative_options && !$(event.target).hasClass('unsuitable'))
             return;
 
+        if ($(event.target).hasClass('unsuitable')) {
+            Swal.fire({
+                title: 'Конфликт опций',
+                text: 'Несовместимые опции будут сброшены. Вы согласны?',
+                type: 'question',
+                showCancelButton: true,
+                cancelButtonText: 'Отмена',
+                confirmButtonText: 'Продолжить'
+            }).then(res => {
+                if (res.value) {
+
+                        this.onOptionChange(null, current_option, option_value, option_name, item_label, option_label);
+                    //console.log(this.selectedOptions);
+
+                    if (relative_options)
+                        relative_options.map(option => {
+                            //console.log(option);
+                            //console.log(this.selectedOptions[option.option_id]);
+                            if (!option.option_value_id.includes(this.selectedOptions[option.option_id]) ) {
+                                //console.log("not include");
+                                let item = this.props.options.filter(item => +item.option_id === +option.option_id)[0];
+                                this.onOptionChange(null, option.option_id, 0);
+                                $(`[data-option-id="${option.option_id}"]`).find('button').addClass('btn-danger').html(item ? item.name : "");
+                            }
+                        });
+                        this.props.options.map((item) => {
+                            //console.log(item);
+
+                            if (+item.option_id !== +current_option) {
+                                //$(`[data-option-id="${item.option_id}"]`).find('button').addClass('btn-danger').html(item.name);
+                            }
+                        });
+                    $(`#cropper-toolbar .dropdown[data-option-id=${current_option}]`).find(`a`).removeClass('unsuitable');
+                    $(`[data-option-id="${current_option}"]`).find('button').removeClass('btn-danger').html(option_name);
+                }
+            });
+
+            // return false;
+        }
+
+        if (!relative_options)
+            return;
         //$(`#cropper-toolbar .dropdown[data-option-id=${current_option}]`).find('a').removeClass('disabled');
         relative_options.map(option => {
             if (!this.exludedOptions[current_option])
@@ -99,7 +149,8 @@ export class ToolbarComponent extends Component {
         });
 
         let enabled = {};
-        $(`#cropper-toolbar .dropdown:not([data-option-id='${current_option}']) a`).addClass('disabled');
+        // $(`#cropper-toolbar .dropdown:not([data-option-id='${current_option}']) a`).addClass('disabled');
+        $(`#cropper-toolbar .dropdown:not([data-option-id='${current_option}']) a`).addClass('unsuitable');
 
         Object.entries(this.exludedOptions).map(option => {
             Object.entries(option[1]).map(item => {
@@ -110,6 +161,7 @@ export class ToolbarComponent extends Component {
         Object.entries(enabled).map(option => {
             option[1].map(value_id => {
                 $(`#cropper-toolbar .dropdown[data-option-id=${option[0]}]`).find(`a[data-value-id=${value_id}]`).removeClass('disabled');
+                $(`#cropper-toolbar .dropdown[data-option-id=${option[0]}]`).find(`a[data-value-id=${value_id}]`).removeClass('unsuitable');
             });
         });
     }
@@ -158,8 +210,8 @@ export class ToolbarComponent extends Component {
                             {item.option_values.map((option) => {
                                 return <a className="dropdown-item" href="#" data-value-id={option.option_value_id}
                                           onClick={(e) => {
-                                              this.onOptionChange(item.option_id, option.option_value_id, option.name, item.label, option.label || option.value);
-                                              this.excludeUnsuitableOptions(item.option_id, option.relation_options);
+                                              this.onOptionChange(e, item.option_id, option.option_value_id, option.name, item.label, option.label || option.value);
+                                              this.excludeUnsuitableOptions(e, item.option_id, option.relation_options, option.name, option.option_value_id, item.label, option.label || option.value);
                                               e.preventDefault();
                                           }}>{option.name}</a>
                             })}

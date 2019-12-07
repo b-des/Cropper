@@ -273,11 +273,6 @@
         items.push(imgs[Math.floor(Math.random() * ((imgs.length - 1) - 0 + 1) + 0)]);
     }
 
-    c.onPropertiesChanged(result => {
-        console.log("Option changed");
-        console.log(result);
-    });
-
 
 
     c.addPhotos([imgs[0]]);
@@ -286,10 +281,11 @@
     c.onDeleteAllPhotos((res) => {
         console.log('onDeleteAllPhotos');
     });
+
     c.onPropertiesChanged(result => {
         console.log("Option changed");
         console.log(result);
-    })
+    });
 
     c.onProcessingStart((data) => {
         console.log(data);

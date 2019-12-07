@@ -748,6 +748,11 @@ export class MainComponent extends Component {
             } else {
                 this.options[index] = option;
             }
+        }else if(id && value === 0){
+            let index = this.options.findIndex((item) => item.option_id === +id);
+            if (index > -1) {
+                this.options.splice(index, 1);
+            }
         }
 
         let quantity = 0;

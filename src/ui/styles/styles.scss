@@ -172,6 +172,11 @@
       }
     }
 
+    .dropdown-menu .dropdown-item.unsuitable{
+      background: #ff00002e;
+      border-radius: 3px;
+    }
+
     .progressbar-container {
       background: $bar-bg;
       width: 200px;
