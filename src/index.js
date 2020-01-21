@@ -11,6 +11,7 @@ import 'tippy.js/dist/tippy.css'
 import 'tippy.js/themes/light.css';
 import 'pretty-checkbox/'
 import './lib/cropper.jquery.js'
+import './ui/styles/customs.css'
 import 'rangeslider-js/dist/styles.min.css'
 
 window.tippy = require('tippy.js').default;
@@ -19,6 +20,7 @@ window.MM_KOEF = 1; // to convert pixel to millimeter
 import Image from './model/Image';
 import Options from './model/Options';
 import Swal from "sweetalert2";
+import ReactDOM from "preact-compat";
 
 /**
  * Cropper module.
@@ -110,7 +112,10 @@ class Cropper extends Component {
 
     destroy(){
         //let elem = document.getElementById(this.options.container);
-       // elem.parentNode.removeChild(elem);
+        const root = render(<Cropper />, document.getElementById(this.options.container));
+        ReactDOM.unmountComponentAtNode(document.getElementById(this.options.container));
+        render(null, document.getElementById(this.options.container), root);
+        // elem.parentNode.removeChild(elem);
         $(`#${this.options.container}`).html('');
     }
 
@@ -178,7 +183,7 @@ class Cropper extends Component {
                         $(`#crop-container-${uid}`).attr('data-fit-sizes', fitSizes.join(','));
                     }
                 });*/
-               // this.setState({urls: this.state.urls});
+                this.setState({urls: this.state.urls});
                 if (images.length === key + 1) {
                     let cropItems = images.filter((item) => item.crop);
                     let borderItems = images.filter((item) => item.border);
@@ -208,21 +213,14 @@ class Cropper extends Component {
 
         console.log("Send data to render via jQuery AJAX");
         console.log("Quantity of photos: " + items.length);
-        $.ajax({
-            url: `${this.options.handlerUrl}/processing`,
-            type: 'POST',
-            data: {data : items},
-            dataType: 'json',
-            error: function(error){
-                if (callback)
-                    callback(error);
-            },
-            success: function(response){
-                if (callback)
-                    callback(response);
-            },
-            timeout: 600000
+        axios.post(`${this.options.handlerUrl}/processing`, {data: items}, {timeout: 600000}).then(response => {
+            if (callback)
+                callback(response.data);
+        }).catch(error => {
+            if (callback)
+                callback(error);
         });
+
     }
 
     /**

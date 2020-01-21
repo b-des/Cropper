@@ -1,0 +1,11 @@
+#cropper-container .image-item > div[data-crop="true"] > img {
+    cursor: all-scroll;
+}
+
+#cropper-container .cropper-container .cross-drag{
+    display: none !important;
+}
+
+#cropper-container .ui-slider .ui-slider-handle{
+    cursor: pointer;
+}

@@ -185,7 +185,7 @@ export class MainComponent extends Component {
 
 
         let photo = this.props.urls.filter(item => item.uid === container.attr('data-uid'))[0];
-        let resolution = photo && photo.resolution? photo.resolution.split('x') : null;
+        let resolution = photo && photo.resolution ? photo.resolution.split('x') : null;
 
         let containerSize = {width: 280, height: 180};
         if (size.width !== 0 && size.height !== 0) {
@@ -345,7 +345,7 @@ export class MainComponent extends Component {
     rotateImage(uid, deg) {
         let index = this.props.urls.findIndex(a => a.uid === uid);
         let photo = null;
-        if(index === -1)
+        if (index === -1)
             photo = this.props.urls.filter(item => item.uid === uid)[0];
         $(`#crop-container-${uid}`).append('<div class="lds-ring"><div></div><div></div><div></div><div></div></div>');
         axios.post(`${this.props.handlerUrl}/rotate`, {
@@ -403,8 +403,8 @@ export class MainComponent extends Component {
 
         $('#cropper-container .image-item > div.enabled').each((i, e) => {
 
-            let photo = this.props.urls.filter(item => item.uid === $(e).attr('data-uid'))[0];
 
+            let photo = this.props.urls.filter(item => item.uid === $(e).attr('data-uid'))[0];
             let item = {
                 url: photo.url,
                 thumbnail: photo.thumbnail || photo.url,
@@ -540,7 +540,7 @@ export class MainComponent extends Component {
             }
         });
 
-        if(container.attr('data-rotate') && +container.attr('data-rotate') !== 0){
+        if (container.attr('data-rotate') && +container.attr('data-rotate') !== 0) {
             setTimeout(this.rotateImage.bind(this, photo.uid, container.attr('data-rotate')), 1000);
             photo.oldRotation = +container.attr('data-rotate');
         }
@@ -645,6 +645,7 @@ export class MainComponent extends Component {
             this.initializedPages[index] = 0;
             this.goToPage(1);
         }, 500);
+        this.registerListeners();
     }
 
 
@@ -667,7 +668,7 @@ export class MainComponent extends Component {
                 }
                 item.initialized = true;
                 this.initPhotos(item);
-            }else if(item.oldRotation !== item.rotation){
+            } else if (item.oldRotation !== item.rotation) {
                 setTimeout(this.rotateImage.bind(this, item.uid, item.rotation), 500);
                 item.oldRotation = item.rotation;
             }
@@ -748,7 +749,7 @@ export class MainComponent extends Component {
             } else {
                 this.options[index] = option;
             }
-        }else if(id && value === 0){
+        } else if (id && value === 0) {
             let index = this.options.findIndex((item) => item.option_id === +id);
             if (index > -1) {
                 this.options.splice(index, 1);
@@ -770,7 +771,7 @@ export class MainComponent extends Component {
 
     adjustOrientation(rotateImmediate) {
         //return false;
-        if (rotateImmediate && this.paginator){
+        if (rotateImmediate && this.paginator) {
             let pagination = this.paginator ? this.paginator.getPaginationData() : null;
             this.props.urls.slice(pagination.fromResult - 1, pagination.toResult).map((photo, i) => {
 
@@ -795,7 +796,7 @@ export class MainComponent extends Component {
                 if (this.size.width < this.size.height && container.attr('data-rotate') === '-90') {
                     container.attr('data-rotate', '0');
                     photo.rotation = 0;
-                } else if (this.size.width === 0 || (this.size.width > this.size.height) ) {
+                } else if (this.size.width === 0 || (this.size.width > this.size.height)) {
                     container.attr('data-rotate', '-90');
                     photo.rotation = -90;
                 }
@@ -860,11 +861,23 @@ export class MainComponent extends Component {
 
     }
 
+    registerListeners(){
+        setTimeout(() => {
+            let rotate = document.querySelectorAll('.rotate-item');
+            Array.from(rotate).forEach(link => {
+                link.removeEventListener('click', () => {});
+                link.addEventListener('click', (e) => {
+                    let uid = $(e.target).closest('.image-container').find('.crop-container').attr('data-uid');
+                    let currentDegree = parseInt($(e.target).closest('.image-container').find('.crop-container').attr('data-rotate'));
+                    let deg = currentDegree ? currentDegree + 90 : 90;
+                    this.rotateImage(uid, deg > 360 ? 90 : deg);
+                });
+            });
+        }, 100);
+    }
 
     componentDidMount() {
         this.borderSettings.initPopup("cropper-container");
-        //this.state.urls = this.props.urls;
-        // this.setState(this.state);
 
         $(document).on('click', '.image-container .remove-item', (e) => {
             let uid = $(e.target).closest('.image-container').find('.crop-container').attr('data-uid');
@@ -880,8 +893,9 @@ export class MainComponent extends Component {
             let uid = $(e.target).closest('.image-container').find('.crop-container').attr('data-uid');
             let currentDegree = parseInt($(e.target).closest('.image-container').find('.crop-container').attr('data-rotate'));
             let deg = currentDegree ? currentDegree + 90 : 90;
-            this.rotateImage(uid, deg > 360 ? 90 : deg);
+            //this.rotateImage(uid, deg > 360 ? 90 : deg);
         });
+       // this.registerListeners();
 
         $(document).on('click', '.image-container .border-adjust', (e) => {
             let uid = $(e.target).closest('.image-container').find('.crop-container').attr('data-uid');
@@ -916,7 +930,7 @@ export class MainComponent extends Component {
         });
 
         setTimeout(() => {
-            // Scrollbar.init(document.querySelector('#main-section'))
+
         }, 1000);
 
 

@@ -1,6 +1,6 @@
 (function ($) {
 
-    var methods = {
+    let methods = {
         init: function (options) {
             return this.each(function () {
                 this.container = $(this);
@@ -28,7 +28,7 @@
 
 
                 if (!this.obj.find('img').length) {
-                    var img = $('<img src="' + src + '">');
+                    let img = $('<img src="' + src + '">');
 
                     //this.obj.html(img);
                     img.on('load', () => {
@@ -230,7 +230,7 @@
                     this.img.css('top', 0);
 
                 }
-                var maxTop = -(this.imgH - this.objH);
+                let maxTop = -(this.imgH - this.objH);
                 if (parseInt(this.img.css('top')) < maxTop) {
                     this.img.css('top', maxTop);
 
@@ -239,7 +239,7 @@
                 if (parseInt(this.img.css('top')) < 0) {
                     this.img.css('top', 0);
                 }
-                var maxTop = this.objH - this.imgH;
+                let maxTop = this.objH - this.imgH;
                 if (parseInt(this.img.css('top')) > maxTop) {
                     this.img.css('top', maxTop);
 
@@ -251,7 +251,7 @@
                     this.img.css('left', 0);
 
                 }
-                var maxLeft = -(this.imgW - this.objW);
+                let maxLeft = -(this.imgW - this.objW);
                 if (parseInt(this.img.css('left')) < maxLeft) {
                     this.img.css('left', maxLeft);
 
@@ -261,7 +261,7 @@
                     this.img.css('left', 0);
 
                 }
-                var maxLeft = (this.objW - this.imgW);
+                let maxLeft = (this.objW - this.imgW);
                 if (parseInt(this.img.css('left')) > maxLeft) {
                     this.img.css('left', maxLeft);
 
@@ -270,15 +270,16 @@
         },
 
         initDrag: function (content) {
-            var that = this;
-
-            that.img.parent().find('.cross-drag').on("mousedown touchstart", function (e) {
+            let that = this;
+            that.img.parents("[data-crop='true']").find('img').on("mousedown touchstart", function (e) {
 
                 e.preventDefault(); // disable selection
-
-                var pageX;
-                var pageY;
-                var userAgent = window.navigator.userAgent;
+                if(that.img.parents("[data-crop='false']").length){
+                    return false;
+                }
+                let pageX;
+                let pageY;
+                let userAgent = window.navigator.userAgent;
                 if (userAgent.match(/iPad/i) || userAgent.match(/iPhone/i) || userAgent.match(/android/i) || (e.pageY && e.pageX) == undefined) {
                     pageX = e.originalEvent.touches[0].pageX;
                     pageY = e.originalEvent.touches[0].pageY;
@@ -287,7 +288,7 @@
                     pageY = e.pageY;
                 }
 
-                var z_idx = that.img.css('z-index'),
+                let z_idx = that.img.css('z-index'),
                     drg_h = that.img.outerHeight(),
                     drg_w = that.img.outerWidth(),
                     pos_y = that.img.offset().top + drg_h - pageY,
@@ -297,8 +298,8 @@
 
                 $('body').on("mousemove touchmove", function (e) {
 
-                    var imgTop;
-                    var imgLeft;
+                    let imgTop;
+                    let imgLeft;
 
                     if (userAgent.match(/iPad/i) || userAgent.match(/iPhone/i) || userAgent.match(/android/i) || (e.pageY && e.pageX) == undefined) {
                         imgTop = e.originalEvent.touches[0].pageY + pos_y - drg_h;
@@ -372,8 +373,8 @@
             this.imgH = newHeight;
             this.img.height(newHeight);
 
-            var newTop = parseInt(this.img.css('top'));
-            var newLeft = parseInt(this.img.css('left'));
+            let newTop = parseInt(this.img.css('top'));
+            let newLeft = parseInt(this.img.css('left'));
 
             if (newTop > 0) {
                 newTop = 0;
@@ -382,11 +383,11 @@
                 newLeft = 0;
             }
 
-            var maxTop = -(newHeight - this.objH);
+            let maxTop = -(newHeight - this.objH);
             if (newTop < maxTop) {
                 newTop = maxTop;
             }
-            var maxLeft = -(newWidth - this.objW);
+            let maxLeft = -(newWidth - this.objW);
             if (newLeft < maxLeft) {
                 newLeft = maxLeft;
             }
@@ -400,7 +401,7 @@
                 if (parseInt(this.img.css('top')) > 0) {
                     this.img.css('top', 0);
                 }
-                var maxTop = -(this.imgH - this.objH);
+                let maxTop = -(this.imgH - this.objH);
                 if (parseInt(this.img.css('top')) < maxTop) {
                     this.img.css('top', maxTop);
                     if (this.options.imgEyecandy) {
@@ -412,7 +413,7 @@
                     this.img.css('top', 0);
 
                 }
-                var maxTop = this.objH - this.imgH;
+                let maxTop = this.objH - this.imgH;
                 if (parseInt(this.img.css('top')) > maxTop) {
                     this.img.css('top', maxTop);
 
@@ -424,7 +425,7 @@
                     this.img.css('left', 0);
 
                 }
-                var maxLeft = -(this.imgW - this.objW);
+                let maxLeft = -(this.imgW - this.objW);
                 if (parseInt(this.img.css('left')) < maxLeft) {
                     this.img.css('left', maxLeft);
 
@@ -433,7 +434,7 @@
                 if (parseInt(this.img.css('left')) < 0) {
                     this.img.css('left', 0);
                 }
-                var maxLeft = (this.objW - this.imgW);
+                let maxLeft = (this.objW - this.imgW);
                 if (parseInt(this.img.css('left')) > maxLeft) {
                     this.img.css('left', maxLeft);
 
@@ -442,7 +443,7 @@
         },
 
         zoomByDelta: function (x) {
-            var that = this;
+            let that = this;
             let ratio = that.imgW / that.imgH;
             let newWidth = that.imgW + x;
             let newHeight = newWidth / ratio;
@@ -481,8 +482,8 @@
             this.imgH = newHeight;
             this.img.height(newHeight);
 
-            var newTop = parseInt(this.img.css('top')) - x / 2;
-            var newLeft = parseInt(this.img.css('left')) - x / 2;
+            let newTop = parseInt(this.img.css('top')) - x / 2;
+            let newLeft = parseInt(this.img.css('left')) - x / 2;
 
             if (newTop > 0) {
                 newTop = 0;
@@ -491,11 +492,11 @@
                 newLeft = 0;
             }
 
-            var maxTop = -(newHeight - that.objH);
+            let maxTop = -(newHeight - that.objH);
             if (newTop < maxTop) {
                 newTop = maxTop;
             }
-            var maxLeft = -(newWidth - that.objW);
+            let maxLeft = -(newWidth - that.objW);
             if (newLeft < maxLeft) {
                 newLeft = maxLeft;
             }
