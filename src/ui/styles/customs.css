@@ -9,3 +9,7 @@
 #cropper-container .ui-slider .ui-slider-handle{
     cursor: pointer;
 }
+
+#cropper-container .cropper-container .slider{
+    display: block !important;
+}
