@@ -13,3 +13,6 @@
 #cropper-container .cropper-container .slider{
     display: block !important;
 }
+#cropper-container #main-section .image-container .image-item > div[data-crop="true"] .border-frame{
+    cursor: all-scroll;
+}

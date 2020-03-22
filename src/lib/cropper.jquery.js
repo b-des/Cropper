@@ -271,7 +271,7 @@
 
         initDrag: function (content) {
             let that = this;
-            that.img.parents("[data-crop='true']").find('img').on("mousedown touchstart", function (e) {
+            that.img.parents("[data-crop='true']").find('img, .border-frame').on("mousedown touchstart", function (e) {
 
                 e.preventDefault(); // disable selection
                 if(that.img.parents("[data-crop='false']").length){
