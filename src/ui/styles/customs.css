@@ -16,3 +16,7 @@
 #cropper-container #main-section .image-container .image-item > div[data-crop="true"] .border-frame{
     cursor: all-scroll;
 }
+
+#cropper-container #main-section{
+    max-height: none !important;
+}

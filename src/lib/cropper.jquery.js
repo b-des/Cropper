@@ -112,12 +112,6 @@
             }
 
 
-            this.obj.on('mousewheel', function (event) {
-                event.preventDefault();
-                methods.zoomByDelta.call(this, this.options.zoomFactor * event.deltaY);
-                this.img.parent().find(".slider").slider("value", this.img.parent().find(".slider").slider("value") + event.deltaY);
-            });
-
             methods.createUI.call(this);
             methods.fitToContainer.call(this, this.options.fitToContainer);
             //that.fillContainer();
