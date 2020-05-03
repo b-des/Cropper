@@ -5,7 +5,6 @@ import Swal from "sweetalert2";
 export class ToolbarComponent extends Component {
     constructor() {
         super();
-        //this.state = {sizeLabel: 'Формат', paperLabel: 'Бумага', framingLabel: 'Кадрирование', borderLabel: 'Рамка'}
         this.tooltip = null;
         this.tooltipOptionItem = null;
         this.exludedOptions = {};
@@ -68,27 +67,27 @@ export class ToolbarComponent extends Component {
     }
 
 
-    onOptionChange(event, id, value, name, item_label, option_label) {
+    onOptionChange(event, id, value, name, itemLabel, optionLabel) {
         if (event && $(event.target).hasClass('unsuitable'))
             return;
-        this.props.onOptionChange(id, value, null, true);
+        this.props.onOptionChange(id, value, {itemLabel, optionLabel});
         if (!value)
             return;
         this.selectedOptions[id] = value;
         $(`[data-option-id="${id}"]`).find('button').removeClass('btn-danger').html(name);
-        switch (item_label) {
+        switch (itemLabel) {
             case 'size':
-                this.props.onSizeChange(option_label);
+                this.props.onSizeChange(optionLabel);
                 $(`.dropdown.size button`).html(name);
                 break;
-            case 'paper':
+     /*       case 'paper':
                 this.onPaperChange(option_label);
-                break;
+                break;*/
             case 'framing':
-                this.onFramingChange(option_label);
+                this.onFramingChange(optionLabel);
                 break;
             case 'border-select':
-                this.onBorderChange(option_label);
+                this.onBorderChange(optionLabel);
                 break;
         }
     }
@@ -121,6 +120,7 @@ export class ToolbarComponent extends Component {
                                 let item = this.props.options.filter(item => +item.option_id === +option.option_id)[0];
                                 this.onOptionChange(null, option.option_id, 0);
                                 $(`[data-option-id="${option.option_id}"]`).find('button').addClass('btn-danger').html(item ? item.name : "");
+                                $(`[data-option-id="${option.option_id}"]`).find('a').removeClass('active');
                             }
                         });
                         this.props.options.map((item) => {
@@ -130,7 +130,7 @@ export class ToolbarComponent extends Component {
                                 //$(`[data-option-id="${item.option_id}"]`).find('button').addClass('btn-danger').html(item.name);
                             }
                         });
-                    $(`#cropper-toolbar .dropdown[data-option-id=${current_option}]`).find(`a`).removeClass('unsuitable');
+                    $(`[data-option-id=${current_option}]`).find(`a`).removeClass('unsuitable');
                     $(`[data-option-id="${current_option}"]`).find('button').removeClass('btn-danger').html(option_name);
                 }
             });
@@ -151,6 +151,7 @@ export class ToolbarComponent extends Component {
         let enabled = {};
         // $(`#cropper-toolbar .dropdown:not([data-option-id='${current_option}']) a`).addClass('disabled');
         $(`#cropper-toolbar .dropdown:not([data-option-id='${current_option}']) a`).addClass('unsuitable');
+        $(`.item-options .dropdown:not([data-option-id='${current_option}']) a`).addClass('disabled');
 
         Object.entries(this.exludedOptions).map(option => {
             Object.entries(option[1]).map(item => {
@@ -160,7 +161,7 @@ export class ToolbarComponent extends Component {
 
         Object.entries(enabled).map(option => {
             option[1].map(value_id => {
-                $(`#cropper-toolbar .dropdown[data-option-id=${option[0]}]`).find(`a[data-value-id=${value_id}]`).removeClass('disabled');
+                $(`.dropdown[data-option-id=${option[0]}]`).find(`a[data-option-value-id=${value_id}]`).removeClass('disabled');
                 $(`#cropper-toolbar .dropdown[data-option-id=${option[0]}]`).find(`a[data-value-id=${value_id}]`).removeClass('unsuitable');
             });
         });
@@ -239,7 +240,7 @@ export class ToolbarComponent extends Component {
                 <div className="bp3-navbar-group bp3-align-left ">
                     <div className="select-items">
                         <div>Выбрано элементов: <span className="selected-items">0</span></div>
-                        <div className="pretty p-svg p-curve p-pulse">
+                        <div className="pretty p-svg p-curve p-pulse" style={{'display':'none'}}>
                             <input type="checkbox"
                                    onChange={(event) => this.props.onSelectChange(event.target.checked)}/>
                             <div className="state p-success">
@@ -334,9 +335,8 @@ export class ToolbarComponent extends Component {
                             <span>Кол-во: </span><input type="number" name="quantity" value="1" min="1"
                                                         style="width: 50px"/>
                         </div>
-                        <button className="btn btn-sm btn-danger" onClick={() => this.props.onDeleteAllClick()}>Удалить
-                            все
-                            фото
+                        <button className="btn btn-sm btn-danger" onClick={() => this.props.onDeleteAllClick()}>
+                            Удалить все фото
                         </button>
                     </div>
 

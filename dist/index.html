@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
           crossorigin="anonymous">
 
@@ -68,7 +69,7 @@
         handlerUrl: 'http://localhost:5567',
         dest: ['C:/Node/Cropper/dist', 'uploads/12334'],
         immediate: false,
-        itemsPerPage: 1,
+        itemsPerPage: 10,
         borderWidth: 10,//толщина рамки по умолчанию
         defaultOptions: [
             //{option_id: 9, option_value_id: 3},
@@ -269,16 +270,23 @@
     });
 
     let items = [];
-    for (let i = 0; i <= 9; i++) {
+    for (let i = 0; i <= 10; i++) {
         items.push(imgs[Math.floor(Math.random() * ((imgs.length - 1) - 0 + 1) + 0)]);
     }
 
 
-    c.addPhotos([imgs[0]]);
-    c.addPhotos([imgs[0]]);
+
+    //c.addPhotos([imgs[1]]);
+
+    c.addPhotos(
+
+        [{"url":"https://images.pexels.com/photos/556416/pexels-photo-556416.jpeg","thumbnail":"https://images.pexels.com/photos/556416/pexels-photo-556416.jpeg","size":{"width":"100","height":"100"},"dest":["C:/Node/Cropper/dist","uploads/12334"],"paper":"","crop":{"x":16.9672452742914,"y":0,"w":66.07938612250291,"h":100},"original":false,"options":{"9":"1","10":"1","11":"2","12":"1","13":"2"},"quantity":1,"rotate":0,"border":"#b72c2c","borderThickness":"10","zoom":"0","top":0,"left":-41.0833},{"url":"https://assets.macroplant.com/assets/adapter/adapter-icon-hero-3977e6dc1fc7e2e44df058ea75dcbbb299bdf7b7953fccea23b0a0aefbb1958c.png","thumbnail":"https://assets.macroplant.com/assets/adapter/adapter-icon-hero-3977e6dc1fc7e2e44df058ea75dcbbb299bdf7b7953fccea23b0a0aefbb1958c.png","resolution":"28.35x28.35","size":{"width":"100","height":"100"},"dest":["C:/Node/Cropper/dist","uploads/12334"],"paper":"","crop":{"x":0,"y":0,"w":100,"h":100},"original":false,"options":{"9":"1","10":"1","11":"2","12":"2","13":"2"},"quantity":1,"rotate":0,"border":"white","borderThickness":"10","zoom":"0","top":0,"left":0,"params":{"some_custom_param":"value of custom param"}},{"url":"https://assets.macroplant.com/assets/adapter/adapter-icon-hero-3977e6dc1fc7e2e44df058ea75dcbbb299bdf7b7953fccea23b0a0aefbb1958c.png","thumbnail":"https://assets.macroplant.com/assets/adapter/adapter-icon-hero-3977e6dc1fc7e2e44df058ea75dcbbb299bdf7b7953fccea23b0a0aefbb1958c.png","resolution":"28.35x28.35","size":{"width":"150","height":"200"},"dest":["C:/Node/Cropper/dist","uploads/12334"],"paper":"","crop":{"x":14.0625,"y":0,"w":71.875,"h":100},"original":false,"options":{"9":"2","10":"1","11":"2","12":"1","13":"2"},"quantity":1,"rotate":0,"border":"black","borderThickness":"10","zoom":"0","top":0,"left":-22.5,"params":{"some_custom_param":"value of custom param"}},{"url":"https://cdn.pixabay.com/photo/2016/11/14/04/45/elephant-1822636__340.jpg","thumbnail":"https://cdn.pixabay.com/photo/2016/11/14/04/45/elephant-1822636__340.jpg","resolution":"28.35x28.35","size":{"width":"200","height":"100"},"dest":["C:/Node/Cropper/dist","uploads/12334"],"paper":"","crop":false,"original":false,"options":{"9":"3","10":"1","11":1,"12":"1","13":"2"},"quantity":1,"rotate":0,"border":"#2196f3","borderThickness":"10","zoom":"0","top":"","left":"","params":{"my_param":"value of my param"}}]
+
+    );
 
     setTimeout(() => {
-        c.addPhotos([imgs[0]]);
+       // c.addPhotos([imgs[2]]);
+       // c.addPhotos(items);
     }, 1000);
 
     c.onDeleteAllPhotos((res) => {
@@ -286,8 +294,8 @@
     });
 
     c.onPropertiesChanged(result => {
-        console.log("Option changed");
-        console.log(result);
+       //console.log("Option changed");
+       //console.log(result);
     });
 
     c.onProcessingStart((data) => {
@@ -301,219 +309,11 @@
 
     c.onImagesProcessed((items) => {
         console.log(items);
+        console.log(JSON.stringify(items.photos));
+        return;
         c.process(items.photos, function (res) {
             console.log(res);
         });
-        return;
-        c.clear();
-        c.destroy();
-        //c = null;
-
-        setTimeout(function () {
-            let d = new Cropper({
-                container: 'app',
-                handlerUrl: 'http://localhost:5567',
-                dest: ['C:/Node/Cropper-backend/dist', 'uploads/1233412345566'],
-                immediate: false,
-                itemsPerPage: 1,
-                borderWidth: 10,//толщина рамки по умолчанию
-                defaultOptions: [
-                    {option_id: 9, option_value_id: 4},
-                    //{option_id: 10, option_value_id: 2},
-                    //{option_id: 12, option_value_id: 2}
-                ],
-                options: [
-                    {
-                        "option_id": "9",
-                        "name": "Формат бумаги",
-                        "label": "size",
-                        "option_values": [
-                            {
-                                "option_value_id": "1",
-                                "relation_options": [
-                                    {
-                                        "option_id": 10,
-                                        "option_value_id": [1]
-                                    },
-                                    {
-                                        "option_id": 13,
-                                        "option_value_id": [1]
-                                    }
-                                ],
-                                "name": "A6 (100x100)",
-                                "value": [
-                                    100,
-                                    100
-                                ]
-                            },
-                            {
-                                "option_value_id": "2",
-                                "relation_options": [
-                                    {
-                                        "option_id": 10,
-                                        "option_value_id": [1]
-                                    },
-                                    {
-                                        "option_id": 13,
-                                        "option_value_id": [2]
-                                    }
-                                ],
-                                "name": "A5 (20x15)",
-                                "value": [
-                                    20,
-                                    15
-                                ]
-                            },
-                            {
-                                "option_value_id": "3",
-                                "relation_options": [
-                                    {
-                                        "option_id": 10,
-                                        "option_value_id": [2]
-                                    },
-                                    {
-                                        "option_id": 13,
-                                        "option_value_id": [2]
-                                    }
-                                ],
-                                "name": "A5 (10x20)",
-                                "value": [
-                                    10,
-                                    20
-                                ]
-                            },
-                            {
-                                "option_value_id": "4",
-                                "relation_options": [
-                                    {
-                                        "option_id": 10,
-                                        "option_value_id": [1, 2]
-                                    },
-                                    {
-                                        "option_id": 13,
-                                        "option_value_id": [1]
-                                    }
-                                ],
-                                "name": "A5 (10x10)",
-                                "value": [
-                                    10,
-                                    10
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        "option_id": "10",
-                        "name": "Бумага",
-                        "label": "paper",
-                        "option_values": [
-                            {
-                                "option_value_id": "1",
-                                "relation_options": [
-                                    {
-                                        "option_id": 9,
-                                        "option_value_id": [1, 2]
-                                    },
-                                    {
-                                        "option_id": 13,
-                                        "option_value_id": [2]
-                                    }
-                                ],
-                                "label": "embossed",
-                                "name": "Тиснёная"
-                            },
-                            {
-                                "option_value_id": "2",
-                                "relation_options": [
-                                    {
-                                        "option_id": 9,
-                                        "option_value_id": [3, 4]
-                                    },
-
-                                    {
-                                        "option_id": 13,
-                                        "option_value_id": [1, 2, 3, 4, 5, 6]
-                                    }
-                                ],
-                                "label": "glossy",
-                                "name": "Глянцевая"
-                            }
-                        ]
-                    },
-                    {
-                        "option_id": "11",
-                        "name": "Кадрирование",
-                        "label": "framing",
-                        "option_values": [
-                            {
-                                "option_value_id": 1,
-                                "label": "whole",
-                                "name": "Кадр целиком"
-                            },
-                            {
-                                "option_value_id": 2,
-                                "label": "cropp",
-                                "name": "Кадр в обрез"
-                            }
-                        ]
-                    },
-                    {
-                        "option_id": "12",
-                        "name": "Рамка",
-                        "label": "border-select",
-                        "option_values": [
-                            {
-                                "option_value_id": "1",
-                                "label": "black",
-                                "name": "Черная"
-                            },
-                            {
-                                "option_value_id": "2",
-                                "label": "white",
-                                "name": "Белая"
-                            },
-                            {
-                                "option_value_id": "3",
-                                "label": "none",
-                                "name": "Без рамки"
-                            }
-                        ]
-                    },
-                    {
-                        "option_id": "13",
-                        "name": "Кастомная опция",
-                        "label": "option111",
-                        "option_values": [
-                            {
-                                "option_value_id": "1",
-                                "label": "black",
-                                "name": "Опция 1",
-                                "relation_options": [
-                                    {
-                                        "option_id": 9,
-                                        "option_value_id": [1, 2, 3, 4]
-                                    },
-                                ]
-                            },
-                            {
-                                "option_value_id": "2",
-                                "label": "white",
-                                "name": "Опция 2"
-                            },
-                            {
-                                "option_value_id": "3",
-                                "label": "none",
-                                "name": "Опция 3"
-                            }
-                        ]
-                    },
-                ]
-            });
-            d.addPhotos([items.photos[0]]);
-
-            return;
-        }, 1000);
-
     });
 
 

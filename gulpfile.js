@@ -5,7 +5,7 @@ let gulp = require('gulp'),
     WebpackDevServer = require('webpack-dev-server'),
     webpackConfig = require('./webpack.config.js'),
     csso = require('gulp-csso')
-    rename      = require('gulp-rename'),
+rename      = require('gulp-rename'),
     LOCAL_SERVER_PORT = 4000;
 const path = require('path');
 

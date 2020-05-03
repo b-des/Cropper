@@ -10,7 +10,7 @@
   margin: 100px auto;
   border: 1px solid #8faaa3;*/
   //position: relative;
-  @import "bootstrap/scss/bootstrap";
+  //@import "bootstrap/scss/bootstrap";
 
 
   @include mobile-only {
@@ -237,6 +237,7 @@
 
     .image-container {
       margin: 1rem .8rem;
+      max-width: 280px;
 
       .tools {
 
@@ -685,4 +686,55 @@
   position: absolute !important;
   background: #FFF;
   z-index: 99999;
+}
+
+.item-options{
+/*  button{
+    width: 100%;
+    border-radius: 0 0 3px 3px;
+  }*/
+  .dropdown{
+    display: inline-block;
+  }
+  .dropdown-menu{
+    .dropdown-item{
+      font-size: 12px;
+
+      &.unsuitable{
+        color: #6c757d;
+        cursor: not-allowed;
+        background-color: transparent;
+      }
+
+      &.disabled{
+        cursor: not-allowed;
+        pointer-events: auto;
+      }
+
+      &.reset{
+        color: #fff;
+        background-color: #dc3545;
+        border-color: #dc3545;
+        border-radius: 0;
+      }
+    }
+  }
+
+  .dropdown-submenu {
+    position: relative;
+  }
+
+  .dropdown-submenu a::after {
+    transform: rotate(-90deg);
+    position: absolute;
+    right: 6px;
+    top: .8em;
+  }
+
+  .dropdown-submenu .dropdown-menu {
+    top: 0;
+    left: 100%;
+    margin-left: .1rem;
+    margin-right: .1rem;
+  }
 }

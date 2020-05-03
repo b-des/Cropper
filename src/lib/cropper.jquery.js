@@ -28,13 +28,6 @@
 
 
                 if (!this.obj.find('img').length) {
-                    let img = $('<img src="' + src + '">');
-
-                    //this.obj.html(img);
-                    img.on('load', () => {
-                        //setTimeout(methods.initCropper.bind(this),100);
-                    });
-
                     let tmpImage = new Image();
                     tmpImage.src = src;
                     tmpImage.onload = function () {
@@ -528,7 +521,7 @@
                     tmpImage.src = src;
                     tmpImage.onload = function () {
 
-                        that.obj.html(this);
+                       // that.obj.html(this);
 
                         that.obj.append('<div class="border-frame"></div>');
                         if (that.options.onLoad) that.options.onLoad(that.obj.attr('data-uid'), this.width, this.height, true);

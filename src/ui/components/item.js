@@ -54,9 +54,27 @@ export class ImageItem {
                
                     <div id="crop-container-{{=it.uid}}" class='crop-container {{? it.checked }} enabled {{?}}' data-uid="{{=it.uid}}" data-rotate="{{=it.rotate}}"
                          style="width:100%; height:100%; padding: {{=it.borderThickness/window.MM_KOEF}}px;" data-src="{{=it.url}}" data-border="{{=it.border}}" data-zoom="{{=it.zoom}}" data-top="{{=it.top}}" data-left="{{=it.left}}"
-                         data-border-thickness="{{=it.borderThickness}}" >
+                         data-border-thickness="{{=it.borderThickness}}">
                         <div class="lds-ring"><div></div><div></div><div></div><div></div></div>
                     </div>
+                </div>
+                
+               <div class="item-options">
+                {{~ it.options :option }}
+               <div class="dropdown" data-label="{{=option.label}}" data-option-id="{{=option.option_id}}">
+                  <button class="btn btn-secondary dropdown-toggle btn-sm" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    {{=option.name}}
+                  </button>
+                  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                   {{~ option.option_values :value:i }}
+                        <a class="dropdown-item option {{? it.selectedOptions[option.option_id] == value.option_value_id}} active {{?}}" 
+                        href="#" data-label="{{=value.label}}" 
+                        {{? value.value }} data-value="{{=value.value}}" {{?}}
+                        data-option-value-id="{{=value.option_value_id}}">{{=value.name}}</a>
+                    {{~}}
+                  </div>
+                </div>
+                {{~}}
                 </div>
             </div>`;
     }

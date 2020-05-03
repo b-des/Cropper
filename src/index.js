@@ -125,7 +125,7 @@ class Cropper extends Component {
      */
     addPhotos(images) {
 
-        if (images.length > 1000) {
+        if (images && images.length > 1000) {
             Swal.fire({
                 title: 'Предупреждение',
                 text: 'Максимальное допустимое количество фотографи не должно превышать 1000 штук',
@@ -135,9 +135,10 @@ class Cropper extends Component {
         }
         let html = '';
         images.map((item, key) => {
-            setTimeout(() => {
 
-                let photo = {uid: uuid()};
+
+            setTimeout(() => {
+                let photo = {uid: uuid(), options: {}};
                 if (typeof item === 'object') {
                     photo = Object.assign(photo, item);
                 } else {
@@ -145,7 +146,7 @@ class Cropper extends Component {
                 }
 
                 this.state.urls.unshift(photo);
-                let html = dot.template(this.imageItemTemplate)({
+                html = dot.template(this.imageItemTemplate)({
                     url: photo.thumbnail || photo.url,
                     top: photo.top === 0 ? 0 : photo.top || '',
                     left: photo.left === 0 ? 0 : photo.left || '',
@@ -155,45 +156,25 @@ class Cropper extends Component {
                     border: photo.border || '',
                     borderThickness: photo.borderThickness || 0,
                     rotate: photo.rotate || '',
-                    checked: photo.zoom && (photo.left || photo.top) || photo.original === false || true
+                    checked: photo.zoom && (photo.left || photo.top) || photo.original === false || true,
+                    options: this.options.options,
+                    selectedOptions: photo.options
                 });
                 $('.selected-items').html(key+1);
                 $('#main-section').prepend(html);
-
-               /* $('#main-section').find(`#crop-container-${photo.uid}`).cropper({
-                    createUI: photo.original === false,
-                    fitToContainer: !photo.crop || photo.crop === false,
-                    onLoad: (uid, width, height, existItem) => {
-                        let fitSizes = this.sizesInPixel.filter((item) => item.width <= width && item.height <= height).map((item, index) => item.title);
-
-                        if (fitSizes.length === 0 && !existItem) {
-                            let item = $(`#crop-container-${uid}`).closest('.image-container').find('.warning').css('display', 'block');
-                            tippy(item.get(0),
-                                {
-                                    content: document.getElementById('tippy-content-3').innerHTML.replace('current', `${width}x${height}`).replace('min', '567x378'),
-                                    theme: 'light'
-                                });
-                        }
-                        if (photo.border) {
-                            setTimeout(() => {
-                                $(`#${uid}`).find('.border-frame').css('border', `${photo.borderThickness / window.MM_KOEF}px solid ${photo.border}`).css('z-index', '99');
-                            }, 500)
-
-                        }
-                        $(`#crop-container-${uid}`).attr('data-fit-sizes', fitSizes.join(','));
-                    }
-                });*/
                 this.setState({urls: this.state.urls});
-                if (images.length === key + 1) {
-                    let cropItems = images.filter((item) => item.crop);
-                    let borderItems = images.filter((item) => item.border);
-
-                    setTimeout(() => {
-                        this.child.current.onPhotoAdded(borderItems[0] ? borderItems[0].border : 'none', cropItems.length > 0, images[0], images[images.length - 1]);
-                    },100);
-                }
             }, 5);
+
+
+
         });
+        setTimeout(() => {
+            //$('#main-section').prepend(html);
+
+            this.child.current.onPhotoAdded();
+        }, 1000);
+
+
     }
 
     /**
@@ -266,6 +247,7 @@ class Cropper extends Component {
     onPropertiesChanged(callback){
         this.onOptionChangedCallback = callback;
     }
+
 }
 
 export default Cropper;

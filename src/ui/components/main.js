@@ -38,14 +38,21 @@ export class MainComponent extends Component {
 
 
     /*Fire when changed size*/
-    onFormatChange(size) {
-        this.size = {width: size[1], height: size[0]};
-        this.changePhotoSize($(`.crop-container.enabled`), this.size);
-        $(`.image-container:visible .crop-container.enabled`).cropper('update', {fitToContainer: this.framing !== 'cropp'});
+    onFormatChange(size, element, index) {
+        this.changePhotoSize(element || $(`.crop-container.enabled`), {width: size[1], height: size[0]});
+        // if update single element
+        if(index >= 0){
+            element.cropper('update', {fitToContainer: !this.props.urls[index].crop});
+        }else{
+            this.size = {width: size[1], height: size[0]};
+            let target = element || $(`.image-container:visible .crop-container.enabled`);
+            target.cropper('update', {fitToContainer: this.framing !== 'cropp'});
+        }
         this.adjustOrientation(true);
         setTimeout(() => {
             this.checkResolutionOfPhotos();
         }, 1000);
+        console.log(this.props.urls);
         /* $(`.crop-container.enabled`).each((i, obj) => {
              setTimeout(() => {
                  $(obj).cropper('update', {fitToContainer: this.framing !== 'cropp'})
@@ -59,30 +66,36 @@ export class MainComponent extends Component {
     }
 
     /*Fire when change cropping mode*/
-    onFramingChange(framing) {
-        this.framing = framing;
-        $(`.image-container:visible .crop-container.enabled`).cropper('update', {fitToContainer: this.framing !== 'cropp'});
-        $(`.crop-container.enabled`).each((i, obj) => {
-            setTimeout(() => {
-                $(obj).cropper('update', {fitToContainer: this.framing !== 'cropp'})
-            }, 10)
-        });
+    onFramingChange(framing, element) {
+        if(!element){
+            this.framing = framing;
+            $(`.crop-container.enabled`).each((i, obj) => {
+                setTimeout(() => {
+                    $(obj).cropper('update', {fitToContainer: this.framing !== 'cropp'})
+                }, 10)
+            });
+        }
+        element = element || $(`.image-container:visible .crop-container.enabled`);
+        element.cropper('update', {fitToContainer: framing !== 'cropp'});
     }
 
     /*On change photo border*/
-    onBorderChange(border) {
-        this.border = border;
+    onBorderChange(border, itemIndex) {
+        if(!itemIndex){
+            this.border = border;
+        }
+        let element = itemIndex >= 0 ? $(`#crop-container-${this.props.urls[itemIndex].uid}`) : $(`.image-container .crop-container.enabled`);
         if (border === 'none') {
-            $(`.crop-container.enabled`).find('.border-frame').css('border', 'none').css('z-index', '-1');
-            $(`.crop-container.enabled`).attr('data-border', 'none');
-            $(`.crop-container.enabled`).attr('data-border-thickness', 0);
-            $(`.crop-container.enabled`).css('padding', 0);
+            element.find('.border-frame').css('border', 'none').css('z-index', '-1');
+            element.attr('data-border', 'none');
+            element.attr('data-border-thickness', 0);
+            element.css('padding', 0);
         } else {
             let thickness = this.props.options.borderWidth / window.MM_KOEF;
-            $(`.image-container .crop-container.enabled`).find('.border-frame').css('border', `${thickness}px solid ${border}`).css('z-index', 99);
-            $(`.image-container .crop-container.enabled`).attr('data-border', border);
-            $(`.image-container .crop-container.enabled`).attr('data-border-thickness', this.props.options.borderWidth);
-            $(`.image-container .crop-container.enabled`).css('padding', thickness);
+            element.find('.border-frame').css('border', `${thickness}px solid ${border}`).css('z-index', 99);
+            element.attr('data-border', border);
+            element.attr('data-border-thickness', this.props.options.borderWidth);
+            element.css('padding', thickness);
         }
 
 
@@ -139,8 +152,12 @@ export class MainComponent extends Component {
     }
 
     /*Select/unselect single item*/
-    onItemSelect(target, checked) {
+    onItemSelect(uid, checked) {
+
         let checkAll = false;
+        let target = $(`#crop-container-${uid}`);
+        const index = this.props.urls.findIndex(a => a.uid === uid);
+        const border = this.props.urls[index]['border-select'] && this.props.urls[index]['border-select'].trim();
         $('.image-container input[type=checkbox]').each(function () {
             if ($(this).prop('checked')) {
                 checkAll = true;
@@ -148,20 +165,30 @@ export class MainComponent extends Component {
         });
 
         if (checked) {
+            let size = null;
+            if(this.props.urls[index].size){
+                let chunks = this.props.urls[index].size.split(',');
+                size = {
+                    width: chunks[1],
+                    height: chunks[0]
+                }
+            }
             target.addClass('enabled');
-            this.changePhotoSize(target, this.size);
-            target.cropper('update', {fitToContainer: this.framing === 'whole'});
+            this.changePhotoSize(target, size);
 
-            if (this.border && !+target.attr('data-border-thickness')) {
+
+            if (border && !+target.attr('data-border-thickness')) {
                 target.attr('data-border-thickness', this.props.options.borderWidth);
-                target.attr('data-border', this.border);
+                target.attr('data-border', this.props.urls[index].border);
             }
             let thickness = target.attr('data-border-thickness') / window.MM_KOEF;
-            if (this.border) {
+            if (border) {
                 target.find('.border-frame').css('border', `${thickness}px solid ${target.attr('data-border')}`).css('z-index', '1');
+                target.css('padding', thickness);
             } else {
                 target.find('.border-frame').css('z-index', '-1');
             }
+            target.cropper('update', {fitToContainer: !this.props.urls[index].crop});
         } else {
             target.css('padding', 0);
             target.find('.border-frame').css('border', 'none').css('z-index', '-1');
@@ -188,7 +215,7 @@ export class MainComponent extends Component {
         let resolution = photo && photo.resolution ? photo.resolution.split('x') : null;
 
         let containerSize = {width: 280, height: 180};
-        if (size.width !== 0 && size.height !== 0) {
+        if (size && (size.width !== 0 && size.height !== 0)) {
             if (size.width === size.height) {
                 //this.setState({width: '180px', height: '180px'});
                 container.css({width: '180px', height: '180px'});
@@ -214,7 +241,8 @@ export class MainComponent extends Component {
                     // setTimeout(this.rotateImage.bind(this, photo.uid, -90), 1000);
                 }
             }
-
+        }else{
+            container.css({width: `${containerSize.width}px`, height: `${containerSize.height}px`});
         }
 
     }
@@ -225,18 +253,23 @@ export class MainComponent extends Component {
         let photo = this.props.urls[index];
         let item = JSON.parse(JSON.stringify(photo));
         item.uid = uuid();
-        this.props.urls.push(item);
+        //this.props.urls.push(item);
+        this.props.urls.splice(index, 0, item);
 
-        let html = dot.template(this.imageItemTemplate)({
+        let options = {
             url: photo.thumbnail || photo.url,
             top: photo.top === 0 ? 0 : photo.top || '',
             left: photo.left === 0 ? 0 : photo.left || '',
             zoom: photo.zoom || 0,
             uid: item.uid,
+            quantity: 1,
             border: photo.border || '',
             rotate: photo.rotate || '',
-            checked: null
-        });
+            checked: true,
+            options: this.props.options.options
+        };
+
+        let html = dot.template(this.imageItemTemplate)(options);
 
         $(html).insertAfter(`#${uid}`);
         $(`#${item.uid}`).find('.crop-container').cropper({
@@ -246,7 +279,8 @@ export class MainComponent extends Component {
         this.paginator.set('totalResult', this.props.urls.length);
         $('#pagination-bar').html(this.paginator.render());
         tippy('[data-tippy-content]', {'theme': 'light'});
-        this.onOrderClick(true);
+        this.onItemSelect($(`#crop-container-${item.uid}`), true);
+        this.makeOrder(true);
     }
 
     /*Delete item*/
@@ -281,7 +315,7 @@ export class MainComponent extends Component {
                 this.checkResolutionOfPhotos(newItemOnPage);
             }
 
-            this.onOrderClick(true, params);
+            this.makeOrder(true, params);
         };
 
         Swal.fire({
@@ -332,7 +366,6 @@ export class MainComponent extends Component {
                 if (res.value) {
                     this.props.clear();
                     this.props.onDeleteAllPhotos(true);
-                    //this.onOrderClick(true);
                 }
             })
         } else {
@@ -376,22 +409,25 @@ export class MainComponent extends Component {
         })
     }
 
-
     /*Fire when clicked ORDER button*/
-    onOrderClick(optionChanged, extra) {
+    makeOrder(optionChanged, extra) {
         let items = [];
+        let haveUnselectedOptions =
+            this.props.urls.filter(item => Object.keys(item.options).length !== this.props.options.options.length);
+        if ((this.props.options.options.length > this.options.length && !optionChanged) || haveUnselectedOptions.length > 0) {
 
-        if (this.props.options.options.length > this.options.length && !optionChanged) {
-            let selectedOptions = this.options.map(item => item.option_id);
-            this.props.options.options.map(item => {
-                if (!selectedOptions.includes(+item.option_id)) {
-                    $(`[data-option-id='${item.option_id}']`).find('button').addClass('btn-danger');
-                }
-            });
-            Swal.fire({
-                text: 'Укажите все опции'
-            });
-            return;
+            if(haveUnselectedOptions.length > 0){
+                let selectedOptions = this.options.map(item => item.option_id);
+                this.props.options.options.map(item => {
+                    if (!selectedOptions.includes(+item.option_id)) {
+                        $(`[data-option-id='${item.option_id}']`).find('button').addClass('btn-danger');
+                    }
+                });
+                Swal.fire({
+                    text: 'Для всех или некоторых фотографий не указаны опции печати'
+                });
+                return;
+            }
         }
 
         if ($('#cropper-container .image-item > div').length === 0 && !optionChanged) {
@@ -405,15 +441,24 @@ export class MainComponent extends Component {
 
 
             let photo = this.props.urls.filter(item => item.uid === $(e).attr('data-uid'))[0];
+            let size = photo.size;
+            if (Array.isArray(size)) {
+                size = {width: photo.size[1], height: photo.size[0]};
+            } else if (!photo.size.width) {
+                let chunks = photo.size.split(',');
+                size = {width: chunks[1], height: chunks[0]};
+            };
+
             let item = {
                 url: photo.url,
                 thumbnail: photo.thumbnail || photo.url,
                 resolution: photo.resolution,
-                size: this.size,
+                size: size,
                 dest: this.props.dest,
-                paper: this.paper || '',
+                paper: photo.paper || '',
                 crop: false,
                 original: true,
+                options: photo.options,
                 quantity: parseInt($(e).closest('.image-container').find('[name="quantity"]').val()) || parseInt($('[name="quantity"]').val())
             };
             if ($(e).hasClass('enabled')) {
@@ -472,30 +517,6 @@ export class MainComponent extends Component {
                 if (this.props.onOrder)
                     this.props.onOrder(error);
             });
-
-
-            /*Alternative method for send images to backend*/
-            /*
-            * if(items.length > 100){
-                items = this.chunkArray(items, 100);
-            }else{
-                items = [items];
-            }
-            let tmpResponse = [];
-            let i = 0;
-            for (let item of items){
-                axios.post(`${this.props.handlerUrl}/processing`, item).then(response => {
-                    tmpResponse.push(response.data);
-                    if(i === items.length){
-                        if(this.props.onOrder)
-                            this.props.onOrder([].concat(...tmpResponse));
-                    }
-
-                }).catch(error => {
-                    if(this.props.onOrder)
-                        this.props.onOrder(error);
-                });
-            }*/
         } else {
 
             if (optionChanged) {
@@ -505,20 +526,6 @@ export class MainComponent extends Component {
             }
         }
     }
-
-    chunkArray(myArray, chunk_size) {
-        var index = 0;
-        var arrayLength = myArray.length;
-        var tempArray = [];
-
-        for (index = 0; index < arrayLength; index += chunk_size) {
-            let myChunk = myArray.slice(index, index + chunk_size);
-            tempArray.push(myChunk);
-        }
-
-        return tempArray;
-    }
-
 
     /*Initializing photo at first start*/
     initPhotos(photo) {
@@ -582,7 +589,6 @@ export class MainComponent extends Component {
 
     /*Fire when add photo*/
     onPhotoAdded(border, crop, firstElement, lastElement) {
-
         $('#main-section .placeholder').hide();
         this.paginator.set('totalResult', this.props.urls.length);
         $('#pagination-bar').html(this.paginator.render());
@@ -610,11 +616,11 @@ export class MainComponent extends Component {
         $('#cropper-toolbar .selected-items').html(length);
         if (length) {
             $('#cropper-toolbar input[type=checkbox]').prop('checked', 'checked');
-            if (firstElement.zoom && (firstElement.left || firstElement.top) || firstElement.original === false)
-                $(`.dropdown.framing button`).html('Кадр целиком');
+            /*if (firstElement.zoom && (firstElement.left || firstElement.top) || firstElement.original === false)
+                $(`.dropdown.framing button`).html('Кадр целиком');*/
             this.child.current.removeControlTooltip();
         }
-
+/*
         if (firstElement.size || lastElement.size) {
             this.changePhotoSize($(`.crop-container.enabled`), firstElement.size || lastElement.size);
             if (crop) {
@@ -638,7 +644,7 @@ export class MainComponent extends Component {
             $(`.crop-container.enabled`).attr('data-border', border.color);
             $(`.crop-container.enabled`).attr('data-border-thickness', border.thickness);
             $('.border-frame').css('border', `${border.thickness}px solid ${border}`);
-        }
+        }*/
         this.adjustOrientation();
         setTimeout(() => {
             let index = this.initializedPages.indexOf(1);
@@ -647,7 +653,6 @@ export class MainComponent extends Component {
         }, 500);
         this.registerListeners();
     }
-
 
     updateSizes(sizes) {
         this.props.sizes = sizes;
@@ -658,6 +663,9 @@ export class MainComponent extends Component {
         this.paginator.set('current', page);
         $('#pagination-bar').html(this.paginator.render());
         let pagination = this.paginator.getPaginationData();
+
+        //hide all items
+        $('.image-container').hide();
 
         //get items from current page
         let visible = this.props.urls.slice(pagination.fromResult - 1, pagination.toResult).map((item, i) => {
@@ -675,23 +683,26 @@ export class MainComponent extends Component {
 
 
             this.checkResolutionOfPhotos(item);
+
+            let element = $(`#crop-container-${item.uid}`);
+            //change size for items
+                this.changePhotoSize(element, item.size || null);
+                if (item.crop) {
+                    $(`#${item.uid}`).show().find('.crop-container.enabled').find('img').css({
+                        'width': 'auto',
+                        'height': 'auto'
+                    })
+                }
+
+                $(`#${item.uid}`).show().find('.crop-container.enabled').cropper('update', {fitToContainer: !item.crop});
+
             return `#${item.uid}`
         });
 
 
-        //hide all items
-        $('.image-container').hide();
-        //change size for items
-        this.changePhotoSize($(`.crop-container.enabled`), this.size);
-        if (this.framing !== 'whole') {
-            $(visible.join(',')).show().find('.crop-container.enabled').find('img').css({
-                'width': 'auto',
-                'height': 'auto'
-            })
-        }
 
-        $(visible.join(',')).show().find('.crop-container.enabled').cropper('update', {fitToContainer: this.framing !== 'cropp'});
-        $(visible.join(',')).show().find('.crop-container.enabled').cropper('update');
+
+        //$(visible.join(',')).show().find('.crop-container.enabled').cropper('update');
 
         //reset unchecked items
         $(visible.join(',')).find('.crop-container:not(.enabled)').css({
@@ -705,30 +716,41 @@ export class MainComponent extends Component {
     /*Create pagination instance*/
     generatePagination() {
         this.paginator = new pagination.TemplatePaginator({
-            prelink: '', current: 1, rowsPerPage: this.props.itemsPerPage,
-            totalResult: this.props.urls.length, slashSeparator: true,
+            prelink: '', current: 1,
+            rowsPerPage: this.props.itemsPerPage,
+            pageLinks: 4,
+            last: 100,
+            totalResult: this.props.urls.length,
+            slashSeparator: true,
             template: function (result) {
-                var i, len, prelink;
-                var html = '<div><ul class="pagination">';
+                let i, len, prelink;
+                let html = '<div><ul class="pagination">';
                 if (result.pageCount < 2) {
                     html += '</ul></div>';
                     return '';
                 }
-                prelink = this.preparePreLink(result.prelink);
                 if (result.previous) {
-                    html += '<li class="page-item"><a class="page-link" href="#" data-page="' + result.previous + '">&#8249;</a></li>';
+                    html += '<li class="page-item"><button class="page-link" data-page="1">&#8249;&#8249;</button></li>';
+                    html += '<li class="page-item"><button class="page-link" data-page="' + result.previous + '">&#8249;</button></li>';
                 }
                 if (result.range.length) {
                     for (i = 0, len = result.range.length; i < len; i++) {
                         if (result.range[i] === result.current) {
-                            html += '<li class="active page-item"><a class="page-link" href="#"  data-page="' + result.range[i] + '">' + result.range[i] + '</a></li>';
+                            html += '<li class="active page-item"><button class="page-link"   data-page="' + result.range[i] + '">' + result.range[i] + '</button></li>';
                         } else {
-                            html += '<li class="page-item"><a class="page-link" href="#"  data-page="' + result.range[i] + '">' + result.range[i] + '</a></li>';
+                            html += '<li class="page-item"><button class="page-link"   data-page="' + result.range[i] + '">' + result.range[i] + '</button></li>';
                         }
                     }
                 }
+
+                if(result.current < result.pageCount - 1 ){
+                    html += '<li class="page-item disabled"><span class="page-link" >...</span></li>';
+                    html += '<li class="page-item"><button class="page-link"  data-page="' + result.pageCount + '" class="paginator-next">'+result.pageCount+'</button></li>';
+                }
+
                 if (result.next) {
-                    html += '<li class="page-item"><a class="page-link" href="#"  data-page="' + result.next + '" class="paginator-next">&#8250;</a></li>';
+                    html += '<li class="page-item"><button class="page-link"   data-page="' + result.next + '" class="paginator-next">&#8250;</button></li>';
+                    html += '<li class="page-item"><button class="page-link"   data-page="' + result.pageCount + '" class="paginator-next">&#8250;&#8250;</button></li>';
                 }
                 html += '</ul></div>';
 
@@ -737,7 +759,16 @@ export class MainComponent extends Component {
         });
     }
 
-    onOptionChange(id, value, size, isInit) {
+    onOptionChange(id, value, data) {
+
+        if(data){
+            this.props.urls.map(item => {
+                item[data.itemLabel] = data.optionLabel;
+                item['options'][id] = value;
+                return item;
+            });
+        }
+
         if (id && value) {
             let option = {
                 option_id: +id,
@@ -749,6 +780,11 @@ export class MainComponent extends Component {
             } else {
                 this.options[index] = option;
             }
+            // highlight individual option
+            // when changed global options
+            let element = $(`.dropdown[data-option-id="${id}"]`);
+            element.find('.option').removeClass('active');
+            element.find(`.option[data-option-value-id="${value}"]`).addClass('active');
         } else if (id && value === 0) {
             let index = this.options.findIndex((item) => item.option_id === +id);
             if (index > -1) {
@@ -758,15 +794,12 @@ export class MainComponent extends Component {
 
         let quantity = 0;
         $('#main-section .crop-container.enabled').parent().parent().find('[name="quantity"]').each(function () {
-
-            ///if($(this).val() > 1){
             quantity += +$(this).val();
-            // }
         });
+
 
         if (this.props.onOptionChanged)
             this.props.onOptionChanged({options: this.options, photos: quantity});
-        //this.onOrderClick(true);
     }
 
     adjustOrientation(rotateImmediate) {
@@ -836,7 +869,7 @@ export class MainComponent extends Component {
                                   onPaperChange={(val) => this.onPaperChange.call(this, val)}
                                   onFramingChange={val => this.onFramingChange.call(this, val)}
                                   onBorderChange={(val) => this.onBorderChange.call(this, val)}
-                                  onOrderClick={(val) => this.onOrderClick()}
+                                  onOrderClick={(val) => this.makeOrder()}
                 />
             </div>
             <div id="main-section" style={{'max-height': this.props.options.maxHeight + 'px'}}>
@@ -912,7 +945,7 @@ export class MainComponent extends Component {
         });
 
         $(document).on('change', '.image-container input[type=checkbox]', (e) => {
-            this.onItemSelect($(e.target).closest('.image-container').find('.crop-container'), $(e.target).prop('checked'));
+            this.onItemSelect($(e.target).closest('.image-container').attr('id'), $(e.target).prop('checked'));
         });
 
         $(document).on('click', '.cropper-container', function (e) {
@@ -946,7 +979,7 @@ export class MainComponent extends Component {
         if (this.props.options.defaultOptions)
             this.props.options.defaultOptions.map(option => {
                 this.onOptionChange(option.option_id, option.option_value_id);
-            })
+            });
 
 
         $(document).keyup((e) => {
@@ -961,6 +994,134 @@ export class MainComponent extends Component {
 
             }
         });
+
+        $(document).on('click', '.dropdown-menu a.dropdown-toggle', function(e) {
+            if (!$(this).next().hasClass('show')) {
+                $(this).parents('.dropdown-menu').first().find('.show').removeClass("show");
+            }
+            let $subMenu = $(this).next(".dropdown-menu");
+            $subMenu.toggleClass('show');
+
+
+            $(this).parents('li.nav-item.dropdown.show').on('hidden.bs.dropdown', function(e) {
+                $('.dropdown-submenu .show').removeClass("show");
+            });
+            return false;
+        });
+
+        $(document).on('click', '.item-options .dropdown-item.option',  (e) => {
+
+            let element = $(e.target).closest('.image-container').find('.crop-container');
+            let uid = element.attr('data-uid');
+            let option = $(e.target).closest('.dropdown').attr('data-label');
+            let optionId = $(e.target).closest('.dropdown').attr('data-option-id');
+            let valueId = $(e.target).attr('data-option-value-id');
+            let value = $(e.target).attr('data-value');
+            if(!value){
+                value = $(e.target).attr('data-label');
+            }
+
+            if($(`#${uid} .dropdown[data-option-id="${optionId}"] [data-option-value-id="${valueId}"]`)
+                .hasClass('disabled')){
+                Swal.fire({
+                    title: 'Конфликт опций',
+                    text: 'Опции будут сброшены. Вы согласны?',
+                    type: 'question',
+                    showCancelButton: true,
+                    cancelButtonText: 'Отмена',
+                    confirmButtonText: 'Продолжить'
+                }).then(res => {
+                    if (res.value) {
+                        this.resetUnsuitableOptions(element, uid);
+                        this.onSingleOptionChange(element, uid, option, value, optionId, valueId);
+                    }
+                });
+                return false;
+            }
+
+
+            this.onSingleOptionChange(element, uid, option, value, optionId, valueId);
+        });
+
+
+    }
+
+    onSingleOptionChange(element, uid, optionName, optionValue, optionId, valueId){
+
+        $(`#${uid}`).find('.dropdown-item').removeClass('active');
+        $(`#${uid}`).closest('.dropdown').find('button').removeClass('btn-danger');
+        $(`#${uid}`).find(`.dropdown[data-option-id="${optionId}"] .dropdown-item[data-option-value-id="${valueId}"]`)
+            .addClass('active');
+        element.attr(`data-${optionName}`, optionValue);
+
+        // get item position
+        const index = this.props.urls.findIndex(a => a.uid === uid);
+         // update item options
+        this.props.urls[index]['options'][optionId] = valueId;
+        this.props.urls[index][optionName] = optionValue;
+        // get option name
+        let option = this.props.options.options.filter(item => +item.option_id === +optionId)[0];
+        if(option){
+            let name = option.option_values.filter(value => +value.option_value_id === +valueId)[0].name;
+            // update selected value for option
+            if(name){
+                $(`#${uid} .item-options [data-option-id="${optionId}"]`).find('button').text(name);
+            }
+        }
+
+        switch (optionName) {
+            case 'size':
+                let size = optionValue.split(',');
+                this.onFormatChange([size[0], size[1]], element, index);
+                break;
+            case 'framing':
+                this.props.urls[index].crop = optionValue !== 'whole';
+                this.onFramingChange(optionValue, element);
+                break;
+            case 'border-select':
+                this.props.urls[index].border = optionValue;
+                this.onBorderChange(optionValue, index);
+                break;
+
+        }
+        this.excludeUnsuitableOptions(element, uid, optionId, valueId)
+    }
+
+    excludeUnsuitableOptions(element, uid, optionId, valueId) {
+        console.log({optionId, valueId});
+        let touchedOption = this.props.options.options.filter(option => +option.option_id === +optionId)[0];
+        let touchedOptionValue = touchedOption.option_values.filter(optionValue => +optionValue.option_value_id === +valueId)[0];
+        let relatedOptions = touchedOptionValue.relation_options;
+        if(relatedOptions){
+            // firstly make all options for current photo unsuitable
+            // except current option
+            $(`#${uid} .item-options .dropdown[data-option-id!="${optionId}"] .option`).addClass('disabled');
+            // iterate over related options
+            relatedOptions.map(relatedOption => {
+                // make related options suitable
+                relatedOption.option_value_id.map(value => {
+                    $(`#${uid} .item-options [data-option-id="${relatedOption.option_id}"]`)
+                        .find(`[data-option-value-id="${value}"]`).removeClass('disabled');
+                });
+            });
+        }
+
+    }
+
+    resetUnsuitableOptions(element, uid) {
+        // get item position
+        const index = this.props.urls.findIndex(a => a.uid === uid);
+        // delete item options
+        this.props.urls[index].options = {};
+        delete this.props.urls[index]['framing'];
+        delete this.props.urls[index]['size'];
+        delete this.props.urls[index]['paper'];
+        $(`#${uid} .item-options .dropdown-item`).removeClass('active');
+        $(`#${uid} .item-options .dropdown-item`).removeClass('disabled');
+        this.props.options.options.map(option => {
+            $(`#${uid} .item-options .dropdown[data-option-id="${option.option_id}"] button`).text(option.name);
+        });
+        this.onFormatChange([0, 0], element, index);
     }
 
 
