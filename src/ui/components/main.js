@@ -52,7 +52,6 @@ export class MainComponent extends Component {
         setTimeout(() => {
             this.checkResolutionOfPhotos();
         }, 1000);
-        console.log(this.props.urls);
         /* $(`.crop-container.enabled`).each((i, obj) => {
              setTimeout(() => {
                  $(obj).cropper('update', {fitToContainer: this.framing !== 'cropp'})
@@ -165,8 +164,8 @@ export class MainComponent extends Component {
         });
 
         if (checked) {
-            let size = null;
-            if(this.props.urls[index].size){
+            let size = this.props.urls[index].size;
+            if(typeof this.props.urls[index].size === "string"){
                 let chunks = this.props.urls[index].size.split(',');
                 size = {
                     width: chunks[1],
@@ -266,7 +265,8 @@ export class MainComponent extends Component {
             border: photo.border || '',
             rotate: photo.rotate || '',
             checked: true,
-            options: this.props.options.options
+            options: this.props.options.options,
+            selectedOptions: photo.options
         };
 
         let html = dot.template(this.imageItemTemplate)(options);
@@ -279,7 +279,7 @@ export class MainComponent extends Component {
         this.paginator.set('totalResult', this.props.urls.length);
         $('#pagination-bar').html(this.paginator.render());
         tippy('[data-tippy-content]', {'theme': 'light'});
-        this.onItemSelect($(`#crop-container-${item.uid}`), true);
+        this.onItemSelect(item.uid, true);
         this.makeOrder(true);
     }
 
@@ -761,13 +761,19 @@ export class MainComponent extends Component {
 
     onOptionChange(id, value, data) {
 
-        if(data){
-            this.props.urls.map(item => {
+        let individualOptions = [];
+        this.props.urls.map(item => {
+            if (data) {
                 item[data.itemLabel] = data.optionLabel;
                 item['options'][id] = value;
-                return item;
-            });
-        }
+            }
+            individualOptions.push({
+                    options:  Object.entries(item.options).map(option => option[1]),
+                    params: item.params
+                });
+            return item;
+        });
+
 
         if (id && value) {
             let option = {
@@ -799,7 +805,7 @@ export class MainComponent extends Component {
 
 
         if (this.props.onOptionChanged)
-            this.props.onOptionChanged({options: this.options, photos: quantity});
+            this.props.onOptionChanged({options: this.options, persons:individualOptions, photos: quantity});
     }
 
     adjustOrientation(rotateImmediate) {
@@ -1087,6 +1093,8 @@ export class MainComponent extends Component {
                 break;
 
         }
+
+        this.onOptionChange(optionId, valueId);
         this.excludeUnsuitableOptions(element, uid, optionId, valueId)
     }
 
