@@ -414,7 +414,8 @@ export class MainComponent extends Component {
         let items = [];
         let haveUnselectedOptions =
             this.props.urls.filter(item => Object.keys(item.options).length !== this.props.options.options.length);
-        if ((this.props.options.options.length > this.options.length && !optionChanged) || haveUnselectedOptions.length > 0) {
+        if ((this.props.options.options.length > this.options.length && !optionChanged) ||
+            (haveUnselectedOptions.length > 0 && !optionChanged)) {
 
             if(haveUnselectedOptions.length > 0){
                 let selectedOptions = this.options.map(item => item.option_id);
@@ -444,7 +445,7 @@ export class MainComponent extends Component {
             let size = photo.size;
             if (Array.isArray(size)) {
                 size = {width: photo.size[1], height: photo.size[0]};
-            } else if (!photo.size.width) {
+            } else if (photo.size && !photo.size.width) {
                 let chunks = photo.size.split(',');
                 size = {width: chunks[1], height: chunks[0]};
             };
@@ -1055,7 +1056,7 @@ export class MainComponent extends Component {
     onSingleOptionChange(element, uid, optionName, optionValue, optionId, valueId){
 
         $(`#${uid}`).find('.dropdown-item').removeClass('active');
-        $(`#${uid}`).closest('.dropdown').find('button').removeClass('btn-danger');
+        $(`#${uid}`).find(`.dropdown[data-option-id="${optionId}"]`).find('button').removeClass('btn-danger');
         $(`#${uid}`).find(`.dropdown[data-option-id="${optionId}"] .dropdown-item[data-option-value-id="${valueId}"]`)
             .addClass('active');
         element.attr(`data-${optionName}`, optionValue);

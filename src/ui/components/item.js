@@ -64,7 +64,7 @@ export class ImageItem {
                <div class="dropdown" data-label="{{=option.label}}" data-option-id="{{=option.option_id}}">
                   <button class="btn btn-secondary dropdown-toggle btn-sm" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                    
-                    {{? !it.selectedOptions[option.option_id].value_name }}
+                    {{? !it.selectedOptions[option.option_id] || !it.selectedOptions[option.option_id].value_name }}
                         {{=option.name}}
                     {{?? true }}
                         {{=it.selectedOptions[option.option_id].value_name}}
@@ -72,7 +72,8 @@ export class ImageItem {
                   </button>
                   <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                    {{~ option.option_values :value:i }}
-                        <a class="dropdown-item option {{? it.selectedOptions[option.option_id].option_value_id == value.option_value_id}} active {{?}}" 
+                        <a class="dropdown-item option {{? (it.selectedOptions[option.option_id] && 
+                        it.selectedOptions[option.option_id].option_value_id == value.option_value_id)}} active {{?}}" 
                         href="#" data-label="{{=value.label}}" 
                         {{? value.value }} data-value="{{=value.value}}" {{?}}
                         data-option-value-id="{{=value.option_value_id}}">{{=value.name}}</a>
