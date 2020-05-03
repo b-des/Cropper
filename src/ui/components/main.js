@@ -1056,18 +1056,21 @@ export class MainComponent extends Component {
 
         // get item position
         const index = this.props.urls.findIndex(a => a.uid === uid);
-         // update item options
-        this.props.urls[index]['options'][optionId] = valueId;
-        this.props.urls[index][optionName] = optionValue;
+
         // get option name
+        let name = '';
         let option = this.props.options.options.filter(item => +item.option_id === +optionId)[0];
         if(option){
-            let name = option.option_values.filter(value => +value.option_value_id === +valueId)[0].name;
+            name = option.option_values.filter(value => +value.option_value_id === +valueId)[0].name;
             // update selected value for option
             if(name){
                 $(`#${uid} .item-options [data-option-id="${optionId}"]`).find('button').text(name);
             }
         }
+
+        // update item options
+        this.props.urls[index]['options'][optionId] = {option_id: optionId, option_value_id: valueId, value_name: name};
+        this.props.urls[index][optionName] = optionValue;
 
         switch (optionName) {
             case 'size':
@@ -1088,7 +1091,6 @@ export class MainComponent extends Component {
     }
 
     excludeUnsuitableOptions(element, uid, optionId, valueId) {
-        console.log({optionId, valueId});
         let touchedOption = this.props.options.options.filter(option => +option.option_id === +optionId)[0];
         let touchedOptionValue = touchedOption.option_values.filter(optionValue => +optionValue.option_value_id === +valueId)[0];
         let relatedOptions = touchedOptionValue.relation_options;
