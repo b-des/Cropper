@@ -96,6 +96,7 @@ export class ToolbarComponent extends Component {
 
         if (!relative_options && !$(event.target).hasClass('unsuitable'))
             return;
+            return;
 
         if ($(event.target).hasClass('unsuitable')) {
             Swal.fire({

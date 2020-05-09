@@ -41,9 +41,9 @@ export class MainComponent extends Component {
     onFormatChange(size, element, index) {
         this.changePhotoSize(element || $(`.crop-container.enabled`), {width: size[1], height: size[0]});
         // if update single element
-        if(index >= 0){
+        if (index >= 0) {
             element.cropper('update', {fitToContainer: !this.props.urls[index].crop});
-        }else{
+        } else {
             this.size = {width: size[1], height: size[0]};
             let target = element || $(`.image-container:visible .crop-container.enabled`);
             target.cropper('update', {fitToContainer: this.framing !== 'cropp'});
@@ -66,7 +66,7 @@ export class MainComponent extends Component {
 
     /*Fire when change cropping mode*/
     onFramingChange(framing, element) {
-        if(!element){
+        if (!element) {
             this.framing = framing;
             $(`.crop-container.enabled`).each((i, obj) => {
                 setTimeout(() => {
@@ -74,21 +74,33 @@ export class MainComponent extends Component {
                 }, 10)
             });
         }
+        this.props.urls.map(item => {
+            item.crop = this.framing === 'cropp';
+            return item;
+        });
         element = element || $(`.image-container:visible .crop-container.enabled`);
         element.cropper('update', {fitToContainer: framing !== 'cropp'});
     }
 
     /*On change photo border*/
     onBorderChange(border, itemIndex) {
-        if(!itemIndex){
+        if (!itemIndex) {
             this.border = border;
         }
+        this.props.urls.map(item => {
+            item.border = border;
+            return item;
+        });
         let element = itemIndex >= 0 ? $(`#crop-container-${this.props.urls[itemIndex].uid}`) : $(`.image-container .crop-container.enabled`);
         if (border === 'none') {
             element.find('.border-frame').css('border', 'none').css('z-index', '-1');
             element.attr('data-border', 'none');
             element.attr('data-border-thickness', 0);
             element.css('padding', 0);
+            this.props.urls.map(item => {
+                item.borderThickness = 0;
+                return item;
+            });
         } else {
             let thickness = this.props.options.borderWidth / window.MM_KOEF;
             element.find('.border-frame').css('border', `${thickness}px solid ${border}`).css('z-index', 99);
@@ -101,7 +113,6 @@ export class MainComponent extends Component {
         $(`.image-container:visible .crop-container.enabled`).cropper('update');
         //$(`.crop-container.enabled`).cropper('update');
     }
-
 
     /*Select/unselect all photos*/
     onSelectAllItems(checked) {
@@ -165,7 +176,7 @@ export class MainComponent extends Component {
 
         if (checked) {
             let size = this.props.urls[index].size;
-            if(typeof this.props.urls[index].size === "string"){
+            if (typeof this.props.urls[index].size === "string") {
                 let chunks = this.props.urls[index].size.split(',');
                 size = {
                     width: chunks[1],
@@ -176,7 +187,7 @@ export class MainComponent extends Component {
             this.changePhotoSize(target, size);
 
 
-            if (border && !+target.attr('data-border-thickness')) {
+            if (border && border !== 'none' && !+target.attr('data-border-thickness')) {
                 target.attr('data-border-thickness', this.props.options.borderWidth);
                 target.attr('data-border', this.props.urls[index].border);
             }
@@ -240,7 +251,7 @@ export class MainComponent extends Component {
                     // setTimeout(this.rotateImage.bind(this, photo.uid, -90), 1000);
                 }
             }
-        }else{
+        } else {
             container.css({width: `${containerSize.width}px`, height: `${containerSize.height}px`});
         }
 
@@ -254,7 +265,7 @@ export class MainComponent extends Component {
         item.uid = uuid();
         //this.props.urls.push(item);
         this.props.urls.splice(index, 0, item);
-
+        console.log(photo);
         let options = {
             url: photo.thumbnail || photo.url,
             top: photo.top === 0 ? 0 : photo.top || '',
@@ -265,16 +276,17 @@ export class MainComponent extends Component {
             border: photo.border || '',
             rotate: photo.rotate || '',
             checked: true,
+            borderThickness: 0,
             options: this.props.options.options,
             selectedOptions: photo.options
         };
+        console.log(options);
 
         let html = dot.template(this.imageItemTemplate)(options);
 
         $(html).insertAfter(`#${uid}`);
         $(`#${item.uid}`).find('.crop-container').cropper({
-            onLoad: () => {
-            }, createUI: false
+            onLoad: () => {}, createUI: false, fitToContainer: photo.crop
         });
         this.paginator.set('totalResult', this.props.urls.length);
         $('#pagination-bar').html(this.paginator.render());
@@ -417,7 +429,7 @@ export class MainComponent extends Component {
         if ((this.props.options.options.length > this.options.length && !optionChanged) ||
             (haveUnselectedOptions.length > 0 && !optionChanged)) {
 
-            if(haveUnselectedOptions.length > 0){
+            if (haveUnselectedOptions.length > 0) {
                 let selectedOptions = this.options.map(item => item.option_id);
                 this.props.options.options.map(item => {
                     if (!selectedOptions.includes(+item.option_id)) {
@@ -448,7 +460,8 @@ export class MainComponent extends Component {
             } else if (photo.size && !photo.size.width) {
                 let chunks = photo.size.split(',');
                 size = {width: chunks[1], height: chunks[0]};
-            };
+            }
+            ;
 
             let item = {
                 url: photo.url,
@@ -621,31 +634,31 @@ export class MainComponent extends Component {
                 $(`.dropdown.framing button`).html('Кадр целиком');*/
             this.child.current.removeControlTooltip();
         }
-/*
-        if (firstElement.size || lastElement.size) {
-            this.changePhotoSize($(`.crop-container.enabled`), firstElement.size || lastElement.size);
-            if (crop) {
-                this.framing = 'cropp';
-                $(`.dropdown.framing button`).html('Кадр в обрез');
-            }
-        }
+        /*
+                if (firstElement.size || lastElement.size) {
+                    this.changePhotoSize($(`.crop-container.enabled`), firstElement.size || lastElement.size);
+                    if (crop) {
+                        this.framing = 'cropp';
+                        $(`.dropdown.framing button`).html('Кадр в обрез');
+                    }
+                }
 
-        if (border.color) {
-            this.border = border.color;
-            if (border.color === 'black') {
-                $(`.dropdown.border-select button`).html(`Черная рамка`);
-            } else if (border.color === 'white') {
-                $(`.dropdown.border-select button`).html(`Белая рамка`);
-            } else if (border.color) {
-                $(`.dropdown.border-select button`).html(`Цветная рамка`);
-            } else {
-                $(`.dropdown.border-select button`).html(`Без рамки`);
-            }
+                if (border.color) {
+                    this.border = border.color;
+                    if (border.color === 'black') {
+                        $(`.dropdown.border-select button`).html(`Черная рамка`);
+                    } else if (border.color === 'white') {
+                        $(`.dropdown.border-select button`).html(`Белая рамка`);
+                    } else if (border.color) {
+                        $(`.dropdown.border-select button`).html(`Цветная рамка`);
+                    } else {
+                        $(`.dropdown.border-select button`).html(`Без рамки`);
+                    }
 
-            $(`.crop-container.enabled`).attr('data-border', border.color);
-            $(`.crop-container.enabled`).attr('data-border-thickness', border.thickness);
-            $('.border-frame').css('border', `${border.thickness}px solid ${border}`);
-        }*/
+                    $(`.crop-container.enabled`).attr('data-border', border.color);
+                    $(`.crop-container.enabled`).attr('data-border-thickness', border.thickness);
+                    $('.border-frame').css('border', `${border.thickness}px solid ${border}`);
+                }*/
         this.adjustOrientation();
         setTimeout(() => {
             let index = this.initializedPages.indexOf(1);
@@ -687,20 +700,18 @@ export class MainComponent extends Component {
 
             let element = $(`#crop-container-${item.uid}`);
             //change size for items
-                this.changePhotoSize(element, item.size || null);
-                if (item.crop) {
-                    $(`#${item.uid}`).show().find('.crop-container.enabled').find('img').css({
-                        'width': 'auto',
-                        'height': 'auto'
-                    })
-                }
+            this.changePhotoSize(element, item.size || null);
+            if (item.crop) {
+                $(`#${item.uid}`).show().find('.crop-container.enabled').find('img').css({
+                    'width': 'auto',
+                    'height': 'auto'
+                })
+            }
 
-                $(`#${item.uid}`).show().find('.crop-container.enabled').cropper('update', {fitToContainer: !item.crop});
+            $(`#${item.uid}`).show().find('.crop-container.enabled').cropper('update', {fitToContainer: !item.crop});
 
             return `#${item.uid}`
         });
-
-
 
 
         //$(visible.join(',')).show().find('.crop-container.enabled').cropper('update');
@@ -744,9 +755,9 @@ export class MainComponent extends Component {
                     }
                 }
 
-                if(result.current < result.pageCount - 1 ){
+                if (result.current < result.pageCount - 1) {
                     html += '<li class="page-item disabled"><span class="page-link" >...</span></li>';
-                    html += '<li class="page-item"><button class="page-link"  data-page="' + result.pageCount + '" class="paginator-next">'+result.pageCount+'</button></li>';
+                    html += '<li class="page-item"><button class="page-link"  data-page="' + result.pageCount + '" class="paginator-next">' + result.pageCount + '</button></li>';
                 }
 
                 if (result.next) {
@@ -761,17 +772,24 @@ export class MainComponent extends Component {
     }
 
     onOptionChange(id, value, data) {
+        let name = '';
+        let option = this.props.options.options.filter(item => +item.option_id === +id)[0];
+        if (option) {
+            name = option.option_values.filter(item => +item.option_value_id === +value)[0].name;
+        }
 
         let individualOptions = [];
         this.props.urls.map(item => {
+
             if (data) {
                 item[data.itemLabel] = data.optionLabel;
-                item['options'][id] = value;
+                item['options'][id] = {option_id: id, option_value_id: value, value_name: name};
             }
             individualOptions.push({
-                    options:  Object.entries(item.options).map(option => option[1]),
-                    params: item.params
-                });
+                options: Object.entries(item.options).map(option => option[1]),
+                params: item.params,
+                quantity: +item.quantity || 1
+            });
             return item;
         });
 
@@ -806,7 +824,7 @@ export class MainComponent extends Component {
 
 
         if (this.props.onOptionChanged)
-            this.props.onOptionChanged({options: this.options, persons:individualOptions, photos: quantity});
+            this.props.onOptionChanged({options: this.options, persons: individualOptions, photos: quantity});
     }
 
     adjustOrientation(rotateImmediate) {
@@ -901,11 +919,12 @@ export class MainComponent extends Component {
 
     }
 
-    registerListeners(){
+    registerListeners() {
         setTimeout(() => {
             let rotate = document.querySelectorAll('.rotate-item');
             Array.from(rotate).forEach(link => {
-                link.removeEventListener('click', () => {});
+                link.removeEventListener('click', () => {
+                });
                 link.addEventListener('click', (e) => {
                     let uid = $(e.target).closest('.image-container').find('.crop-container').attr('data-uid');
                     let currentDegree = parseInt($(e.target).closest('.image-container').find('.crop-container').attr('data-rotate'));
@@ -914,6 +933,12 @@ export class MainComponent extends Component {
                 });
             });
         }, 100);
+    }
+
+    quantityChange(uid, quantity) {
+        // get item position
+        const index = this.props.urls.findIndex(a => a.uid === uid);
+        this.props.urls[index]['quantity'] = quantity;
     }
 
     componentDidMount() {
@@ -935,7 +960,7 @@ export class MainComponent extends Component {
             let deg = currentDegree ? currentDegree + 90 : 90;
             //this.rotateImage(uid, deg > 360 ? 90 : deg);
         });
-       // this.registerListeners();
+        // this.registerListeners();
 
         $(document).on('click', '.image-container .border-adjust', (e) => {
             let uid = $(e.target).closest('.image-container').find('.crop-container').attr('data-uid');
@@ -966,6 +991,10 @@ export class MainComponent extends Component {
             }
         });
         $(document).on('change', '.image-container [name="quantity"]', (e) => {
+            let element = $(e.target).closest('.image-container').find('.crop-container');
+            let uid = element.attr('data-uid');
+            let quantity = $(e.target).closest('.image-container').find('[name="quantity"]').val();
+            this.quantityChange(uid, quantity);
             this.onOptionChange();
         });
 
@@ -1002,7 +1031,7 @@ export class MainComponent extends Component {
             }
         });
 
-        $(document).on('click', '.dropdown-menu a.dropdown-toggle', function(e) {
+        $(document).on('click', '.dropdown-menu a.dropdown-toggle', function (e) {
             if (!$(this).next().hasClass('show')) {
                 $(this).parents('.dropdown-menu').first().find('.show').removeClass("show");
             }
@@ -1010,13 +1039,13 @@ export class MainComponent extends Component {
             $subMenu.toggleClass('show');
 
 
-            $(this).parents('li.nav-item.dropdown.show').on('hidden.bs.dropdown', function(e) {
+            $(this).parents('li.nav-item.dropdown.show').on('hidden.bs.dropdown', function (e) {
                 $('.dropdown-submenu .show').removeClass("show");
             });
             return false;
         });
 
-        $(document).on('click', '.item-options .dropdown-item.option',  (e) => {
+        $(document).on('click', '.item-options .dropdown-item.option', (e) => {
 
             let element = $(e.target).closest('.image-container').find('.crop-container');
             let uid = element.attr('data-uid');
@@ -1024,12 +1053,12 @@ export class MainComponent extends Component {
             let optionId = $(e.target).closest('.dropdown').attr('data-option-id');
             let valueId = $(e.target).attr('data-option-value-id');
             let value = $(e.target).attr('data-value');
-            if(!value){
+            if (!value) {
                 value = $(e.target).attr('data-label');
             }
 
-            if($(`#${uid} .dropdown[data-option-id="${optionId}"] [data-option-value-id="${valueId}"]`)
-                .hasClass('disabled')){
+            if ($(`#${uid} .dropdown[data-option-id="${optionId}"] [data-option-value-id="${valueId}"]`)
+                .hasClass('disabled')) {
                 Swal.fire({
                     title: 'Конфликт опций',
                     text: 'Опции будут сброшены. Вы согласны?',
@@ -1053,7 +1082,7 @@ export class MainComponent extends Component {
 
     }
 
-    onSingleOptionChange(element, uid, optionName, optionValue, optionId, valueId){
+    onSingleOptionChange(element, uid, optionName, optionValue, optionId, valueId) {
 
         $(`#${uid}`).find('.dropdown-item').removeClass('active');
         $(`#${uid}`).find(`.dropdown[data-option-id="${optionId}"]`).find('button').removeClass('btn-danger');
@@ -1067,10 +1096,10 @@ export class MainComponent extends Component {
         // get option name
         let name = '';
         let option = this.props.options.options.filter(item => +item.option_id === +optionId)[0];
-        if(option){
+        if (option) {
             name = option.option_values.filter(value => +value.option_value_id === +valueId)[0].name;
             // update selected value for option
-            if(name){
+            if (name) {
                 $(`#${uid} .item-options [data-option-id="${optionId}"]`).find('button').text(name);
             }
         }
@@ -1095,7 +1124,7 @@ export class MainComponent extends Component {
 
         }
 
-        this.onOptionChange(optionId, valueId);
+        this.onOptionChange(null, null);
         this.excludeUnsuitableOptions(element, uid, optionId, valueId)
     }
 
@@ -1103,7 +1132,7 @@ export class MainComponent extends Component {
         let touchedOption = this.props.options.options.filter(option => +option.option_id === +optionId)[0];
         let touchedOptionValue = touchedOption.option_values.filter(optionValue => +optionValue.option_value_id === +valueId)[0];
         let relatedOptions = touchedOptionValue.relation_options;
-        if(relatedOptions){
+        if (relatedOptions) {
             // firstly make all options for current photo unsuitable
             // except current option
             $(`#${uid} .item-options .dropdown[data-option-id!="${optionId}"] .option`).addClass('disabled');
