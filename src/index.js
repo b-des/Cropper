@@ -125,6 +125,8 @@ class Cropper extends Component {
      */
     addPhotos(images) {
 
+        if(!images)
+            return;
         if (images && images.length > 1000) {
             Swal.fire({
                 title: 'Предупреждение',

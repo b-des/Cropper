@@ -176,11 +176,19 @@ export class MainComponent extends Component {
 
         if (checked) {
             let size = this.props.urls[index].size;
+            // if size has string format
             if (typeof this.props.urls[index].size === "string") {
                 let chunks = this.props.urls[index].size.split(',');
                 size = {
                     width: chunks[1],
                     height: chunks[0]
+                }
+            }
+            // if size has array format
+            if(size && size.length === 2){
+                size = {
+                    width: size[1],
+                    height: size[0]
                 }
             }
             target.addClass('enabled');
@@ -226,6 +234,7 @@ export class MainComponent extends Component {
 
         let containerSize = {width: 280, height: 180};
         if (size && (size.width !== 0 && size.height !== 0)) {
+
             if (size.width === size.height) {
                 //this.setState({width: '180px', height: '180px'});
                 container.css({width: '180px', height: '180px'});
@@ -755,7 +764,7 @@ export class MainComponent extends Component {
                     }
                 }
 
-                if (result.current < result.pageCount - 1) {
+                if (result.pageCount > 4 && result.current < result.pageCount - 1) {
                     html += '<li class="page-item disabled"><span class="page-link" >...</span></li>';
                     html += '<li class="page-item"><button class="page-link"  data-page="' + result.pageCount + '" class="paginator-next">' + result.pageCount + '</button></li>';
                 }
@@ -1083,6 +1092,10 @@ export class MainComponent extends Component {
     }
 
     onSingleOptionChange(element, uid, optionName, optionValue, optionId, valueId) {
+        // make item checked
+        this.onItemSelect(uid, true);
+        $(`#${uid}`).find('input[type="checkbox"]').prop('checked','checked');
+        $(`#${uid}`).find('.crop-container ').addClass('enabled');
 
         $(`#${uid}`).find('.dropdown-item').removeClass('active');
         $(`#${uid}`).find(`.dropdown[data-option-id="${optionId}"]`).find('button').removeClass('btn-danger');
