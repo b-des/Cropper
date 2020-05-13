@@ -72,11 +72,11 @@ export class ImageItem {
                   </button>
                   <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                    {{~ option.option_values :value:i }}
-                        <a class="dropdown-item option {{? (it.selectedOptions[option.option_id] && 
+                        <span class="dropdown-item option {{? (it.selectedOptions[option.option_id] && 
                         it.selectedOptions[option.option_id].option_value_id == value.option_value_id)}} active {{?}}" 
-                        href="#" data-label="{{=value.label}}" 
+                        data-label="{{=value.label}}" 
                         {{? value.value }} data-value="{{=value.value}}" {{?}}
-                        data-option-value-id="{{=value.option_value_id}}">{{=value.name}}</a>
+                        data-option-value-id="{{=value.option_value_id}}">{{=value.name}}</span>
                     {{~}}
                   </div>
                 </div>

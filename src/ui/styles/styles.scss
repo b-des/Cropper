@@ -699,6 +699,7 @@
   .dropdown-menu{
     .dropdown-item{
       font-size: 12px;
+      cursor: pointer;
 
       &.unsuitable{
         color: #6c757d;
