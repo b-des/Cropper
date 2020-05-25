@@ -273,8 +273,8 @@ export class MainComponent extends Component {
         let item = JSON.parse(JSON.stringify(photo));
         item.uid = uuid();
         //this.props.urls.push(item);
+        item.clone = true;
         this.props.urls.splice(index, 0, item);
-        console.log(photo);
         let options = {
             url: photo.thumbnail || photo.url,
             top: photo.top === 0 ? 0 : photo.top || '',
@@ -289,7 +289,7 @@ export class MainComponent extends Component {
             options: this.props.options.options,
             selectedOptions: photo.options
         };
-        console.log(options);
+        console.log(this.props.urls);
 
         let html = dot.template(this.imageItemTemplate)(options);
 
@@ -336,7 +336,8 @@ export class MainComponent extends Component {
                 this.checkResolutionOfPhotos(newItemOnPage);
             }
 
-            this.makeOrder(true, params);
+            //this.makeOrder(true, params);
+            this.onOptionChange(null, null, null, params);
         };
 
         Swal.fire({
@@ -470,7 +471,6 @@ export class MainComponent extends Component {
                 let chunks = photo.size.split(',');
                 size = {width: chunks[1], height: chunks[0]};
             }
-            ;
 
             let item = {
                 url: photo.url,
@@ -484,6 +484,7 @@ export class MainComponent extends Component {
                 options: photo.options,
                 quantity: parseInt($(e).closest('.image-container').find('[name="quantity"]').val()) || parseInt($('[name="quantity"]').val())
             };
+
             if ($(e).hasClass('enabled')) {
 
                 let imgWidth = (parseFloat($(e).find('img').css('width')));
@@ -514,6 +515,8 @@ export class MainComponent extends Component {
                     original: false
                 });
 
+
+
                 if (photo.crop && (item.crop.w === 0 || item.crop.h === 0)) {
                     item.crop = photo.crop;
                 }
@@ -525,6 +528,13 @@ export class MainComponent extends Component {
                     left: (!item.crop.w && !item.crop.h) ? '' : parseFloat($(e).find('img').css('left')),
                     params: photo ? photo.params : ''
                 });
+            }
+
+            if(photo.clone){
+                if(!item.params){
+                    item.params = {};
+                }
+                item.params.clone = true;
             }
             items.push(item);
         });
@@ -780,11 +790,11 @@ export class MainComponent extends Component {
         });
     }
 
-    onOptionChange(id, value, data) {
+    onOptionChange(id, value, data, deleted) {
         let name = '';
         let option = this.props.options.options.filter(item => +item.option_id === +id)[0];
-        if (option) {
-            name = option.option_values.filter(item => +item.option_value_id === +value)[0].name;
+        if (option && value) {
+            name = option.option_values.filter(item => +item.option_value_id === +value)[0];
         }
 
         let individualOptions = [];
@@ -831,9 +841,13 @@ export class MainComponent extends Component {
             quantity += +$(this).val();
         });
 
+        let result = {options: this.options, persons: individualOptions, photos: quantity};
+        if(deleted){
+            result.deleted = deleted;
+        }
 
         if (this.props.onOptionChanged)
-            this.props.onOptionChanged({options: this.options, persons: individualOptions, photos: quantity});
+            this.props.onOptionChanged(result);
     }
 
     adjustOrientation(rotateImmediate) {
