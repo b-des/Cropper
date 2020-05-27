@@ -15,7 +15,6 @@ export class MainComponent extends Component {
 
     constructor() {
         super();
-
         this.state = {
             width: '100%',
             height: '100%',
@@ -33,7 +32,7 @@ export class MainComponent extends Component {
         this.child = createRef();
         this.initializedPages = [];
         this.borderSettings = new BorderComponent();
-
+        this.individualOptions = [];
     }
 
 
@@ -289,7 +288,6 @@ export class MainComponent extends Component {
             options: this.props.options.options,
             selectedOptions: photo.options
         };
-        console.log(this.props.urls);
 
         let html = dot.template(this.imageItemTemplate)(options);
 
@@ -301,7 +299,7 @@ export class MainComponent extends Component {
         $('#pagination-bar').html(this.paginator.render());
         tippy('[data-tippy-content]', {'theme': 'light'});
         this.onItemSelect(item.uid, true);
-        this.makeOrder(true);
+       // this.makeOrder(true);
     }
 
     /*Delete item*/
@@ -431,38 +429,9 @@ export class MainComponent extends Component {
         })
     }
 
-    /*Fire when clicked ORDER button*/
-    makeOrder(optionChanged, extra) {
+    getAllPhotos(){
         let items = [];
-        let haveUnselectedOptions =
-            this.props.urls.filter(item => Object.keys(item.options).length !== this.props.options.options.length);
-        if ((this.props.options.options.length > this.options.length && !optionChanged) ||
-            (haveUnselectedOptions.length > 0 && !optionChanged)) {
-
-            if (haveUnselectedOptions.length > 0) {
-                let selectedOptions = this.options.map(item => item.option_id);
-                this.props.options.options.map(item => {
-                    if (!selectedOptions.includes(+item.option_id)) {
-                        $(`[data-option-id='${item.option_id}']`).find('button').addClass('btn-danger');
-                    }
-                });
-                Swal.fire({
-                    text: 'Для всех или некоторых фотографий не указаны опции печати'
-                });
-                return;
-            }
-        }
-
-        if ($('#cropper-container .image-item > div').length === 0 && !optionChanged) {
-            Swal.fire({
-                text: 'Вы не загрузили ни одной фотографии!'
-            });
-            return;
-        }
-
         $('#cropper-container .image-item > div.enabled').each((i, e) => {
-
-
             let photo = this.props.urls.filter(item => item.uid === $(e).attr('data-uid'))[0];
             let size = photo.size;
             if (Array.isArray(size)) {
@@ -516,7 +485,6 @@ export class MainComponent extends Component {
                 });
 
 
-
                 if (photo.crop && (item.crop.w === 0 || item.crop.h === 0)) {
                     item.crop = photo.crop;
                 }
@@ -539,6 +507,39 @@ export class MainComponent extends Component {
             items.push(item);
         });
 
+        return items;
+    }
+
+    /*Fire when clicked ORDER button*/
+    makeOrder(optionChanged, extra) {
+
+        let haveUnselectedOptions =
+            this.props.urls.filter(item => Object.keys(item.options).length !== this.props.options.options.length);
+        if ((this.props.options.options.length > this.options.length && !optionChanged) ||
+            (haveUnselectedOptions.length > 0 && !optionChanged)) {
+
+            if (haveUnselectedOptions.length > 0) {
+                let selectedOptions = this.options.map(item => item.option_id);
+                this.props.options.options.map(item => {
+                    if (!selectedOptions.includes(+item.option_id)) {
+                        $(`[data-option-id='${item.option_id}']`).find('button').addClass('btn-danger');
+                    }
+                });
+                Swal.fire({
+                    text: 'Для всех или некоторых фотографий не указаны опции печати'
+                });
+                return;
+            }
+        }
+
+        if ($('#cropper-container .image-item > div').length === 0 && !optionChanged) {
+            Swal.fire({
+                text: 'Вы не загрузили ни одной фотографии!'
+            });
+            return;
+        }
+
+        let items = this.getAllPhotos();
 
         if (this.props.immediate && !optionChanged) {
             this.props.onProcessingStart({status: 'start', count: items.length});
@@ -553,7 +554,7 @@ export class MainComponent extends Component {
         } else {
 
             if (optionChanged) {
-                this.props.onOptionChanged({options: this.options, photos: items.reverse(), params: extra});
+                this.props.onOptionChanged({options: this.options, photos: items.reverse(), params: extra, persons: this.individualOptions});
             } else {
                 this.props.onOrder({options: this.options, photos: items.reverse()});
             }
@@ -841,7 +842,8 @@ export class MainComponent extends Component {
             quantity += +$(this).val();
         });
 
-        let result = {options: this.options, persons: individualOptions, photos: quantity};
+        this.individualOptions = individualOptions;
+        let result = {options: this.options, persons: individualOptions, photos: this.getAllPhotos()};
         if(deleted){
             result.deleted = deleted;
         }
