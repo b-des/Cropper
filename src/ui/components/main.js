@@ -273,6 +273,7 @@ export class MainComponent extends Component {
         item.uid = uuid();
         //this.props.urls.push(item);
         item.clone = true;
+        item.quantity = 1;
         this.props.urls.splice(index, 0, item);
         let options = {
             url: photo.thumbnail || photo.url,
