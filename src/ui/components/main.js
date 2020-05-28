@@ -557,7 +557,7 @@ export class MainComponent extends Component {
             if (optionChanged) {
                 this.props.onOptionChanged({options: this.options, photos: items.reverse(), params: extra, persons: this.individualOptions});
             } else {
-                this.props.onOrder({options: this.options, photos: items.reverse()});
+                this.props.onOrder({options: this.options, photos: items.reverse(), persons: this.individualOptions});
             }
         }
     }
