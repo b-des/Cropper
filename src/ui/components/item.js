@@ -67,7 +67,7 @@ export class ImageItem {
                     {{? !it.selectedOptions[option.option_id] || !it.selectedOptions[option.option_id].value_name }}
                         {{=option.name}}
                     {{?? true }}
-                        {{=it.selectedOptions[option.option_id].value_name}}
+                        {{=it.selectedOptions[option.option_id].value_name.name || it.selectedOptions[option.option_id].value_name}}
                     {{?}}
                   </button>
                   <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
