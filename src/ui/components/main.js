@@ -73,10 +73,6 @@ export class MainComponent extends Component {
                 }, 10)
             });
         }
-        this.props.urls.map(item => {
-            item.crop = this.framing === 'cropp';
-            return item;
-        });
         element = element || $(`.image-container:visible .crop-container.enabled`);
         element.cropper('update', {fitToContainer: framing !== 'cropp'});
     }
@@ -166,6 +162,9 @@ export class MainComponent extends Component {
         let checkAll = false;
         let target = $(`#crop-container-${uid}`);
         const index = this.props.urls.findIndex(a => a.uid === uid);
+        console.log(uid);
+        console.log(index);
+        console.log(this.props.urls);
         const border = this.props.urls[index]['border-select'] && this.props.urls[index]['border-select'].trim();
         $('.image-container input[type=checkbox]').each(function () {
             if ($(this).prop('checked')) {
@@ -289,6 +288,7 @@ export class MainComponent extends Component {
             options: this.props.options.options,
             selectedOptions: photo.options
         };
+        console.log(photo);
 
         let html = dot.template(this.imageItemTemplate)(options);
 
@@ -300,7 +300,10 @@ export class MainComponent extends Component {
         $('#pagination-bar').html(this.paginator.render());
         tippy('[data-tippy-content]', {'theme': 'light'});
         this.onItemSelect(item.uid, true);
-       // this.makeOrder(true);
+        Object.keys(photo.options).map((key, index) => {
+            console.log(photo.options[key]);
+            this.excludeUnsuitableOptions(null, null, photo.options[key].option_id, photo.options[key].option_value_id);
+        });
     }
 
     /*Delete item*/
@@ -721,7 +724,7 @@ export class MainComponent extends Component {
 
             let element = $(`#crop-container-${item.uid}`);
             //change size for items
-            this.changePhotoSize(element, item.size || null);
+            this.changePhotoSize(element, item.size ? {width: item.size[1], height: item.size[0]} : null);
             if (item.crop) {
                 $(`#${item.uid}`).show().find('.crop-container.enabled').find('img').css({
                     'width': 'auto',
@@ -851,6 +854,8 @@ export class MainComponent extends Component {
 
         if (this.props.onOptionChanged)
             this.props.onOptionChanged(result);
+        if(id && value)
+            this.excludeUnsuitableOptions(null, null, id, value);
     }
 
     adjustOrientation(rotateImmediate) {
@@ -1141,10 +1146,11 @@ export class MainComponent extends Component {
         switch (optionName) {
             case 'size':
                 let size = optionValue.split(',');
+                this.props.urls[index][optionName] = size;
                 this.onFormatChange([size[0], size[1]], element, index);
                 break;
             case 'framing':
-                this.props.urls[index].crop = optionValue !== 'whole';
+                this.props.urls[index].crop = optionValue === 'cropp';
                 this.onFramingChange(optionValue, element);
                 break;
             case 'border-select':
@@ -1153,7 +1159,6 @@ export class MainComponent extends Component {
                 break;
 
         }
-
         this.onOptionChange(null, null);
         this.excludeUnsuitableOptions(element, uid, optionId, valueId)
     }
@@ -1163,14 +1168,20 @@ export class MainComponent extends Component {
         let touchedOptionValue = touchedOption.option_values.filter(optionValue => +optionValue.option_value_id === +valueId)[0];
         let relatedOptions = touchedOptionValue.relation_options;
         if (relatedOptions) {
+            let container = '';
+
             // firstly make all options for current photo unsuitable
             // except current option
-            $(`#${uid} .item-options .dropdown[data-option-id!="${optionId}"] .option`).addClass('disabled');
+            if(uid){
+                container = `#${uid} `;
+            }
+            $(`${container}.item-options .dropdown[data-option-id!="${optionId}"] .option`).addClass('disabled');
             // iterate over related options
             relatedOptions.map(relatedOption => {
                 // make related options suitable
                 relatedOption.option_value_id.map(value => {
-                    $(`#${uid} .item-options [data-option-id="${relatedOption.option_id}"]`)
+
+                    $(`${container}.item-options [data-option-id="${relatedOption.option_id}"]`)
                         .find(`[data-option-value-id="${value}"]`).removeClass('disabled');
                 });
             });

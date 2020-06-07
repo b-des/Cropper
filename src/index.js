@@ -112,6 +112,9 @@ class Cropper extends Component {
 
     destroy(){
         //let elem = document.getElementById(this.options.container);
+
+        this.child.current.deleteAllItems(true);
+        this.state.urls = [];
         const root = render(<Cropper />, document.getElementById(this.options.container));
         ReactDOM.unmountComponentAtNode(document.getElementById(this.options.container));
         render(null, document.getElementById(this.options.container), root);
