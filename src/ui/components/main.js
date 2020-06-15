@@ -52,7 +52,7 @@ export class MainComponent extends Component {
             this.checkResolutionOfPhotos();
         }, 1000);
 
-        if(!element){
+        if (!element) {
             window.photos.map(item => {
                 item.size = this.size;
                 return item;
@@ -189,7 +189,7 @@ export class MainComponent extends Component {
                 }
             }
             // if size has array format
-            if(size && size.length === 2){
+            if (size && size.length === 2) {
                 size = {
                     width: size[1],
                     height: size[0]
@@ -226,7 +226,7 @@ export class MainComponent extends Component {
 
         $('#cropper-toolbar input[type=checkbox]').prop('checked', checkAll);
         $('#cropper-toolbar .selected-items').html($('.image-container input[type=checkbox]:checked').length);
-        if(!skipOptionChangeEvent)
+        if (!skipOptionChangeEvent)
             this.onOptionChange();
     }
 
@@ -297,7 +297,8 @@ export class MainComponent extends Component {
 
         $(html).insertAfter(`#${uid}`);
         $(`#${item.uid}`).find('.crop-container').cropper({
-            onLoad: () => {}, createUI: false, fitToContainer: photo.crop
+            onLoad: () => {
+            }, createUI: false, fitToContainer: photo.crop
         });
         this.paginator.set('totalResult', window.photos.length);
         $('#pagination-bar').html(this.paginator.render());
@@ -306,6 +307,11 @@ export class MainComponent extends Component {
         Object.keys(photo.options).map((key, index) => {
             this.excludeUnsuitableOptions(null, null, photo.options[key].option_id, photo.options[key].option_value_id);
         });
+
+        /* let currentDegree = parseInt($(`#${item.uid}`).find('.crop-container').attr('data-rotate'));
+         let deg = currentDegree ? currentDegree + 90 : 90;
+         this.rotateImage(item.uid, deg > 360 ? 90 : deg);*/
+        //this.registerListeners();
     }
 
     /*Delete item*/
@@ -436,7 +442,7 @@ export class MainComponent extends Component {
         })
     }
 
-    getAllPhotos(){
+    getAllPhotos() {
         let items = [];
         $('#cropper-container .image-item > div.enabled').each((i, e) => {
             let photo = window.photos.filter(item => item.uid === $(e).attr('data-uid'))[0];
@@ -505,8 +511,8 @@ export class MainComponent extends Component {
                 });
             }
 
-            if(photo.clone){
-                if(!item.params){
+            if (photo.clone) {
+                if (!item.params) {
                     item.params = {};
                 }
                 item.params.clone = true;
@@ -520,24 +526,23 @@ export class MainComponent extends Component {
 
     /*Fire when clicked ORDER button*/
     makeOrder(optionChanged, extra) {
-
+        let optionsKey = this.props.options.options.map(option => option.option_id);
         let haveUnselectedOptions =
-            window.photos.filter(item => Object.keys(item.options).length !== this.props.options.options.length);
-        if ((this.props.options.options.length > this.options.length && !optionChanged) ||
-            (haveUnselectedOptions.length > 0 && !optionChanged)) {
-
-            if (haveUnselectedOptions.length > 0) {
-                let selectedOptions = this.options.map(item => item.option_id);
-                this.props.options.options.map(item => {
-                    if (!selectedOptions.includes(+item.option_id)) {
-                        $(`[data-option-id='${item.option_id}']`).find('button').addClass('btn-danger');
-                    }
+            window.photos
+                .filter(item => Object.keys(item.options).length !== this.props.options.options.length)
+                .map(item => {
+                    return optionsKey.map(key => {
+                        if (!Object.keys(item.options).includes(key)) {
+                            $(`#${item.uid} [data-option-id='${key}']`).find('button').addClass('btn-danger');
+                            return key;
+                        }
+                    }).filter(item => item);
                 });
-                Swal.fire({
-                    text: 'Для всех или некоторых фотографий не указаны опции печати'
-                });
-                return;
-            }
+        if (haveUnselectedOptions.length > 0 && !optionChanged) {
+            Swal.fire({
+                text: 'Для всех или некоторых фотографий не указаны опции печати'
+            });
+            return;
         }
 
         if ($('#cropper-container .image-item > div').length === 0 && !optionChanged) {
@@ -562,7 +567,12 @@ export class MainComponent extends Component {
         } else {
 
             if (optionChanged) {
-                this.props.onOptionChanged({options: this.options, photos: items.reverse(), params: extra, persons: this.individualOptions});
+                this.props.onOptionChanged({
+                    options: this.options,
+                    photos: items.reverse(),
+                    params: extra,
+                    persons: this.individualOptions
+                });
             } else {
                 this.props.onOrder({options: this.options, photos: items.reverse(), persons: this.individualOptions});
             }
@@ -666,7 +676,7 @@ export class MainComponent extends Component {
             this.initializedPages[index] = 0;
             this.goToPage(1);
         }, 500);
-        this.registerListeners();
+        //this.registerListeners();
 
     }
 
@@ -687,6 +697,9 @@ export class MainComponent extends Component {
         let visible = window.photos.slice(pagination.fromResult - 1, pagination.toResult).map((item, i) => {
 
             if (!item.initialized) {
+                Object.keys(item.options).map((key, index) => {
+                    this.excludeUnsuitableOptions(null, null, item.options[key].option_id, item.options[key].option_value_id);
+                });
                 if (this.props.options.itemsPerPage === i + 1) {
                     this.initializedPages.push(+page);
                 }
@@ -826,13 +839,13 @@ export class MainComponent extends Component {
 
         this.individualOptions = individualOptions;
         let result = {options: this.options, persons: individualOptions, photos: this.getAllPhotos()};
-        if(deleted){
+        if (deleted) {
             result.deleted = deleted;
         }
 
         if (this.props.onOptionChanged)
             this.props.onOptionChanged(result);
-        if(id && value)
+        if (id && value)
             this.excludeUnsuitableOptions(null, null, id, value);
     }
 
@@ -929,17 +942,17 @@ export class MainComponent extends Component {
     }
 
     registerListeners() {
+        let listener = (e) => {
+            let uid = $(e.target).closest('.image-container').find('.crop-container').attr('data-uid');
+            let currentDegree = parseInt($(e.target).closest('.image-container').find('.crop-container').attr('data-rotate'));
+            let deg = currentDegree ? currentDegree + 90 : 90;
+            this.rotateImage(uid, deg > 360 ? 90 : deg);
+        };
         setTimeout(() => {
             let rotate = document.querySelectorAll('.rotate-item');
             Array.from(rotate).forEach(link => {
-                link.removeEventListener('click', () => {
-                });
-                link.addEventListener('click', (e) => {
-                    let uid = $(e.target).closest('.image-container').find('.crop-container').attr('data-uid');
-                    let currentDegree = parseInt($(e.target).closest('.image-container').find('.crop-container').attr('data-rotate'));
-                    let deg = currentDegree ? currentDegree + 90 : 90;
-                    this.rotateImage(uid, deg > 360 ? 90 : deg);
-                });
+                link.removeEventListener('click', listener, false);
+                link.addEventListener('click', listener, false);
             });
         }, 100);
     }
@@ -968,9 +981,8 @@ export class MainComponent extends Component {
             let uid = $(e.target).closest('.image-container').find('.crop-container').attr('data-uid');
             let currentDegree = parseInt($(e.target).closest('.image-container').find('.crop-container').attr('data-rotate'));
             let deg = currentDegree ? currentDegree + 90 : 90;
-            //this.rotateImage(uid, deg > 360 ? 90 : deg);
+            this.rotateImage(uid, deg > 360 ? 90 : deg);
         });
-        // this.registerListeners();
 
         $(document).on('click', '.image-container .border-adjust', (e) => {
             let uid = $(e.target).closest('.image-container').find('.crop-container').attr('data-uid');
@@ -1078,7 +1090,7 @@ export class MainComponent extends Component {
                     confirmButtonText: 'Продолжить'
                 }).then(res => {
                     if (res.value) {
-                        this.resetUnsuitableOptions(element, uid);
+                        this.resetUnsuitableOptions(element, uid, optionId, valueId);
                         this.onSingleOptionChange(element, uid, option, value, optionId, valueId);
                     }
                 });
@@ -1095,7 +1107,7 @@ export class MainComponent extends Component {
     onSingleOptionChange(element, uid, optionName, optionValue, optionId, valueId) {
         // make item checked
         this.onItemSelect(uid, true, true);
-        $(`#${uid}`).find('input[type="checkbox"]').prop('checked','checked');
+        $(`#${uid}`).find('input[type="checkbox"]').prop('checked', 'checked');
         $(`#${uid}`).find('.crop-container ').addClass('enabled');
 
         $(`#${uid}`).find('.dropdown-item').removeClass('active');
@@ -1151,7 +1163,7 @@ export class MainComponent extends Component {
 
             // firstly make all options for current photo unsuitable
             // except current option
-            if(uid){
+            if (uid) {
                 container = `#${uid} `;
             }
             $(`${container}.item-options .dropdown[data-option-id!="${optionId}"] .option`).addClass('disabled');
@@ -1168,20 +1180,35 @@ export class MainComponent extends Component {
 
     }
 
-    resetUnsuitableOptions(element, uid) {
+    resetUnsuitableOptions(element, uid, optionId, valueId) {
         // get item position
         const index = window.photos.findIndex(a => a.uid === uid);
-        // delete item options
-        window.photos[index].options = {};
-        delete window.photos[index]['framing'];
-        delete window.photos[index]['size'];
-        delete window.photos[index]['paper'];
-        $(`#${uid} .item-options .dropdown-item`).removeClass('active');
-        $(`#${uid} .item-options .dropdown-item`).removeClass('disabled');
-        this.props.options.options.map(option => {
-            $(`#${uid} .item-options .dropdown[data-option-id="${option.option_id}"] button`).text(option.name);
+        this.props.options.options.map((option) => {
+            option.option_values.map(option_value => {
+                if (option_value.relation_options) {
+                    option_value.relation_options.map(relation_option => {
+                        if (relation_option.option_id == optionId && !relation_option.option_value_id.includes(valueId)) {
+                            $(`#${uid} .item-options .dropdown[data-option-id="${option.option_id}"] button`).text(option.name);
+                            $(`#${uid} .item-options .dropdown[data-option-id="${option.option_id}"] button`).addClass('btn-danger');
+                            delete window.photos[index].options[option.option_id];
+                        }
+                    });
+                }
+            });
+
         });
-        this.onFormatChange([0, 0], element, index);
+        // console.log(res2);
+        // delete item options
+        /*     window.photos[index].options = {};
+             delete window.photos[index]['framing'];
+             delete window.photos[index]['size'];
+             delete window.photos[index]['paper'];
+             $(`#${uid} .item-options .dropdown-item`).removeClass('active');
+             $(`#${uid} .item-options .dropdown-item`).removeClass('disabled');
+             this.props.options.options.map(option => {
+                 $(`#${uid} .item-options .dropdown[data-option-id="${option.option_id}"] button`).text(option.name);
+             });
+             this.onFormatChange([0, 0], element, index);*/
     }
 
 
