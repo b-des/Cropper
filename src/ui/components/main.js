@@ -346,7 +346,7 @@ export class MainComponent extends Component {
                 this.checkResolutionOfPhotos(newItemOnPage);
             }
 
-            //this.makeOrder(true, params);
+            $('#cropper-toolbar .selected-items').html($('.image-container input[type=checkbox]:checked').length);
             this.onOptionChange(null, null, null, params);
         };
 
@@ -529,7 +529,7 @@ export class MainComponent extends Component {
         let optionsKey = this.props.options.options.map(option => option.option_id);
         let haveUnselectedOptions =
             window.photos
-                .filter(item => Object.keys(item.options).length !== this.props.options.options.length)
+                //.filter(item => Object.keys(item.options).length !== this.props.options.options.length)
                 .map(item => {
                     return optionsKey.map(key => {
                         if (!Object.keys(item.options).includes(key)) {
@@ -537,7 +537,7 @@ export class MainComponent extends Component {
                             return key;
                         }
                     }).filter(item => item);
-                });
+                }).filter(item => Array.isArray(item) && item.length);
         if (haveUnselectedOptions.length > 0 && !optionChanged) {
             Swal.fire({
                 text: 'Для всех или некоторых фотографий не указаны опции печати'
@@ -796,9 +796,13 @@ export class MainComponent extends Component {
         let individualOptions = [];
         window.photos.map(item => {
 
-            if (data) {
+            if (data && value) {
                 item[data.itemLabel] = data.optionLabel;
                 item['options'][id] = {option_id: id, option_value_id: value, value_name: name};
+            }else{
+                if(data && data.optionLabel)
+                    delete item[data.optionLabel];
+                delete item.options[id];
             }
             individualOptions.push({
                 options: Object.entries(item.options).map(option => option[1]),
@@ -1131,7 +1135,7 @@ export class MainComponent extends Component {
         }
 
         // update item options
-        window.photos[index]['options'][optionId] = {option_id: optionId, option_value_id: valueId, value_name: name};
+        window.photos[index]['options'][optionId] = {option_id: optionId, option_value_id: 78923478, value_name: name};
         window.photos[index][optionName] = optionValue;
 
         switch (optionName) {
@@ -1160,12 +1164,13 @@ export class MainComponent extends Component {
         let relatedOptions = touchedOptionValue.relation_options;
         if (relatedOptions) {
             let container = '';
-
-            // firstly make all options for current photo unsuitable
-            // except current option
             if (uid) {
                 container = `#${uid} `;
             }
+
+            $(`${container}.item-options .dropdown[data-option-id!="${optionId}"] .option.disabled`).addClass('pre-disabled');
+            // first make all options for current photo unsuitable
+            // except current option
             $(`${container}.item-options .dropdown[data-option-id!="${optionId}"] .option`).addClass('disabled');
             // iterate over related options
             relatedOptions.map(relatedOption => {
@@ -1173,9 +1178,11 @@ export class MainComponent extends Component {
                 relatedOption.option_value_id.map(value => {
 
                     $(`${container}.item-options [data-option-id="${relatedOption.option_id}"]`)
-                        .find(`[data-option-value-id="${value}"]`).removeClass('disabled');
+                        .find(`[data-option-value-id="${value}"]`).not('.pre-disabled').removeClass('disabled');
                 });
             });
+
+            $(`${container}.item-options .option`).removeClass('pre-disabled');
         }
 
     }
@@ -1188,8 +1195,15 @@ export class MainComponent extends Component {
                 if (option_value.relation_options) {
                     option_value.relation_options.map(relation_option => {
                         if (relation_option.option_id == optionId && !relation_option.option_value_id.includes(valueId)) {
+                            if(option.label && window.photos[index][option.label]){
+                                delete window.photos[index][option.label];
+                            }
+                            if(option.label === 'size'){
+                                this.onFormatChange([0, 0], element, index);
+                            }
                             $(`#${uid} .item-options .dropdown[data-option-id="${option.option_id}"] button`).text(option.name);
                             $(`#${uid} .item-options .dropdown[data-option-id="${option.option_id}"] button`).addClass('btn-danger');
+                            $(`#${uid} .item-options .option`).removeClass('disabled');
                             delete window.photos[index].options[option.option_id];
                         }
                     });
@@ -1197,18 +1211,6 @@ export class MainComponent extends Component {
             });
 
         });
-        // console.log(res2);
-        // delete item options
-        /*     window.photos[index].options = {};
-             delete window.photos[index]['framing'];
-             delete window.photos[index]['size'];
-             delete window.photos[index]['paper'];
-             $(`#${uid} .item-options .dropdown-item`).removeClass('active');
-             $(`#${uid} .item-options .dropdown-item`).removeClass('disabled');
-             this.props.options.options.map(option => {
-                 $(`#${uid} .item-options .dropdown[data-option-id="${option.option_id}"] button`).text(option.name);
-             });
-             this.onFormatChange([0, 0], element, index);*/
     }
 
 

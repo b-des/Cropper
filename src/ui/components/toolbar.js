@@ -97,7 +97,7 @@ export class ToolbarComponent extends Component {
         if (!relative_options && !$(event.target).hasClass('unsuitable'))
             return;
 
-        if ($(event.target).hasClass('unsuitable')) {
+        if (event && $(event.target).hasClass('unsuitable')) {
             Swal.fire({
                 title: 'Конфликт опций',
                 text: 'Несовместимые опции будут сброшены. Вы согласны?',
@@ -113,10 +113,7 @@ export class ToolbarComponent extends Component {
 
                     if (relative_options)
                         relative_options.map(option => {
-                            //console.log(option);
-                            //console.log(this.selectedOptions[option.option_id]);
                             if (!option.option_value_id.includes(this.selectedOptions[option.option_id]) ) {
-                                //console.log("not include");
                                 let item = this.props.options.filter(item => +item.option_id === +option.option_id)[0];
                                 this.onOptionChange(null, option.option_id, 0);
                                 $(`[data-option-id="${option.option_id}"]`).find('button').addClass('btn-danger').html(item ? item.name : "");
@@ -187,6 +184,7 @@ export class ToolbarComponent extends Component {
     }
 
     componentWillMount() {
+
         this.options = this.props.options.map((item) => {
                 let default_id = this.props.defaultOptions.filter(option => +option.option_id === +item.option_id).map(option => option.option_value_id)[0];
                 let default_option = item.option_values.filter(value => +value.option_value_id === +default_id)[0];
@@ -195,7 +193,7 @@ export class ToolbarComponent extends Component {
                 if (default_id && default_option) {
                     this.onOptionChange(+item.option_id, +default_option.option_value_id, null, item.label, default_option.value || default_option.label);
                     setTimeout(() => {
-                        this.excludeUnsuitableOptions(item.option_id, default_option.relation_options);
+                        this.excludeUnsuitableOptions(null, item.option_id, default_option.relation_options);
                     }, 1000);
                 }
                 return <div>
@@ -254,77 +252,7 @@ export class ToolbarComponent extends Component {
                         </div>
                     </div>
                     {this.options}
-                    {/* <div className="dropdown size">
-                        <button className="btn btn-sm btn-primary dropdown-toggle disabled" type="button" data-toggle="dropdown"
-                                aria-haspopup="true" aria-expanded="false">
-                            {this.state.sizeLabel}
 
-                        </button>
-                        <div className="dropdown-menu">
-                            {this.sizes}
-                        </div>
-                    </div>
-
-                    <div className="dropdown paper">
-                        <button className="btn btn-sm btn-primary dropdown-toggle disabled" type="button" data-toggle="dropdown"
-                                aria-haspopup="true" aria-expanded="false">
-                            {this.state.paperLabel}
-
-                        </button>
-                        <div className="dropdown-menu">
-                            <a className="dropdown-item" href="#" onClick={(e) => {
-                                this.onPaperChange('glossy');
-                                e.preventDefault()
-                            }}>Глянцевая</a>
-                            <a className="dropdown-item" href="#" onClick={(e) => {
-                                this.onPaperChange('mate');
-                                e.preventDefault()
-                            }}>Матовая</a>
-                            <a className="dropdown-item" href="#" onClick={(e) => {
-                                this.onPaperChange('embossed');
-                                e.preventDefault()
-                            }}>Тиснёная</a>
-                        </div>
-                    </div>
-                    <div className="dropdown framing">
-                        <button className="btn btn-sm btn-primary dropdown-toggle disabled" type="button" data-toggle="dropdown"
-                                aria-haspopup="true" aria-expanded="false">
-                            {this.state.framingLabel}
-
-                        </button>
-                        <div className="dropdown-menu">
-                            <a className="dropdown-item" href="#" onClick={(e) => {
-                                this.onFramingChange('whole');
-                                e.preventDefault()
-                            }}>Кадр целиком</a>
-                            <a className="dropdown-item" href="#" onClick={(e) => {
-                                this.onFramingChange('cropp');
-                                e.preventDefault()
-                            }}>Кадр в обрез</a>
-
-                        </div>
-                    </div>
-                    <div className="dropdown border-select">
-                        <button className="btn btn-sm btn-primary dropdown-toggle disabled" type="button" data-toggle="dropdown"
-                                aria-haspopup="true" aria-expanded="false">
-                            {this.state.borderLabel}
-                        </button>
-                        <div className="dropdown-menu">
-                            <a className="dropdown-item" href="#" onClick={(e) => {
-                                this.onBorderChange('white');
-                                e.preventDefault()
-                            }}>Белая</a>
-                            <a className="dropdown-item" href="#" onClick={(e) => {
-                                this.onBorderChange('black');
-                                e.preventDefault()
-                            }}>Черная</a>
-                            <a className="dropdown-item" href="#" onClick={(e) => {
-                                this.onBorderChange('none');
-                                e.preventDefault()
-                            }}>Без рамки</a>
-                        </div>
-                    </div>
-                    */}
 
                     <button type="button" className="btn btn-sm btn-success border"
                             onClick={() => this.props.onOrderClick()}>Заказать
