@@ -1135,7 +1135,7 @@ export class MainComponent extends Component {
         }
 
         // update item options
-        window.photos[index]['options'][optionId] = {option_id: optionId, option_value_id: 78923478, value_name: name};
+        window.photos[index]['options'][optionId] = {option_id: optionId, option_value_id: valueId, value_name: name};
         window.photos[index][optionName] = optionValue;
 
         switch (optionName) {
@@ -1178,7 +1178,7 @@ export class MainComponent extends Component {
                 relatedOption.option_value_id.map(value => {
 
                     $(`${container}.item-options [data-option-id="${relatedOption.option_id}"]`)
-                        .find(`[data-option-value-id="${value}"]`).not('.pre-disabled').removeClass('disabled');
+                        .find(`[data-option-value-id="${value}"]`)/*.not('.pre-disabled')*/.removeClass('disabled');
                 });
             });
 
@@ -1203,6 +1203,7 @@ export class MainComponent extends Component {
                             }
                             $(`#${uid} .item-options .dropdown[data-option-id="${option.option_id}"] button`).text(option.name);
                             $(`#${uid} .item-options .dropdown[data-option-id="${option.option_id}"] button`).addClass('btn-danger');
+                            $(`#${uid} .item-options .dropdown[data-option-id="${option.option_id}"] .dropdown-item`).removeClass('active');
                             $(`#${uid} .item-options .option`).removeClass('disabled');
                             delete window.photos[index].options[option.option_id];
                         }

@@ -117,7 +117,7 @@ export class ToolbarComponent extends Component {
                                 let item = this.props.options.filter(item => +item.option_id === +option.option_id)[0];
                                 this.onOptionChange(null, option.option_id, 0);
                                 $(`[data-option-id="${option.option_id}"]`).find('button').addClass('btn-danger').html(item ? item.name : "");
-                                $(`[data-option-id="${option.option_id}"]`).find('a').removeClass('active');
+                                $(`[data-option-id="${option.option_id}"]`).find('a, span').removeClass('active');
                             }
                         });
                         this.props.options.map((item) => {
