@@ -1,6 +1,16 @@
 # Cropper.js
 Front-end library for image manipulation
 
+## Build
+Run _`npm install`_;  
+Install gulp CLI: _`npm install --global gulp-cli`_;  
+Install webpack CLI: _`npm install --global webpack`_;  
+Run `_webpack --watch`_ in root project;  
+Run _`gulp`_ in root project to start dev-server and build application.
+
+The final files will locates in ./dist/main.js and ./dist/*.css
+
+
 ## Installation
 Just include the file named 'main.js' from dist directory to your website, before closing body tag.
 

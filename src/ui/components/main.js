@@ -484,7 +484,7 @@ export class MainComponent extends Component {
 
 
                 item = Object.assign(item, {
-                    crop: $(e).attr('data-crop') === 'true' || this.framing === 'cropp' ? {
+                    crop: ($(e).attr('data-crop') === 'true' || this.framing === 'cropp') && photo.crop ? {
                         x: isFinite(left) ? left : 0,
                         y: isFinite(top) ? top : 0,
                         w: isFinite(width) ? width : 0,
