@@ -212,9 +212,12 @@
                 methods.showUi.call(this);
             }
 
-            tippy('.cut-line', {content: document.getElementById('tippy-content-1').innerHTML, theme: 'light',});
-            tippy('.offset-line', {content: document.getElementById('tippy-content-2').innerHTML, theme: 'light',});
+            try{
+                tippy('.cut-line', {content: document.getElementById('tippy-content-1').innerHTML, theme: 'light',});
+                tippy('.offset-line', {content: document.getElementById('tippy-content-2').innerHTML, theme: 'light',});
+            }catch (e) {
 
+            }
         },
 
 
@@ -616,5 +619,3 @@
     };
 
 }(jQuery));
-
-
