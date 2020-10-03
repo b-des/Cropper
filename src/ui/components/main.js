@@ -676,8 +676,6 @@ export class MainComponent extends Component {
             this.initializedPages[index] = 0;
             this.goToPage(1);
         }, 500);
-        //this.registerListeners();
-
     }
 
     updateSizes(sizes) {
