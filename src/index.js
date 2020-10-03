@@ -3,7 +3,6 @@ import {MainComponent} from "./ui/components/main";
 import {ImageItem} from "./ui/components/item";
 import uuid from 'uuid/v4';
 import ls from 'local-storage';
-import config from './data.json'
 import dot from 'dot'
 import axios from "axios";
 
@@ -81,7 +80,7 @@ class Cropper extends Component {
 
 
         this.setState({
-            sizes: config.sizes
+            sizes: []
         });
 
         if (this.options.sizes) {
