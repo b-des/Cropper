@@ -133,7 +133,6 @@ class Cropper extends Component {
         let html = '';
         images.map((item, key) => {
 
-            setTimeout(() => {
                 let photo = {uid: uuid(), options: {}};
                 if (typeof item === 'object') {
                     photo = Object.assign(photo, item);
@@ -159,7 +158,7 @@ class Cropper extends Component {
                 $('.selected-items').html(key + 1);
                 $('#main-section').prepend(html);
                 window.photos.unshift(photo);
-            }, 5);
+
         });
 
         setTimeout(() => {
