@@ -501,6 +501,11 @@ export class MainComponent extends Component {
                 if (photo.crop && (item.crop.w === 0 || item.crop.h === 0)) {
                     item.crop = photo.crop;
                 }
+                // is user hasn't changed photo position
+                // use auto cropping at center
+                if (!parseInt($(e).attr('data-left')) && !parseInt($(e).attr('data-top')) && photo.crop) {
+                    item.crop = true;
+                }
 
             }
             if (!this.props.immediate) {
@@ -852,9 +857,11 @@ export class MainComponent extends Component {
     }
 
     adjustOrientation(rotateImmediate) {
-        //return false;
         if (rotateImmediate && this.paginator) {
-            let pagination = this.paginator ? this.paginator.getPaginationData() : null;
+            let pagination = this.paginator ? this.paginator.getPaginationData() : {
+                fromResult: 0,
+                toResult: window.photos.length
+            };
             window.photos.slice(pagination.fromResult - 1, pagination.toResult).map((photo, i) => {
 
                 let resolution = photo.resolution ? photo.resolution.split('x') : null;
