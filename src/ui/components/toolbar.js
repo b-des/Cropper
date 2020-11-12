@@ -80,9 +80,9 @@ export class ToolbarComponent extends Component {
                 this.props.onSizeChange(optionLabel);
                 $(`.dropdown.size button`).html(name);
                 break;
-     /*       case 'paper':
-                this.onPaperChange(option_label);
-                break;*/
+            /*       case 'paper':
+                       this.onPaperChange(option_label);
+                       break;*/
             case 'framing':
                 this.onFramingChange(optionLabel);
                 break;
@@ -97,7 +97,14 @@ export class ToolbarComponent extends Component {
         if (!relative_options && !$(event.target).hasClass('unsuitable'))
             return;
 
+        let unableSelectOption = this.excludeOptions(relative_options, current_option);
+        console.log(unableSelectOption);
+        if(unableSelectOption)
+            return false;
+
+        let isOptionsConflict = false;
         if (event && $(event.target).hasClass('unsuitable')) {
+            isOptionsConflict = true;
             Swal.fire({
                 title: 'Конфликт опций',
                 text: 'Несовместимые опции будут сброшены. Вы согласны?',
@@ -107,26 +114,26 @@ export class ToolbarComponent extends Component {
                 confirmButtonText: 'Продолжить'
             }).then(res => {
                 if (res.value) {
-
-                        this.onOptionChange(null, current_option, option_value, option_name, item_label, option_label);
+                    this.excludeOptions(relative_options, current_option);
+                    this.onOptionChange(null, current_option, option_value, option_name, item_label, option_label);
                     //console.log(this.selectedOptions);
 
                     if (relative_options)
                         relative_options.map(option => {
-                            if (!option.option_value_id.includes(this.selectedOptions[option.option_id]) ) {
+                            if (!option.option_value_id.includes(this.selectedOptions[option.option_id])) {
                                 let item = this.props.options.filter(item => +item.option_id === +option.option_id)[0];
                                 this.onOptionChange(null, option.option_id, 0);
                                 $(`[data-option-id="${option.option_id}"]`).find('button').addClass('btn-danger').html(item ? item.name : "");
                                 $(`[data-option-id="${option.option_id}"]`).find('a, span').removeClass('active');
                             }
                         });
-                        this.props.options.map((item) => {
-                            //console.log(item);
+                    this.props.options.map((item) => {
+                        //console.log(item);
 
-                            if (+item.option_id !== +current_option) {
-                                //$(`[data-option-id="${item.option_id}"]`).find('button').addClass('btn-danger').html(item.name);
-                            }
-                        });
+                        if (+item.option_id !== +current_option) {
+                            //$(`[data-option-id="${item.option_id}"]`).find('button').addClass('btn-danger').html(item.name);
+                        }
+                    });
                     $(`[data-option-id=${current_option}]`).find(`a`).removeClass('unsuitable');
                     $(`[data-option-id="${current_option}"]`).find('button').removeClass('btn-danger').html(option_name);
                 }
@@ -135,9 +142,14 @@ export class ToolbarComponent extends Component {
             // return false;
         }
 
-        if (!relative_options)
+        if (!relative_options || isOptionsConflict)
             return;
         //$(`#cropper-toolbar .dropdown[data-option-id=${current_option}]`).find('a').removeClass('disabled');
+
+    }
+
+    excludeOptions(relative_options, current_option){
+        let preventOptionSelect = false;
         relative_options.map(option => {
             if (!this.exludedOptions[current_option])
                 this.exludedOptions[current_option] = {[option.option_id]: option.option_value_id};
@@ -147,21 +159,37 @@ export class ToolbarComponent extends Component {
 
         let enabled = {};
         // $(`#cropper-toolbar .dropdown:not([data-option-id='${current_option}']) a`).addClass('disabled');
-        $(`#cropper-toolbar .dropdown:not([data-option-id='${current_option}']) a`).addClass('unsuitable');
-        $(`.item-options .dropdown:not([data-option-id='${current_option}']) a`).addClass('disabled');
 
+        console.log(this.exludedOptions);
         Object.entries(this.exludedOptions).map(option => {
+            console.log('================item===============');
             Object.entries(option[1]).map(item => {
+                console.log(item);
                 enabled[item[0]] = enabled[item[0]] ? this.unionDuplicates(enabled[item[0]], item[1]) : item[1];
-            })
+            });
+            console.log('//================item===============');
         });
 
+        console.log(enabled);
         Object.entries(enabled).map(option => {
-            option[1].map(value_id => {
-                $(`.dropdown[data-option-id=${option[0]}]`).find(`a[data-option-value-id=${value_id}]`).removeClass('disabled');
-                $(`#cropper-toolbar .dropdown[data-option-id=${option[0]}]`).find(`a[data-value-id=${value_id}]`).removeClass('unsuitable');
-            });
+            if (option[1].length === 0) {
+                preventOptionSelect = true;
+            }
         });
+
+        if(!preventOptionSelect){
+            $(`#cropper-toolbar .dropdown:not([data-option-id='${current_option}']) a`).addClass('unsuitable');
+            $(`.item-options .dropdown:not([data-option-id='${current_option}']) a`).addClass('disabled');
+
+            Object.entries(enabled).map(option => {
+                option[1].map(value_id => {
+                    $(`.dropdown[data-option-id=${option[0]}]`).find(`a[data-option-value-id=${value_id}]`).removeClass('disabled');
+                    $(`#cropper-toolbar .dropdown[data-option-id=${option[0]}]`).find(`a[data-value-id=${value_id}]`).removeClass('unsuitable');
+                });
+            });
+        }
+
+        return preventOptionSelect;
     }
 
     unionDuplicates(arr1, arr2) {
@@ -181,6 +209,15 @@ export class ToolbarComponent extends Component {
             this.props.onOptionChange();
         });
 
+    }
+
+    showConflictDialog(){
+        Swal.fire({
+            title: 'Конфликт опций',
+            text: 'Извините, выбор этой опции приведет к конфликту',
+            type: 'info',
+            confirmButtonText: 'Выбрать другую опцию'
+        })
     }
 
     componentWillMount() {
@@ -209,6 +246,12 @@ export class ToolbarComponent extends Component {
                             {item.option_values.map((option) => {
                                 return <a className="dropdown-item" href="#" data-value-id={option.option_value_id}
                                           onClick={(e) => {
+                                              let unableSelectOption = this.excludeOptions(option.relation_options, item.option_id);
+                                              if(unableSelectOption){
+                                                  console.log("unable to select");
+                                                  this.showConflictDialog();
+                                                  return;
+                                              }
                                               this.onOptionChange(e, item.option_id, option.option_value_id, option.name, item.label, option.label || option.value);
                                               this.excludeUnsuitableOptions(e, item.option_id, option.relation_options, option.name, option.option_value_id, item.label, option.label || option.value);
                                               e.preventDefault();
@@ -222,23 +265,12 @@ export class ToolbarComponent extends Component {
     }
 
     render(props, state, context) {
-
-
-        this.sizes = props.sizes.map((item, key) =>
-            <a className="dropdown-item" href="#" onClick={(e) => {
-                this.props.onSizeChange(item.value);
-                // $('.dropdown.size button').html(`Формат: ${item.title}`);
-                e.preventDefault();
-            }}>{item.title}</a>
-        );
-
-
         return <nav className="bp3-dark" id="cropper-toolbar">
             <div>
                 <div className="bp3-navbar-group bp3-align-left ">
                     <div className="select-items">
                         <div>Выбрано элементов: <span className="selected-items">0</span></div>
-                        <div className="pretty p-svg p-curve p-pulse" style={{'display':'none'}}>
+                        <div className="pretty p-svg p-curve p-pulse" style={{'display': 'none'}}>
                             <input type="checkbox"
                                    onChange={(event) => this.props.onSelectChange(event.target.checked)}/>
                             <div className="state p-success">
@@ -252,22 +284,18 @@ export class ToolbarComponent extends Component {
                         </div>
                     </div>
                     {this.options}
-
-
                     <button type="button" className="btn btn-sm btn-success border"
                             onClick={() => this.props.onOrderClick()}>Заказать
                     </button>
-
                     <div className="right-toolbar-tools">
                         <div>
-                            <span>Кол-во: </span><input type="number" name="quantity" value="1" min="1"
-                                                        style="width: 50px"/>
+                            <span>Кол-во: </span>
+                            <input type="number" name="quantity" value="1" min="1" style="width: 50px"/>
                         </div>
                         <button className="btn btn-sm btn-danger" onClick={() => this.props.onDeleteAllClick()}>
                             Удалить все фото
                         </button>
                     </div>
-
 
                 </div>
 
@@ -275,6 +303,5 @@ export class ToolbarComponent extends Component {
         </nav>
 
     }
-
 
 }
