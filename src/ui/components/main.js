@@ -35,7 +35,6 @@ export class MainComponent extends Component {
         window.photos = [];
     }
 
-
     /*Fire when changed size*/
     onFormatChange(size, element, index) {
         this.changePhotoSize(element || $(`.crop-container.enabled`), {width: size[1], height: size[0]});

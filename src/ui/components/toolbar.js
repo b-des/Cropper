@@ -93,7 +93,7 @@ export class ToolbarComponent extends Component {
     }
 
     excludeUnsuitableOptions(event, current_option, relative_options, option_name, option_value, item_label, option_label) {
-
+        return;
         if (!relative_options && !$(event.target).hasClass('unsuitable'))
             return;
 
