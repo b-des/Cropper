@@ -63,14 +63,20 @@ export class ImageItem {
                 {{~ it.options :option }}
                <div class="dropdown" data-label="{{=option.label}}" data-option-id="{{=option.option_id}}">
                   <button class="btn btn-secondary dropdown-toggle btn-sm" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    {{=option.name}}
+                   
+                    {{? !it.selectedOptions[option.option_id] || !it.selectedOptions[option.option_id].value_name }}
+                        {{=option.name}}
+                    {{?? true }}
+                        {{=it.selectedOptions[option.option_id].value_name.name || it.selectedOptions[option.option_id].value_name}}
+                    {{?}}
                   </button>
                   <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                    {{~ option.option_values :value:i }}
-                        <a class="dropdown-item option {{? it.selectedOptions[option.option_id] == value.option_value_id}} active {{?}}" 
-                        href="#" data-label="{{=value.label}}" 
+                        <span class="dropdown-item option {{? (it.selectedOptions[option.option_id] && 
+                        it.selectedOptions[option.option_id].option_value_id == value.option_value_id)}} active {{?}}" 
+                        data-label="{{=value.label}}" 
                         {{? value.value }} data-value="{{=value.value}}" {{?}}
-                        data-option-value-id="{{=value.option_value_id}}">{{=value.name}}</a>
+                        data-option-value-id="{{=value.option_value_id}}">{{=value.name}}</span>
                     {{~}}
                   </div>
                 </div>

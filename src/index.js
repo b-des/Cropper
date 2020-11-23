@@ -3,7 +3,6 @@ import {MainComponent} from "./ui/components/main";
 import {ImageItem} from "./ui/components/item";
 import uuid from 'uuid/v4';
 import ls from 'local-storage';
-import config from './data.json'
 import dot from 'dot'
 import axios from "axios";
 
@@ -55,13 +54,14 @@ class Cropper extends Component {
             borderWidth: 3,
             defaultOptions: [],
         };
-
+        window.photos = [];
         Object.assign(this.options, options);
         window.defaultBorderWidth = this.options.borderWidth;
 
-        this.state.urls = [];
-        this.state.handlerUrl = '';
-        //this.state.urls = ls.get('urls') ? ls.get('urls') : [];
+
+        this.state = {
+            handlerUrl: '',
+        };
 
         window.onbeforeunload = () => {
             if (this.options.saveOnRefresh) {
@@ -79,18 +79,16 @@ class Cropper extends Component {
         };
 
 
-        this.state.sizes = config.sizes;
+        this.setState({
+            sizes: []
+        });
+
         if (this.options.sizes) {
-            this.state.sizes = this.options.sizes;
+            this.setState({
+                sizes: this.options.sizes
+            });
         }
 
-        this.sizesInPixel = this.state.sizes.map((item, index) => {
-            return {
-                title: item.title,
-                width: Math.round(item.value[1] * 37.79515625),
-                height: Math.round(item.value[0] * 37.79515625)
-            }
-        });
         if (this.options.container) {
             render(<MainComponent ref={this.child}
                                   immediate={this.options.immediate}
@@ -110,9 +108,9 @@ class Cropper extends Component {
 
     }
 
-    destroy(){
-        //let elem = document.getElementById(this.options.container);
-        const root = render(<Cropper />, document.getElementById(this.options.container));
+    destroy() {
+        window.photos = null;
+        const root = render(<Cropper/>, document.getElementById(this.options.container));
         ReactDOM.unmountComponentAtNode(document.getElementById(this.options.container));
         render(null, document.getElementById(this.options.container), root);
         // elem.parentNode.removeChild(elem);
@@ -124,7 +122,6 @@ class Cropper extends Component {
      * @param {Image[]} images - Array with photos.
      */
     addPhotos(images) {
-
         if (images && images.length > 1000) {
             Swal.fire({
                 title: 'Предупреждение',
@@ -136,8 +133,6 @@ class Cropper extends Component {
         let html = '';
         images.map((item, key) => {
 
-
-            setTimeout(() => {
                 let photo = {uid: uuid(), options: {}};
                 if (typeof item === 'object') {
                     photo = Object.assign(photo, item);
@@ -145,7 +140,7 @@ class Cropper extends Component {
                     photo = Object.assign(photo, {url: item});
                 }
 
-                this.state.urls.unshift(photo);
+
                 html = dot.template(this.imageItemTemplate)({
                     url: photo.thumbnail || photo.url,
                     top: photo.top === 0 ? 0 : photo.top || '',
@@ -160,21 +155,15 @@ class Cropper extends Component {
                     options: this.options.options,
                     selectedOptions: photo.options
                 });
-                $('.selected-items').html(key+1);
+                $('.selected-items').html(key + 1);
                 $('#main-section').prepend(html);
-                this.setState({urls: this.state.urls});
-            }, 5);
-
-
+                window.photos.unshift(photo);
 
         });
-        setTimeout(() => {
-            //$('#main-section').prepend(html);
 
+        setTimeout(() => {
             this.child.current.onPhotoAdded();
         }, 1000);
-
-
     }
 
     /**
@@ -184,13 +173,13 @@ class Cropper extends Component {
      */
     process(items, callback) {
         this.startProcessingCallback({status: 'start', count: items.length});
-       /* axios.post(`${this.options.handlerUrl}/processing`, items, {timeout: 600000}).then(response => {
-           if (callback)
-                callback(response.data);
-        }).catch(error => {
+        /* axios.post(`${this.options.handlerUrl}/processing`, items, {timeout: 600000}).then(response => {
             if (callback)
-                callback(error);
-        });*/
+                 callback(response.data);
+         }).catch(error => {
+             if (callback)
+                 callback(error);
+         });*/
 
         console.log("Send data to render via jQuery AJAX");
         console.log("Quantity of photos: " + items.length);
@@ -208,15 +197,15 @@ class Cropper extends Component {
      * Clear all photos
      */
     clear() {
-        this.state.urls.splice(0, this.state.urls.length);
+        //this.state.urls.splice(0, this.state.urls.length);
+        window.photos = [];
         this.child.current.deleteAllItems(true);
     }
 
-    setPhotoSizes(sizes) {
-        this.state.sizes = sizes;
-        this.setState(this.state);
-        this.child.current.updateSizes(this.state.sizes);
 
+    componentDidUpdate(previousProps, previousState, previousContext) {
+        console.log('componentDidUpdate');
+        return super.componentDidUpdate(previousProps, previousState, previousContext);
     }
 
     /**
@@ -227,7 +216,7 @@ class Cropper extends Component {
         this.startProcessingCallback = callback;
     }
 
-    onDeleteAllPhotos(callback){
+    onDeleteAllPhotos(callback) {
         this.onDeleteAllPhotosCallback = callback;
     }
 
@@ -244,7 +233,7 @@ class Cropper extends Component {
      * Callback function triggered when option changed
      * @param callback
      */
-    onPropertiesChanged(callback){
+    onPropertiesChanged(callback) {
         this.onOptionChangedCallback = callback;
     }
 

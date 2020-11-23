@@ -28,6 +28,13 @@
 
 
                 if (!this.obj.find('img').length) {
+                    let img = $('<img src="' + src + '">');
+
+                    //this.obj.html(img);
+                    img.on('load', () => {
+                        //setTimeout(methods.initCropper.bind(this),100);
+                    });
+
                     let tmpImage = new Image();
                     tmpImage.src = src;
                     tmpImage.onload = function () {
@@ -205,9 +212,12 @@
                 methods.showUi.call(this);
             }
 
-            tippy('.cut-line', {content: document.getElementById('tippy-content-1').innerHTML, theme: 'light',});
-            tippy('.offset-line', {content: document.getElementById('tippy-content-2').innerHTML, theme: 'light',});
+            try{
+                tippy('.cut-line', {content: document.getElementById('tippy-content-1').innerHTML, theme: 'light',});
+                tippy('.offset-line', {content: document.getElementById('tippy-content-2').innerHTML, theme: 'light',});
+            }catch (e) {
 
+            }
         },
 
 
@@ -521,7 +531,7 @@
                     tmpImage.src = src;
                     tmpImage.onload = function () {
 
-                       // that.obj.html(this);
+                        that.obj.html(this);
 
                         that.obj.append('<div class="border-frame"></div>');
                         if (that.options.onLoad) that.options.onLoad(that.obj.attr('data-uid'), this.width, this.height, true);
@@ -609,5 +619,3 @@
     };
 
 }(jQuery));
-
-
