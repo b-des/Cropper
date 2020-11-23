@@ -43,7 +43,7 @@ export class MainComponent extends Component {
         if (index >= 0) {
             element.cropper('update', {fitToContainer: !window.photos[index].crop});
         } else {
-            this.size = {width: size[1], height: size[0]};
+            this.size = {width: +size[1], height: +size[0]};
             let target = element || $(`.image-container:visible .crop-container.enabled`);
             target.cropper('update', {fitToContainer: this.framing !== 'cropp'});
         }
@@ -254,7 +254,7 @@ export class MainComponent extends Component {
                 }
 
             }
-            this.size = {width: size.width, height: size.height};
+            this.size = {width: +size.width, height: +size.height};
             if (resolution && (+resolution[0] / +resolution[1] < 1)) {
                 if (this.size.width < this.size.height && container.attr('data-rotate') === '-90') {
                     // setTimeout(this.rotateImage.bind(this, photo.uid, 0), 1000);
@@ -409,6 +409,8 @@ export class MainComponent extends Component {
 
     /*Rotate image*/
     rotateImage(uid, deg) {
+        console.log("Rotation");
+        console.log(uid, deg);
         let index = window.photos.findIndex(a => a.uid === uid);
         let photo = null;
         if (index === -1)
@@ -500,6 +502,11 @@ export class MainComponent extends Component {
 
                 if (photo.crop && (item.crop.w === 0 || item.crop.h === 0)) {
                     item.crop = photo.crop;
+                }
+                // is user hasn't changed photo position
+                // use auto cropping at center
+                if (!parseInt($(e).attr('data-left')) && !parseInt($(e).attr('data-top')) && photo.crop) {
+                    item.crop = true;
                 }
 
             }
@@ -852,14 +859,20 @@ export class MainComponent extends Component {
     }
 
     adjustOrientation(rotateImmediate) {
-        //return false;
+        console.log("adjustOrientation");
         if (rotateImmediate && this.paginator) {
-            let pagination = this.paginator ? this.paginator.getPaginationData() : null;
+            let pagination = this.paginator ? this.paginator.getPaginationData() : {
+                fromResult: 0,
+                toResult: window.photos.length
+            };
             window.photos.slice(pagination.fromResult - 1, pagination.toResult).map((photo, i) => {
 
                 let resolution = photo.resolution ? photo.resolution.split('x') : null;
                 let container = $('#main-section').find(`#crop-container-${photo.uid}`);
+
                 if (resolution && (+resolution[0] / +resolution[1] < 1)) {
+                    console.log(this.size);
+                    console.log(this.size.width < this.size.height);
                     if (this.size.width < this.size.height && container.attr('data-rotate') === '-90') {
                         setTimeout(this.rotateImage.bind(this, photo.uid, 0), 500);
                         photo.oldRotation = 0;
