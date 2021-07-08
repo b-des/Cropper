@@ -90,7 +90,7 @@ gulp.task('webpack-dev-server', function (callback) {
 });
 
 gulp.task('build-dev', gulp.series('webpack:build-dev'), function () {
-    gulp.watch(['scripts/**/*'], ['webpack:build-dev']);
+    gulp.watch(['scripts/**/*'], [ 'webpack:build-dev']);
 });
 
 // Production build

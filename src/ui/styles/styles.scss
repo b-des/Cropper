@@ -6,9 +6,9 @@
   background: #c8d5dd;
   border-radius: 0px;
   padding: 0px;
-/*  width: 90%;
-  margin: 100px auto;
-  border: 1px solid #8faaa3;*/
+  /*  width: 90%;
+    margin: 100px auto;
+    border: 1px solid #8faaa3;*/
   //position: relative;
   //@import "bootstrap/scss/bootstrap";
 
@@ -119,7 +119,7 @@
         margin: 0 5px;
         display: inline-block;
 
-        & > span{
+        & > span {
           font-size: 12px;
           color: #b5b5b5;
         }
@@ -136,7 +136,8 @@
           flex-basis: calc(50% - 20px);
           text-align: center;
         }
-       .btn {
+
+        .btn {
           @include mobile-only {
             width: 100%;
             display: block;
@@ -170,9 +171,14 @@
         width: 30%;
         padding: 5px;
       }
+
+      @include mobile-only {
+        display: block;
+        width: auto;
+      }
     }
 
-    .dropdown-menu .dropdown-item.unsuitable{
+    .dropdown-menu .dropdown-item.unsuitable {
       background: #ff00002e;
       border-radius: 3px;
     }
@@ -512,44 +518,45 @@
     min-width: 300px;
     box-shadow: 0 0 8px -1px #000;
 
-    @include mobile-only{
+    @include mobile-only {
       width: 90%;
     }
 
-    #color-picker{
+    #color-picker {
       text-align: center;
     }
 
-    #border-thickness-label{
+    #border-thickness-label {
       text-align: center;
       font-size: 13px;
     }
 
-    &:before{
-      content:'';
-      display:block;
-      width:0;
-      height:0;
-      position:absolute;
+    &:before {
+      content: '';
+      display: block;
+      width: 0;
+      height: 0;
+      position: absolute;
     }
 
-    &.right:before{
+    &.right:before {
       border-top: 10px solid transparent;
       border-bottom: 10px solid transparent;
       border-right: 10px solid white;
-      left:-10px;
-      top:9px;
+      left: -10px;
+      top: 9px;
     }
 
-    &.left:before{
+    &.left:before {
 
       border-left: 10px solid #fff;
       border-top: 10px solid transparent;
       border-bottom: 10px solid transparent;
-      right:-10px;
-      top:9px;
+      right: -10px;
+      top: 9px;
     }
-    &.top:before{
+
+    &.top:before {
 
       border-bottom: 10px solid #fff;
       border-left: 10px solid transparent;
@@ -558,7 +565,7 @@
       top: -10px;
     }
 
-    .close{
+    .close {
       position: absolute;
       top: 10px;
       right: 10px;
@@ -595,7 +602,7 @@
       }
     }
 
-    .a-color-picker{
+    .a-color-picker {
       box-shadow: none;
     }
   }
@@ -682,37 +689,71 @@
   }
 }
 
-.tline{
+.tline {
   position: absolute !important;
   background: #FFF;
   z-index: 99999;
 }
 
-.item-options{
-/*  button{
-    width: 100%;
-    border-radius: 0 0 3px 3px;
-  }*/
-  .dropdown{
+.option-item {
+  position: relative;
+}
+
+.option-item:after {
+  content: "";
+  position: absolute;
+  background: #0095dd45;
+  width: 0;
+  height: 100%;
+  left: 0;
+  top: 0;
+
+}
+
+.option-item:hover:after {
+  width: 100%;
+  transition: width 1s;
+}
+.option-tooltip-icon{
+  background: #0095dd;
+  padding: 1px 4px;
+  border-radius: 4px;
+  margin-right: 4px;
+  color: white;
+}
+.tooltip.bs-tooltip-auto.show{
+  /*top: 20px !important;*/
+
+  @media screen and (max-width: 768px){
+    /*left: 20px !important;*/
+  }
+}
+.item-options {
+  /*  button{
+      width: 100%;
+      border-radius: 0 0 3px 3px;
+    }*/
+  .dropdown {
     display: inline-block;
   }
-  .dropdown-menu{
-    .dropdown-item{
+
+  .dropdown-menu {
+    .dropdown-item {
       font-size: 12px;
       cursor: pointer;
 
-      &.unsuitable{
+      &.unsuitable {
         color: #6c757d;
         cursor: not-allowed;
         background-color: transparent;
       }
 
-      &.disabled{
+      &.disabled {
         cursor: not-allowed;
         pointer-events: auto;
       }
 
-      &.reset{
+      &.reset {
         color: #fff;
         background-color: #dc3545;
         border-color: #dc3545;

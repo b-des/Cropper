@@ -1,4 +1,4 @@
-import {h, Component} from "preact";
+import {h, Component, options} from "preact";
 import findDuplicates from 'array-find-duplicates';
 import Swal from "sweetalert2";
 
@@ -9,6 +9,7 @@ export class ToolbarComponent extends Component {
         this.tooltipOptionItem = null;
         this.exludedOptions = {};
         this.selectedOptions = {};
+        this.incompatibleOptions = {};
     }
 
     onPaperChange(type) {
@@ -80,9 +81,9 @@ export class ToolbarComponent extends Component {
                 this.props.onSizeChange(optionLabel);
                 $(`.dropdown.size button`).html(name);
                 break;
-     /*       case 'paper':
-                this.onPaperChange(option_label);
-                break;*/
+            /*       case 'paper':
+                       this.onPaperChange(option_label);
+                       break;*/
             case 'framing':
                 this.onFramingChange(optionLabel);
                 break;
@@ -92,10 +93,30 @@ export class ToolbarComponent extends Component {
         }
     }
 
+    isCompatibleOptions(optionId) {
+        //this.incompatibleOptions
+        let all = $(`#cropper-toolbar .dropdown[data-option-id='${optionId}']`).find('a').length;
+        let unsuitable = $(`#cropper-toolbar .dropdown[data-option-id='${optionId}']`).find('a.unsuitable').length;
+        if (all === unsuitable) {
+            Swal.fire({
+                title: 'Конфликт опций',
+                text: 'Вы не можете выбрать опцию, потому что установили несовместимые параметры. Пожалуйста, измените Ваши настройки',
+                type: 'warning',
+                confirmButtonText: 'Закрыть'
+            })
+        }
+        return all !== unsuitable;
+
+        //let tmp = Object.entries(this.selectedOptions);
+        // console.log(tmp);
+        //console.log(this.props.options);
+        // let selectedOption = this.props.options.filter(option => option.option_id == 1);
+    }
+
     excludeUnsuitableOptions(event, current_option, relative_options, option_name, option_value, item_label, option_label) {
         if (!relative_options && !$(event.target).hasClass('unsuitable'))
             return;
-
+        //console.log(this.selectedOptions);
         if (event && $(event.target).hasClass('unsuitable')) {
             Swal.fire({
                 title: 'Конфликт опций',
@@ -107,25 +128,19 @@ export class ToolbarComponent extends Component {
             }).then(res => {
                 if (res.value) {
 
-                        this.onOptionChange(null, current_option, option_value, option_name, item_label, option_label);
+                    this.onOptionChange(null, current_option, option_value, option_name, item_label, option_label);
                     //console.log(this.selectedOptions);
 
                     if (relative_options)
                         relative_options.map(option => {
-                            if (!option.option_value_id.includes(this.selectedOptions[option.option_id]) ) {
+                            if (!option.option_value_id.includes(this.selectedOptions[option.option_id])) {
                                 let item = this.props.options.filter(item => +item.option_id === +option.option_id)[0];
                                 this.onOptionChange(null, option.option_id, 0);
                                 $(`[data-option-id="${option.option_id}"]`).find('button').addClass('btn-danger').html(item ? item.name : "");
                                 $(`[data-option-id="${option.option_id}"]`).find('a, span').removeClass('active');
                             }
                         });
-                        this.props.options.map((item) => {
-                            //console.log(item);
 
-                            if (+item.option_id !== +current_option) {
-                                //$(`[data-option-id="${item.option_id}"]`).find('button').addClass('btn-danger').html(item.name);
-                            }
-                        });
                     $(`[data-option-id=${current_option}]`).find(`a`).removeClass('unsuitable');
                     $(`[data-option-id="${current_option}"]`).find('button').removeClass('btn-danger').html(option_name);
                 }
@@ -180,11 +195,32 @@ export class ToolbarComponent extends Component {
             this.props.onOptionChange();
         });
 
+        $(function () {
+            //$('[data-toggle="tooltip"]').tooltip();
+            tippy('[data-tippy-content]', {'theme': 'light'});
+
+        });
     }
 
     componentWillMount() {
-
         this.options = this.props.options.map((item) => {
+                /* let option = item;
+                 // проходим по каждому элементу опции
+                 option.option_values.map(optionItem => {
+                     let excludedOptions = [];
+                     // проходим по каждой совместимой опции
+                     optionItem.relation_options.map(relatedOption => {
+                         let relatedOptionGroup = this.props.options.filter(option => option.option_id == relatedOption.option_id);
+                         if (relatedOptionGroup && relatedOptionGroup.length > 0) {
+                             let excludedOption = relatedOptionGroup[0].option_values
+                                 .filter(optionValue => !relatedOption.option_value_id.includes(optionValue.option_value_id)).map(i => i.option_value_id)
+                             excludedOptions.push([relatedOption.option_id, excludedOption])
+                         }
+                     });
+
+                     optionItem['excluded_options'] = excludedOptions;
+                 });*/
+
                 let default_id = this.props.defaultOptions.filter(option => +option.option_id === +item.option_id).map(option => option.option_value_id)[0];
                 let default_option = item.option_values.filter(value => +value.option_value_id === +default_id)[0];
 
@@ -196,7 +232,12 @@ export class ToolbarComponent extends Component {
                     }, 1000);
                 }
                 return <div>
-                    <span>{item.name}:</span>
+                    <span>
+                        {item.name} &nbsp;
+                        {item.description &&
+                            <i className="fa fa-question option-tooltip-icon" data-toggle="tooltip" data-tippy-content={item.description}></i>
+                        }
+                    </span>
                     <div className={`dropdown ${item.label}`} data-option-id={item.option_id}>
                         <button className="btn btn-sm btn-primary dropdown-toggle disabled" type="button"
                                 data-toggle="dropdown"
@@ -206,10 +247,15 @@ export class ToolbarComponent extends Component {
                         </button>
                         <div className="dropdown-menu">
                             {item.option_values.map((option) => {
-                                return <a className="dropdown-item" href="#" data-value-id={option.option_value_id}
+                                let hasTooltip = option.description || option.image;
+                                return <a className={`dropdown-item ${hasTooltip ? "option-item" : ""}`} href="#"
+                                          data-value-id={option.option_value_id} data-toggle="option-tooltip"
+                                          data-description={option.description} data-image={option.image}
                                           onClick={(e) => {
-                                              this.onOptionChange(e, item.option_id, option.option_value_id, option.name, item.label, option.label || option.value);
-                                              this.excludeUnsuitableOptions(e, item.option_id, option.relation_options, option.name, option.option_value_id, item.label, option.label || option.value);
+                                              if (this.isCompatibleOptions(item.option_id)) {
+                                                  this.onOptionChange(e, item.option_id, option.option_value_id, option.name, item.label, option.label || option.value);
+                                                  this.excludeUnsuitableOptions(e, item.option_id, option.relation_options, option.name, option.option_value_id, item.label, option.label || option.value);
+                                              }
                                               e.preventDefault();
                                           }}>{option.name}</a>
                             })}
@@ -237,7 +283,7 @@ export class ToolbarComponent extends Component {
                 <div className="bp3-navbar-group bp3-align-left ">
                     <div className="select-items">
                         <div>Выбрано элементов: <span className="selected-items">0</span></div>
-                        <div className="pretty p-svg p-curve p-pulse" style={{'display':'none'}}>
+                        <div className="pretty p-svg p-curve p-pulse" style={{'display': 'none'}}>
                             <input type="checkbox"
                                    onChange={(event) => this.props.onSelectChange(event.target.checked)}/>
                             <div className="state p-success">

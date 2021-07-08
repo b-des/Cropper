@@ -30,6 +30,7 @@
 <!-- Bootstrap core JavaScript -->
 <script type="text/javascript"
         src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="options.js"></script>
 <script>
     imgs = [
         {
@@ -54,154 +55,7 @@
         cropper.addPhotos([imgs[Math.floor(Math.random() * ((imgs.length - 1) - 0 + 1) + 0)]])
     }
 
-    let options = [
-        {
-            "option_id": "9",
-            "name": "Формат бумаги",
-            "label": "size",
-            "option_values": [
-                {
-                    "option_value_id": "1",
-                    "relation_options": [
-                        {
-                            "option_id": 10,
-                            "option_value_id": [1]
-                        },
-                        {
-                            "option_id": 11,
-                            "option_value_id": [1]
-                        },
-                        {
-                            "option_id": 12,
-                            "option_value_id": [1]
-                        },
-                        {
-                            "option_id": 13,
-                            "option_value_id": [1]
-                        }
-                    ],
-                    "name": "89x127",
-                    "value": [
-                        89,
-                        127
-                    ]
-                },
-                {
-                    "option_value_id": "2",
 
-                    "name": "A5 (200x150)",
-                    "value": [
-                        200,
-                        150
-                    ]
-                },
-                {
-                    "option_value_id": "3",
-
-                    "name": "A5 (100x200)",
-                    "value": [
-                        100,
-                        200
-                    ]
-                },
-                {
-                    "option_value_id": "4",
-
-                    "name": "A6 (10x15)",
-                    "value": [
-                        10,
-                        15
-                    ]
-                }
-            ]
-        },
-        {
-            "option_id": "10",
-            "name": "Бумага",
-            "label": "paper",
-            "option_values": [
-                {
-                    "option_value_id": "1",
-
-                    "label": "embossed",
-                    "name": "Тиснёная"
-                },
-                {
-                    "option_value_id": "2",
-
-                    "label": "glossy",
-                    "name": "Глянцевая"
-                }
-            ]
-        },
-        {
-            "option_id": "11",
-            "name": "Кадрирование",
-            "label": "framing",
-            "option_values": [
-                {
-                    "option_value_id": 99,
-                    "label": "none",
-                    "name": "На усмотрение оператора"
-                },
-                {
-                    "option_value_id": 1,
-                    "label": "whole",
-                    "name": "Кадр целиком"
-                },
-                {
-                    "option_value_id": 2,
-                    "label": "cropp",
-                    "name": "Кадр в обрез"
-                }
-            ]
-        },
-        {
-            "option_id": "12",
-            "name": "Рамка",
-            "label": "border-select",
-            "option_values": [
-                {
-                    "option_value_id": "1",
-                    "label": "black",
-                    "name": "Черная"
-                },
-                {
-                    "option_value_id": "2",
-                    "label": "white",
-                    "name": "Белая"
-                },
-                {
-                    "option_value_id": "3",
-                    "label": "none",
-                    "name": "Без рамки"
-                }
-            ]
-        },
-        {
-            "option_id": "13",
-            "name": "Кастомная опция",
-            "label": "option111",
-            "option_values": [
-                {
-                    "option_value_id": "1",
-                    "label": "black",
-                    "name": "Опция 1",
-
-                },
-                {
-                    "option_value_id": "2",
-                    "label": "white",
-                    "name": "Опция 2"
-                },
-                {
-                    "option_value_id": "3",
-                    "label": "none",
-                    "name": "Опция 3"
-                }
-            ]
-        },
-    ];
     let copperParams = {
         container: 'app',
         handlerUrl: 'https://3352.pechat55.ru',
@@ -229,16 +83,15 @@
 
 
     cropper.onDeleteAllPhotos((res) => {
-        console.log('onDeleteAllPhotos');
+
     });
 
     cropper.onProcessingStart((data) => {
-        console.log(data);
+
     });
 
     cropper.onPropertiesChanged(data => {
-        console.log("onPropertiesChanged");
-        console.log(data);
+
     });
 
 

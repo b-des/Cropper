@@ -297,12 +297,14 @@ export class MainComponent extends Component {
         $(html).insertAfter(`#${uid}`);
         $(`#${item.uid}`).find('.crop-container').cropper({
             onLoad: () => {
+                this.adjustOrientation(true, item.uid)
             }, createUI: false, fitToContainer: photo.crop
         });
         this.paginator.set('totalResult', window.photos.length);
         $('#pagination-bar').html(this.paginator.render());
         tippy('[data-tippy-content]', {'theme': 'light'});
         this.onItemSelect(item.uid, true);
+
         Object.keys(photo.options).map((key, index) => {
             this.excludeUnsuitableOptions(null, null, photo.options[key].option_id, photo.options[key].option_value_id);
         });
@@ -397,7 +399,7 @@ export class MainComponent extends Component {
                 if (res.value) {
                     this.props.clear();
                     this.props.onDeleteAllPhotos(true);
-                    window.photos = undefined;
+                    window.photos = [];
                 }
             })
         } else {
@@ -408,8 +410,6 @@ export class MainComponent extends Component {
 
     /*Rotate image*/
     rotateImage(uid, deg) {
-        console.log("Rotation");
-        console.log(uid, deg);
         let index = window.photos.findIndex(a => a.uid === uid);
         let photo = null;
         if (index === -1)
@@ -430,12 +430,14 @@ export class MainComponent extends Component {
                 // target.cropper('reset');
                 target.cropper('update', {
                     rotate: true, createUI: target.hasClass('enabled'), onLoad: () => {
+                        this.onItemSelect(uid, true);
                     }
                 });
 
                 if (this.border && this.border !== 'none') {
                     target.find('.border-frame').css('z-index', `99`);
                 }
+
             }, 1000);
 
         }).catch(error => {
@@ -682,6 +684,7 @@ export class MainComponent extends Component {
             this.initializedPages[index] = 0;
             this.goToPage(1);
         }, 500);
+        this.refreshOptionsTooltips();
     }
 
     updateSizes(sizes) {
@@ -857,21 +860,20 @@ export class MainComponent extends Component {
             this.excludeUnsuitableOptions(null, null, id, value);
     }
 
-    adjustOrientation(rotateImmediate) {
-        console.log("adjustOrientation");
+    adjustOrientation(rotateImmediate, uid) {
         if (rotateImmediate && this.paginator) {
             let pagination = this.paginator ? this.paginator.getPaginationData() : {
                 fromResult: 0,
                 toResult: window.photos.length
             };
-            window.photos.slice(pagination.fromResult - 1, pagination.toResult).map((photo, i) => {
+            window.photos.slice(pagination.fromResult - 1, pagination.toResult)
+                .filter(photo => uid ? photo.uid === uid : true)
+                .map((photo, i) => {
 
                 let resolution = photo.resolution ? photo.resolution.split('x') : null;
                 let container = $('#main-section').find(`#crop-container-${photo.uid}`);
 
                 if (resolution && (+resolution[0] / +resolution[1] < 1)) {
-                    console.log(this.size);
-                    console.log(this.size.width < this.size.height);
                     if (this.size.width < this.size.height && container.attr('data-rotate') === '-90') {
                         setTimeout(this.rotateImage.bind(this, photo.uid, 0), 500);
                         photo.oldRotation = 0;
@@ -977,7 +979,37 @@ export class MainComponent extends Component {
         window.photos[index]['quantity'] = quantity;
     }
 
+    refreshOptionsTooltips(){
+        $(function () {
+            $('[data-toggle="option-tooltip"]').each(function () {
+                let image = $(this).attr('data-image');
+                let description = $(this).attr('data-description');
+                let isMobile = window.innerWidth < 768;
+                if (description || image) {
+                    $(this).tooltip({
+                        html: true,
+                        boundary: 'window',
+                        offset: 100,
+                        placement: 'auto',
+                        delay: { "show": isMobile ? 100 : 1200, "hide": 100 },
+                        title: `<p>${description}</p>` + (image ? `<img class="img-thumbnail" style="width: 150px" width="150px" src="${image}"/>` : ''),
+                    });
+                }
+
+                if(isMobile){
+                    $(document).on('click', '#cropper-toolbar .dropdown-menu', function (e) {
+                        e.stopPropagation();
+                        setTimeout(() => {
+                            $(document).click();
+                        }, 500)
+                    });
+                }
+            });
+        });
+    }
+
     componentDidMount() {
+
         window.photos = [];
         this.borderSettings.initPopup("cropper-container");
 
@@ -1096,7 +1128,7 @@ export class MainComponent extends Component {
             if ($(`#${uid} .dropdown[data-option-id="${optionId}"] [data-option-value-id="${valueId}"]`)
                 .hasClass('disabled')) {
                 Swal.fire({
-                    title: 'Конфликт опций',
+                    title: 'Конфликт опций1',
                     text: 'Опции будут сброшены. Вы согласны?',
                     type: 'question',
                     showCancelButton: true,
@@ -1114,7 +1146,6 @@ export class MainComponent extends Component {
 
             this.onSingleOptionChange(element, uid, option, value, optionId, valueId);
         });
-
 
     }
 

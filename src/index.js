@@ -109,7 +109,7 @@ class Cropper extends Component {
     }
 
     destroy() {
-        window.photos = null;
+        window.photos = [];
         const root = render(<Cropper/>, document.getElementById(this.options.container));
         ReactDOM.unmountComponentAtNode(document.getElementById(this.options.container));
         render(null, document.getElementById(this.options.container), root);
@@ -204,7 +204,6 @@ class Cropper extends Component {
 
 
     componentDidUpdate(previousProps, previousState, previousContext) {
-        console.log('componentDidUpdate');
         return super.componentDidUpdate(previousProps, previousState, previousContext);
     }
 

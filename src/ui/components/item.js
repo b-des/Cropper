@@ -5,6 +5,7 @@ import tippy from 'tippy.js'
 export class ImageItem {
 
     getHtml() {
+
         return `<div class="image-container" id="{{=it.uid}}">
                 <div class="tools">
                         <div class="pretty p-svg p-curve p-plain">
@@ -73,8 +74,11 @@ export class ImageItem {
                   <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                    {{~ option.option_values :value:i }}
                         <span class="dropdown-item option {{? (it.selectedOptions[option.option_id] && 
-                        it.selectedOptions[option.option_id].option_value_id == value.option_value_id)}} active {{?}}" 
+                        it.selectedOptions[option.option_id].option_value_id == value.option_value_id)}} active {{?}}
+                        {{? value.description}} option-item {{?}}" 
+                        data-toggle="option-tooltip"
                         data-label="{{=value.label}}" 
+                        data-description="{{=value.description}}" data-image="{{=value.image}}"
                         {{? value.value }} data-value="{{=value.value}}" {{?}}
                         data-option-value-id="{{=value.option_value_id}}">{{=value.name}}</span>
                     {{~}}
