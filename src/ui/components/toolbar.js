@@ -129,7 +129,6 @@ export class ToolbarComponent extends Component {
                 if (res.value) {
 
                     this.onOptionChange(null, current_option, option_value, option_name, item_label, option_label);
-                    //console.log(this.selectedOptions);
 
                     if (relative_options)
                         relative_options.map(option => {
@@ -141,17 +140,17 @@ export class ToolbarComponent extends Component {
                             }
                         });
 
-                    $(`[data-option-id=${current_option}]`).find(`a`).removeClass('unsuitable');
+                    $(`[data-option-id=${current_option}]`).find(`a[data-value-id=${option_value}]`).removeClass('unsuitable');
                     $(`[data-option-id="${current_option}"]`).find('button').removeClass('btn-danger').html(option_name);
                 }
             });
 
-            // return false;
         }
 
         if (!relative_options)
             return;
         //$(`#cropper-toolbar .dropdown[data-option-id=${current_option}]`).find('a').removeClass('disabled');
+        //this.exludedOptions[current_option] = null;
         relative_options.map(option => {
             if (!this.exludedOptions[current_option])
                 this.exludedOptions[current_option] = {[option.option_id]: option.option_value_id};
@@ -176,6 +175,20 @@ export class ToolbarComponent extends Component {
                 $(`#cropper-toolbar .dropdown[data-option-id=${option[0]}]`).find(`a[data-value-id=${value_id}]`).removeClass('unsuitable');
             });
         });
+    }
+
+    findExcludedOptions(optionId, allowedOptionValueIds, isEmpty){
+        let res = this.props.options.filter(option => +option.option_id === +optionId);
+        if(!res || res.length === 0)
+            return [];
+        let res2 = res[0].option_values.filter(value => !allowedOptionValueIds.includes(value.option_value_id));
+        let res3 = res2.map(item =>  item.option_value_id);
+        //console.log(res2);
+        if(isEmpty){
+            return {[optionId] : res3 || []};
+        }else{
+            return  res3 || [];
+        }
     }
 
     unionDuplicates(arr1, arr2) {

@@ -88,7 +88,7 @@ class Cropper extends Component {
                 sizes: this.options.sizes
             });
         }
-
+        this.options.options = this.handleOptions(this.options.options);
         if (this.options.container) {
             render(<MainComponent ref={this.child}
                                   immediate={this.options.immediate}
@@ -106,6 +106,24 @@ class Cropper extends Component {
 
         }
 
+    }
+
+    // обновляет массив с опциями
+    // подставляя недостающиеся элементы для зависимых опций
+    handleOptions(options){
+        let allOptionsId = options.map(option => option.option_id);
+        options.map(option => {
+            option.option_values.map(optionValue => {
+                let existedRelatedOptions = optionValue.relation_options.map(relationOption => relationOption.option_id);
+                allOptionsId.map(optionId => {
+                    if(!existedRelatedOptions.includes(optionId) && +optionId !== +option.option_id){
+                        optionValue.relation_options.push({"option_id": `${optionId}`, "option_value_id": []})
+                    }
+                })
+            })
+        });
+
+        return options;
     }
 
     destroy() {

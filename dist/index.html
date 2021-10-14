@@ -61,7 +61,7 @@
         handlerUrl: 'https://3352.pechat55.ru',
         dest: ['C:/Node/Cropper/dist', 'uploads/12334'],
         immediate: false,
-        itemsPerPage: 1,
+        itemsPerPage: 5,
         borderWidth: 10,//толщина рамки по умолчанию
         defaultOptions: [
             //{option_id: 9, option_value_id: 3},
@@ -79,6 +79,7 @@
 
 
     cropper.addPhotos([imgs[0]]);
+    cropper.addPhotos([imgs[1]]);
 
 
 
@@ -93,7 +94,7 @@
     cropper.onPropertiesChanged(data => {
 
     });
-
+cropper.orderCallback()
 
     /* c.process([{"border":"#c93333","borderThickness":"29","crop":{"x":"31.34715025906736","y":"28.756476683937827","w":"65.41450777202073","h":"42.61658031088083"},"dest":["C:/Node/Cropper/dist","uploads/12334"],"left":"-121","original":"false","quantity":"1","rotate":"90","size":{"width":"152","height":"102"},"thumbnail":"image\/photobox\/uploads\/tmp\/sisadmin_typical_4aad3e2ff46c64676ace26dacdd3b929-ua28q5t-rotated.png?v=1573655414035","top":"-111","url":"https:\/\/pechat.photo\/image\/customer\/authorized\/d3d9446802a44259755d38e6d163e820\/sisadmin_typical_4aad3e2ff46c64676ace26dacdd3b929.png","zoom":"1.61"}], (res) => {
          console.log(res);

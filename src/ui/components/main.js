@@ -7,6 +7,7 @@ import 'perfect-scrollbar/css/perfect-scrollbar.css'
 import pagination from 'pagination';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import findDuplicates from "array-find-duplicates";
 
 const dot = require('dot');
 
@@ -285,20 +286,21 @@ export class MainComponent extends Component {
             uid: item.uid,
             quantity: 1,
             border: photo.border || '',
-            rotate: photo.rotate || '',
+            rotate: photo.rotation || '',
             checked: true,
             borderThickness: 0,
             options: this.props.options.options,
             selectedOptions: photo.options
         };
-
         let html = dot.template(this.imageItemTemplate)(options);
 
         $(html).insertAfter(`#${uid}`);
         $(`#${item.uid}`).find('.crop-container').cropper({
             onLoad: () => {
-                this.adjustOrientation(true, item.uid)
-            }, createUI: false, fitToContainer: photo.crop
+                //this.adjustOrientation(true, item.uid)
+            },
+            createUI: false,
+            fitToContainer: photo.crop
         });
         this.paginator.set('totalResult', window.photos.length);
         $('#pagination-bar').html(this.paginator.render());
@@ -306,7 +308,7 @@ export class MainComponent extends Component {
         this.onItemSelect(item.uid, true);
 
         Object.keys(photo.options).map((key, index) => {
-            this.excludeUnsuitableOptions(null, null, photo.options[key].option_id, photo.options[key].option_value_id);
+            this.excludeUnsuitableOptions(null, item.uid, photo.options[key].option_id, photo.options[key].option_value_id);
         });
 
         /* let currentDegree = parseInt($(`#${item.uid}`).find('.crop-container').attr('data-rotate'));
@@ -411,17 +413,18 @@ export class MainComponent extends Component {
     /*Rotate image*/
     rotateImage(uid, deg) {
         let index = window.photos.findIndex(a => a.uid === uid);
-        let photo = null;
+        let photo = window.photos[index];
         if (index === -1)
             photo = window.photos.filter(item => item.uid === uid)[0];
         $(`#crop-container-${uid}`).append('<div class="lds-ring"><div></div><div></div><div></div><div></div></div>');
         axios.post(`${this.props.handlerUrl}/rotate`, {
-            url: window.photos[index] ? window.photos[index].thumbnail || window.photos[index].url : photo.thumbnail || photo.url,
+            url: window.photos[index] ? window.photos[index].url || window.photos[index].thumbnail : photo.url || photo.thumbnail,
             uid: uid,
             deg: deg,
             dest: this.props.dest
         }).then(response => {
-
+            photo.thumbnail = response.data.filename;
+            photo.rotation = response.data.deg >= 360 ? 0 : response.data.deg;
             setTimeout(() => {
                 let target = $(`#crop-container-${uid}`);
                 target.attr('data-rotate', response.data.deg >= 360 ? 0 : response.data.deg);
@@ -705,7 +708,7 @@ export class MainComponent extends Component {
 
             if (!item.initialized) {
                 Object.keys(item.options).map((key, index) => {
-                    this.excludeUnsuitableOptions(null, null, item.options[key].option_id, item.options[key].option_value_id);
+                    this.excludeUnsuitableOptions(null, null, item.options[key].option_id, item.options[key].option_value_id, true);
                 });
                 if (this.props.options.itemsPerPage === i + 1) {
                     this.initializedPages.push(+page);
@@ -857,7 +860,7 @@ export class MainComponent extends Component {
         if (this.props.onOptionChanged)
             this.props.onOptionChanged(result);
         if (id && value)
-            this.excludeUnsuitableOptions(null, null, id, value);
+            this.excludeUnsuitableOptions(null, null, id, value, true);
     }
 
     adjustOrientation(rotateImmediate, uid) {
@@ -1128,7 +1131,7 @@ export class MainComponent extends Component {
             if ($(`#${uid} .dropdown[data-option-id="${optionId}"] [data-option-value-id="${valueId}"]`)
                 .hasClass('disabled')) {
                 Swal.fire({
-                    title: 'Конфликт опций1',
+                    title: 'Конфликт опций',
                     text: 'Опции будут сброшены. Вы согласны?',
                     type: 'question',
                     showCancelButton: true,
@@ -1199,33 +1202,73 @@ export class MainComponent extends Component {
         this.excludeUnsuitableOptions(element, uid, optionId, valueId)
     }
 
-    excludeUnsuitableOptions(element, uid, optionId, valueId) {
+    excludeUnsuitableOptions(element, uid, optionId, valueId, global) {
         let touchedOption = this.props.options.options.filter(option => +option.option_id === +optionId)[0];
         let touchedOptionValue = touchedOption.option_values.filter(optionValue => +optionValue.option_value_id === +valueId)[0];
         let relatedOptions = touchedOptionValue.relation_options;
         if (relatedOptions) {
-            let container = '';
-            if (uid) {
-                container = `#${uid} `;
-            }
 
-            $(`${container}.item-options .dropdown[data-option-id!="${optionId}"] .option.disabled`).addClass('pre-disabled');
+
+            if(global){
+                for(let i = 0; i < window.photos.length; i++){
+                    this.handleExcludedOptions(relatedOptions, i, optionId);
+                }
+                return;
+            }
+            //$(`${container}.item-options .dropdown[data-option-id!="${optionId}"] .option.disabled`).addClass('pre-disabled');
             // first make all options for current photo unsuitable
             // except current option
-            $(`${container}.item-options .dropdown[data-option-id!="${optionId}"] .option`).addClass('disabled');
+           // $(`${container}.item-options .dropdown[data-option-id!="${optionId}"] .option`).addClass('disabled');
             // iterate over related options
-            relatedOptions.map(relatedOption => {
-                // make related options suitable
-                relatedOption.option_value_id.map(value => {
+            const index = window.photos.findIndex(a => a.uid === uid);
+            this.handleExcludedOptions(relatedOptions, index, optionId, uid);
 
-                    $(`${container}.item-options [data-option-id="${relatedOption.option_id}"]`)
-                        .find(`[data-option-value-id="${value}"]`)/*.not('.pre-disabled')*/.removeClass('disabled');
-                });
-            });
-
-            $(`${container}.item-options .option`).removeClass('pre-disabled');
+            // $(`${container}.item-options .option`).removeClass('pre-disabled');
         }
 
+    }
+
+    handleExcludedOptions(relatedOptions, index, optionId, uid) {
+        let container = '';
+        if (uid) {
+            container = `#${uid} `;
+        }
+
+        relatedOptions.map(option => {
+            // make related options suitable
+            /* relatedOption.option_value_id.map(value => {
+
+                 $(`${container}.item-options [data-option-id="${relatedOption.option_id}"]`)
+                     .find(`[data-option-value-id="${value}"]`).not('.pre-disabled').removeClass('disabled');
+             });*/
+            if (!window.photos[index].exludedOptions) {
+                window.photos[index]['exludedOptions'] = {};
+            }
+            if (!window.photos[index].exludedOptions[optionId])
+                window.photos[index].exludedOptions[optionId] = {[option.option_id]: option.option_value_id};
+            else
+                window.photos[index].exludedOptions[optionId][option.option_id] = option.option_value_id;
+        });
+
+        let enabled = {};
+        // $(`#cropper-toolbar .dropdown:not([data-option-id='${current_option}']) a`).addClass('disabled');
+        $(`${container}.item-options .dropdown:not([data-option-id='${optionId}']) span`).addClass('disabled');
+
+        Object.entries(window.photos[index].exludedOptions).map(option => {
+            Object.entries(option[1]).map(item => {
+                enabled[item[0]] = enabled[item[0]] ? this.unionDuplicates(enabled[item[0]], item[1]) : item[1];
+            })
+        });
+
+        Object.entries(enabled).map(option => {
+            option[1].map(value_id => {
+                $(`${container}.item-options .dropdown[data-option-id=${option[0]}]`).find(`span[data-option-value-id=${value_id}]`).removeClass('disabled');
+            });
+        });
+    }
+
+    unionDuplicates(arr1, arr2) {
+        return [...new Set([].concat(...findDuplicates(arr1.concat(arr2))))];
     }
 
     resetUnsuitableOptions(element, uid, optionId, valueId) {

@@ -39,7 +39,10 @@ var options = [{
     "label": "size",
     "option_values": [{
         "option_value_id": "402",
-        "relation_options": [{"option_id": "10", "option_value_id": ["26", "28", "38"]}, {
+        "relation_options": [
+            {"option_id": "10", "option_value_id": ["26", "28", "38"]},
+            {"option_id": "82", "option_value_id": []},
+            {
             "option_id": "11",
             "option_value_id": ["31", "32"]
         }, {"option_id": "79", "option_value_id": ["329", "330"]}, {
